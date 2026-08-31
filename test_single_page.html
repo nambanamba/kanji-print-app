@@ -1,0 +1,402 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <title>Test and Practice 1-Page Drill</title>
+  <style>
+    @page {
+      size: A4 portrait;
+      margin: 8mm 10mm;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: "Hiragino Kaku Gothic ProN", "Yu Gothic", "Meiryo", sans-serif;
+      background: #ffffff;
+      color: #000000;
+      -webkit-print-color-adjust: exact;
+      print-color-adjust: exact;
+    }
+
+    .page-container {
+      width: 100%;
+      height: 280mm;
+      box-sizing: border-box;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+    }
+
+    /* ヘッダー */
+    .p-head {
+      border-bottom: 2px solid #000000;
+      padding-bottom: 2px;
+      margin-bottom: 4px;
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-end;
+    }
+    .p-title { font-size: 13pt; font-weight: bold; }
+    .p-meta { display: flex; gap: 14px; font-size: 8.5pt; }
+    .p-line { display: inline-block; border-bottom: 1px solid #000000; min-width: 55px; }
+
+    /* セクション見出し */
+    .section-title {
+      font-size: 9pt;
+      font-weight: bold;
+      background: #f1f5f9;
+      border-left: 4px solid #1e3a8a;
+      padding: 2px 6px;
+      margin-bottom: 4px;
+    }
+
+    /* 上段：テスト欄（2列） */
+    .test-section {
+      margin-bottom: 6px;
+    }
+    .test-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 3px 12px;
+    }
+    .test-item {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      border-bottom: 1px dashed #cbd5e1;
+      padding-bottom: 2px;
+    }
+    .test-q-text {
+      font-size: 9.5pt;
+      line-height: 1.1;
+    }
+    .test-hint {
+      font-size: 6.8pt;
+      color: #555555;
+    }
+    .test-ans-box {
+      width: 36mm;
+      height: 9mm;
+      border: 1.5px solid #000000;
+      background: #ffffff;
+      border-radius: 2px;
+      flex-shrink: 0;
+    }
+
+    /* 下段：練習マス目欄 */
+    .practice-section {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+    }
+    .practice-table {
+      width: 100%;
+      border-collapse: collapse;
+      table-layout: fixed;
+    }
+    .practice-table th {
+      background: #f8fafc !important;
+      border: 1px solid #000000;
+      font-size: 7.5pt;
+      padding: 2px;
+      text-align: center;
+    }
+    .p-row {
+      height: 17.5mm;
+    }
+    .p-no-td {
+      width: 5%;
+      border: 1px solid #000000;
+      text-align: center;
+      font-size: 9pt;
+      font-weight: bold;
+    }
+    .p-word-td {
+      width: 25%;
+      border: 1px solid #000000;
+      padding: 2px 6px;
+      vertical-align: middle;
+    }
+    .p-sample-word {
+      font-size: 13.5pt;
+      font-weight: bold;
+      color: #000000;
+      letter-spacing: 0.05em;
+      line-height: 1.1;
+    }
+    .p-kana-sub {
+      font-size: 7pt;
+      color: #555555;
+    }
+    .p-box-td {
+      width: 14%;
+      border: 1px solid #000000;
+      padding: 0;
+      vertical-align: middle;
+      text-align: center;
+    }
+    .p-grid-cell {
+      width: 100%;
+      height: 100%;
+      min-height: 17mm;
+      position: relative;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: #ffffff;
+    }
+    /* 十字リーダー点線 */
+    .p-grid-cell::before {
+      content: "";
+      position: absolute;
+      top: 50%;
+      left: 0;
+      width: 100%;
+      height: 1px;
+      border-top: 1px dashed #cccccc;
+    }
+    .p-grid-cell::after {
+      content: "";
+      position: absolute;
+      top: 0;
+      left: 50%;
+      width: 1px;
+      height: 100%;
+      border-left: 1px dashed #cccccc;
+    }
+    .p-trace-txt {
+      font-size: 13pt;
+      font-weight: bold;
+      color: #cccccc !important;
+      letter-spacing: 0.05em;
+      position: relative;
+      z-index: 2;
+    }
+  </style>
+</head>
+<body>
+  <div class="page-container">
+    <div>
+      <div class="p-head">
+        <div>
+          <div class="p-title">中学受験 社会 漢字テスト＆練習プリント（今日の10問）</div>
+        </div>
+        <div class="p-meta">
+          <div>日付: <span class="p-line">2026年9月1日</span></div>
+          <div>氏名: <span class="p-line"></span></div>
+          <div>得点: <span class="p-line" style="min-width:40px;">　 / 10</span></div>
+        </div>
+      </div>
+
+      <!-- ① 上段：テスト欄 -->
+      <div class="test-section">
+        <div class="section-title">① まずテストしてみよう（ひらがなを正しい漢字で書く）</div>
+        <div class="test-grid">
+          <div>
+  <div class="test-item">
+    <div class="test-q-text"><b>1.</b> いわじゅくいせき <span class="test-hint">(旧石器時代の遺跡（群馬県）)</span></div>
+    <div class="test-ans-box"></div>
+  </div>
+
+  <div class="test-item">
+    <div class="test-q-text"><b>2.</b> あいざわただひろ <span class="test-hint">(岩宿遺跡を発見した人物)</span></div>
+    <div class="test-ans-box"></div>
+  </div>
+
+  <div class="test-item">
+    <div class="test-q-text"><b>3.</b> のじりこ <span class="test-hint">(ナウマンゾウ化石出土（長野県）)</span></div>
+    <div class="test-ans-box"></div>
+  </div>
+
+  <div class="test-item">
+    <div class="test-q-text"><b>4.</b> おおもりかいづか <span class="test-hint">(モースが発見した貝塚（東京都）)</span></div>
+    <div class="test-ans-box"></div>
+  </div>
+
+  <div class="test-item">
+    <div class="test-q-text"><b>5.</b> さんないまるやまいせき <span class="test-hint">(縄文の大集落遺跡（青森県）)</span></div>
+    <div class="test-ans-box"></div>
+  </div>
+</div>
+          <div>
+  <div class="test-item">
+    <div class="test-q-text"><b>6.</b> たてあなじゅうきょ <span class="test-hint">(地面を掘り下げた住居)</span></div>
+    <div class="test-ans-box"></div>
+  </div>
+
+  <div class="test-item">
+    <div class="test-q-text"><b>7.</b> どぐう <span class="test-hint">(魔よけや豊作を祈る土人形)</span></div>
+    <div class="test-ans-box"></div>
+  </div>
+
+  <div class="test-item">
+    <div class="test-q-text"><b>8.</b> たかゆかそうこ <span class="test-hint">(収穫した米を保存した建物)</span></div>
+    <div class="test-ans-box"></div>
+  </div>
+
+  <div class="test-item">
+    <div class="test-q-text"><b>9.</b> いしぼうちょう <span class="test-hint">(稲の穂首狩り用石器)</span></div>
+    <div class="test-ans-box"></div>
+  </div>
+
+  <div class="test-item">
+    <div class="test-q-text"><b>10.</b> とろいせき <span class="test-hint">(水田・集落跡（静岡県）)</span></div>
+    <div class="test-ans-box"></div>
+  </div>
+</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ② 下段：練習マス目欄 -->
+    <div class="practice-section">
+      <div class="section-title">② お手本を見て練習しよう（なぞり書き ＋ 4回練習マス）</div>
+      <table class="practice-table">
+        <thead>
+          <tr>
+            <th style="width:5%;">No</th>
+            <th style="width:25%;">お手本（漢字）</th>
+            <th style="width:14%;">① なぞり</th>
+            <th style="width:14%;">② 練習</th>
+            <th style="width:14%;">③ 練習</th>
+            <th style="width:14%;">④ 練習</th>
+            <th style="width:14%;">⑤ 練習</th>
+          </tr>
+        </thead>
+        <tbody>
+          
+  <tr class="p-row">
+    <td class="p-no-td">1</td>
+    <td class="p-word-td">
+      <div class="p-sample-word">岩宿遺跡</div>
+      <div class="p-kana-sub">いわじゅくいせき</div>
+    </td>
+    <td class="p-box-td"><div class="p-grid-cell"><span class="p-trace-txt">岩宿遺跡</span></div></td>
+    <td class="p-box-td"><div class="p-grid-cell"></div></td>
+    <td class="p-box-td"><div class="p-grid-cell"></div></td>
+    <td class="p-box-td"><div class="p-grid-cell"></div></td>
+    <td class="p-box-td"><div class="p-grid-cell"></div></td>
+  </tr>
+
+  <tr class="p-row">
+    <td class="p-no-td">2</td>
+    <td class="p-word-td">
+      <div class="p-sample-word">相沢忠洋</div>
+      <div class="p-kana-sub">あいざわただひろ</div>
+    </td>
+    <td class="p-box-td"><div class="p-grid-cell"><span class="p-trace-txt">相沢忠洋</span></div></td>
+    <td class="p-box-td"><div class="p-grid-cell"></div></td>
+    <td class="p-box-td"><div class="p-grid-cell"></div></td>
+    <td class="p-box-td"><div class="p-grid-cell"></div></td>
+    <td class="p-box-td"><div class="p-grid-cell"></div></td>
+  </tr>
+
+  <tr class="p-row">
+    <td class="p-no-td">3</td>
+    <td class="p-word-td">
+      <div class="p-sample-word">野尻湖</div>
+      <div class="p-kana-sub">のじりこ</div>
+    </td>
+    <td class="p-box-td"><div class="p-grid-cell"><span class="p-trace-txt">野尻湖</span></div></td>
+    <td class="p-box-td"><div class="p-grid-cell"></div></td>
+    <td class="p-box-td"><div class="p-grid-cell"></div></td>
+    <td class="p-box-td"><div class="p-grid-cell"></div></td>
+    <td class="p-box-td"><div class="p-grid-cell"></div></td>
+  </tr>
+
+  <tr class="p-row">
+    <td class="p-no-td">4</td>
+    <td class="p-word-td">
+      <div class="p-sample-word">大森貝塚</div>
+      <div class="p-kana-sub">おおもりかいづか</div>
+    </td>
+    <td class="p-box-td"><div class="p-grid-cell"><span class="p-trace-txt">大森貝塚</span></div></td>
+    <td class="p-box-td"><div class="p-grid-cell"></div></td>
+    <td class="p-box-td"><div class="p-grid-cell"></div></td>
+    <td class="p-box-td"><div class="p-grid-cell"></div></td>
+    <td class="p-box-td"><div class="p-grid-cell"></div></td>
+  </tr>
+
+  <tr class="p-row">
+    <td class="p-no-td">5</td>
+    <td class="p-word-td">
+      <div class="p-sample-word">三内丸山遺跡</div>
+      <div class="p-kana-sub">さんないまるやまいせき</div>
+    </td>
+    <td class="p-box-td"><div class="p-grid-cell"><span class="p-trace-txt">三内丸山遺跡</span></div></td>
+    <td class="p-box-td"><div class="p-grid-cell"></div></td>
+    <td class="p-box-td"><div class="p-grid-cell"></div></td>
+    <td class="p-box-td"><div class="p-grid-cell"></div></td>
+    <td class="p-box-td"><div class="p-grid-cell"></div></td>
+  </tr>
+
+  <tr class="p-row">
+    <td class="p-no-td">6</td>
+    <td class="p-word-td">
+      <div class="p-sample-word">竪穴住居</div>
+      <div class="p-kana-sub">たてあなじゅうきょ</div>
+    </td>
+    <td class="p-box-td"><div class="p-grid-cell"><span class="p-trace-txt">竪穴住居</span></div></td>
+    <td class="p-box-td"><div class="p-grid-cell"></div></td>
+    <td class="p-box-td"><div class="p-grid-cell"></div></td>
+    <td class="p-box-td"><div class="p-grid-cell"></div></td>
+    <td class="p-box-td"><div class="p-grid-cell"></div></td>
+  </tr>
+
+  <tr class="p-row">
+    <td class="p-no-td">7</td>
+    <td class="p-word-td">
+      <div class="p-sample-word">土偶</div>
+      <div class="p-kana-sub">どぐう</div>
+    </td>
+    <td class="p-box-td"><div class="p-grid-cell"><span class="p-trace-txt">土偶</span></div></td>
+    <td class="p-box-td"><div class="p-grid-cell"></div></td>
+    <td class="p-box-td"><div class="p-grid-cell"></div></td>
+    <td class="p-box-td"><div class="p-grid-cell"></div></td>
+    <td class="p-box-td"><div class="p-grid-cell"></div></td>
+  </tr>
+
+  <tr class="p-row">
+    <td class="p-no-td">8</td>
+    <td class="p-word-td">
+      <div class="p-sample-word">高床倉庫</div>
+      <div class="p-kana-sub">たかゆかそうこ</div>
+    </td>
+    <td class="p-box-td"><div class="p-grid-cell"><span class="p-trace-txt">高床倉庫</span></div></td>
+    <td class="p-box-td"><div class="p-grid-cell"></div></td>
+    <td class="p-box-td"><div class="p-grid-cell"></div></td>
+    <td class="p-box-td"><div class="p-grid-cell"></div></td>
+    <td class="p-box-td"><div class="p-grid-cell"></div></td>
+  </tr>
+
+  <tr class="p-row">
+    <td class="p-no-td">9</td>
+    <td class="p-word-td">
+      <div class="p-sample-word">石包丁</div>
+      <div class="p-kana-sub">いしぼうちょう</div>
+    </td>
+    <td class="p-box-td"><div class="p-grid-cell"><span class="p-trace-txt">石包丁</span></div></td>
+    <td class="p-box-td"><div class="p-grid-cell"></div></td>
+    <td class="p-box-td"><div class="p-grid-cell"></div></td>
+    <td class="p-box-td"><div class="p-grid-cell"></div></td>
+    <td class="p-box-td"><div class="p-grid-cell"></div></td>
+  </tr>
+
+  <tr class="p-row">
+    <td class="p-no-td">10</td>
+    <td class="p-word-td">
+      <div class="p-sample-word">登呂遺跡</div>
+      <div class="p-kana-sub">とろいせき</div>
+    </td>
+    <td class="p-box-td"><div class="p-grid-cell"><span class="p-trace-txt">登呂遺跡</span></div></td>
+    <td class="p-box-td"><div class="p-grid-cell"></div></td>
+    <td class="p-box-td"><div class="p-grid-cell"></div></td>
+    <td class="p-box-td"><div class="p-grid-cell"></div></td>
+    <td class="p-box-td"><div class="p-grid-cell"></div></td>
+  </tr>
+
+        </tbody>
+      </table>
+    </div>
+  </div>
+</body>
+</html>
