@@ -154,7 +154,7 @@
 
     @page {
       size: A4 portrait;
-      margin: 6mm 8mm;
+      margin: 8mm 8mm;
     }
 
     @media print {
@@ -178,12 +178,8 @@
 
       .p-page {
         page-break-after: always;
-        height: 284mm;
+        height: 275mm;
         box-sizing: border-box;
-        display: flex;
-        flex-direction: column;
-        justify-content: space-between;
-        padding: 0;
       }
 
       .p-page:last-child {
@@ -192,112 +188,96 @@
 
       .p-header {
         border-bottom: 2px solid #000000;
-        padding-bottom: 2px;
-        margin-bottom: 4px;
+        padding-bottom: 3px;
+        margin-bottom: 6px;
         display: flex;
         align-items: flex-end;
         justify-content: space-between;
       }
 
       .p-title {
-        font-size: 12.5pt;
+        font-size: 13pt;
         font-weight: bold;
-        letter-spacing: 0.02em;
+        letter-spacing: 0.03em;
       }
 
       .p-meta {
         display: flex;
         gap: 12px;
-        font-size: 8pt;
+        font-size: 8.5pt;
       }
 
       .p-line {
         display: inline-block;
         border-bottom: 1px solid #000000;
-        min-width: 55px;
+        min-width: 60px;
         padding-bottom: 1px;
       }
 
-      /* 2列グリッド */
+      /* 2列グリッドコンテナ */
       .p-grid-2col {
         display: grid;
         grid-template-columns: 1fr 1fr;
-        gap: 4px 6px;
-        flex: 1;
+        gap: 6px 8px;
       }
 
       /* 1語の練習カード */
       .p-word-card {
         border: 1.2px solid #000000;
-        border-radius: 3px;
-        padding: 3px 5px;
+        border-radius: 4px;
+        padding: 4px 6px;
         background: #ffffff;
         display: flex;
         flex-direction: column;
         justify-content: space-between;
-        height: 52mm;
+        min-height: 48mm;
       }
 
       .p-card-top {
-        margin-bottom: 1px;
-      }
-
-      .p-top-row {
-        display: flex;
-        align-items: baseline;
-        gap: 6px;
+        margin-bottom: 3px;
       }
 
       .p-no-badge {
-        font-size: 8pt;
+        font-size: 7.5pt;
         font-weight: bold;
-        color: #1e3a8a;
+        color: #333333;
+        display: inline-block;
       }
 
       .p-kana-title {
-        font-size: 11pt;
-        font-weight: 800;
+        font-size: 11.5pt;
+        font-weight: bold;
         color: #000000;
         letter-spacing: 0.02em;
-        line-height: 1;
-      }
-
-      .p-unit-tag {
-        font-size: 6.5pt;
-        color: #666;
-        margin-left: auto;
+        line-height: 1.15;
       }
 
       .p-mean-hint {
-        font-size: 6.8pt;
-        color: #333333;
+        font-size: 7pt;
+        color: #444444;
         line-height: 1.1;
-        margin-top: 1px;
-        white-space: nowrap;
-        overflow: hidden;
-        text-overflow: ellipsis;
       }
 
       .p-point-hint {
-        color: #dc2626;
-        font-weight: bold;
-        margin-left: 4px;
+        font-size: 6.5pt;
+        color: #666666;
+        line-height: 1.1;
       }
 
-      /* 練習テーブル */
+      /* 練習テーブル (お手本 + ①〜⑤) */
       .p-card-table {
         width: 100%;
         border-collapse: collapse;
-        margin-top: 1px;
+        margin-top: 2px;
       }
 
       .p-card-table tr {
-        height: 6.2mm;
+        height: 6.8mm;
       }
 
       .p-label-cell {
         width: 14mm;
-        font-size: 6.5pt;
+        font-size: 6.8pt;
         font-weight: bold;
         color: #333333;
         text-align: center;
@@ -315,8 +295,8 @@
       /* 1文字ずつのマス目 */
       .p-char-box {
         border: 1px solid #000000;
-        height: 6.2mm;
-        width: 12mm;
+        height: 6.8mm;
+        width: 11mm;
         position: relative;
         text-align: center;
         vertical-align: middle;
@@ -331,7 +311,7 @@
         left: 0;
         width: 100%;
         height: 1px;
-        border-top: 1px dashed #cccccc;
+        border-top: 1px dashed #d1d5db;
       }
       .p-char-box::after {
         content: "";
@@ -340,7 +320,7 @@
         left: 50%;
         width: 1px;
         height: 100%;
-        border-left: 1px dashed #cccccc;
+        border-left: 1px dashed #d1d5db;
       }
 
       .p-sample-char {
@@ -356,7 +336,7 @@
       .p-trace-char {
         font-size: 11pt;
         font-weight: bold;
-        color: #cccccc !important;
+        color: #d1d5db !important;
         position: relative;
         z-index: 2;
         display: block;
@@ -428,24 +408,6 @@
           🚀 今日の特訓ドリルを作成する
         </button>
 
-        <div class="setting-group" style="background:#f1f5f9; padding:12px; border-radius:8px; margin-top:14px;">
-          <div class="setting-label" style="margin-bottom:6px; color:#1e3a8a;">📥 完成版PDFを直接ダウンロード・印刷</div>
-          <div style="display:grid; grid-template-columns:1fr 1fr; gap:8px;">
-            <a href="pdfs/第1回_社会漢字_5回練習ドリル_全20語.pdf" target="_blank" class="btn-outline" style="text-decoration:none; font-size:0.82rem; background:#ffffff; color:#1d4ed8; border-color:#93c5fd; font-weight:bold;">
-              📄 第1回 練習ドリルPDF (全20語)
-            </a>
-            <a href="pdfs/第2回_社会漢字_5回練習ドリル_全20語.pdf" target="_blank" class="btn-outline" style="text-decoration:none; font-size:0.82rem; background:#ffffff; color:#1d4ed8; border-color:#93c5fd; font-weight:bold;">
-              📄 第2回 練習ドリルPDF (全20語)
-            </a>
-            <a href="pdfs/第1回_社会漢字_模範解答.pdf" target="_blank" class="btn-outline" style="text-decoration:none; font-size:0.82rem; background:#ffffff; color:#dc2626; border-color:#fca5a5; font-weight:bold;">
-              📕 第1回 模範解答PDF
-            </a>
-            <a href="pdfs/第2回_社会漢字_模範解答.pdf" target="_blank" class="btn-outline" style="text-decoration:none; font-size:0.82rem; background:#ffffff; color:#dc2626; border-color:#fca5a5; font-weight:bold;">
-              📕 第2回 模範解答PDF
-            </a>
-          </div>
-        </div>
-
         <div class="btn-row">
           <button class="btn-outline btn-print-primary" onclick="printDrillCards('practice')">
             🖨️ 練習用（お手本＆なぞりつき）
@@ -509,8 +471,8 @@
   <script src="kanji-data.js"></script>
 
   <script>
-    const SETTINGS_KEY = "kanji_app_settings_cache_v4";
-    const HISTORY_KEY = "kanji_drill_app_history_v4";
+    const SETTINGS_KEY = "kanji_app_settings_cache_v3";
+    const HISTORY_KEY = "kanji_drill_app_history_v3";
 
     let selectedUnits = new Set(["第1回", "第2回"]);
     let currentCount = 10;
@@ -828,7 +790,7 @@
     }
 
     // =========================================================
-    // 印刷ロジック（A4 2列 5回練習カード形式・1文字1マス）
+    // 印刷ロジック（A4 2列 5回練習カード形式）
     // mode: 'practice' (お手本+なぞり+4回練習) | 'test' (お手本なし+5回練習) | 'answer' (赤字お手本)
     // =========================================================
     function printDrillCards(mode = 'practice') {
@@ -837,6 +799,7 @@
       const todayStr = new Date().toLocaleDateString("ja-JP", { year: "numeric", month: "long", day: "numeric" });
       const unitNames = Array.from(selectedUnits).join("・") || "全単元";
 
+      // 1ページ10語（5行×2列）
       const pageSize = 10;
       const pagesCount = Math.ceil(currentSet.length / pageSize);
       let pagesHtml = "";
@@ -846,9 +809,14 @@
         
         let cardsHtml = pageItems.map((it, idx) => {
           const globalIdx = p * pageSize + idx + 1;
+          
+          // 単語の漢字文字を配列化（スラッシュ等は除く）
           const rawWord = it.word.split('/')[0].trim();
           const chars = Array.from(rawWord);
+          const charCount = Math.max(chars.length, 2);
 
+          // 行ごとのマス目を生成
+          // 行0: お手本
           let sampleRowHtml = "";
           if (mode === 'practice') {
             const boxes = chars.map(c => `<td class="p-char-box"><span class="p-sample-char">${c}</span></td>`).join("");
@@ -857,18 +825,21 @@
             const boxes = chars.map(c => `<td class="p-char-box"><span class="p-ans-char">${c}</span></td>`).join("");
             sampleRowHtml = `<tr><td class="p-label-cell" style="background:#fff5f5; color:#c00000;">解答</td>${boxes}</tr>`;
           } else {
+            // テストモードのときはお手本行なし、または空欄
             const emptyBoxes = chars.map(() => `<td class="p-char-box"></td>`).join("");
             sampleRowHtml = `<tr><td class="p-label-cell">①</td>${emptyBoxes}</tr>`;
           }
 
+          // 行1: 練習①（practiceのときは薄いなぞり文字、testのときは空マス）
           let row1Html = "";
           if (mode === 'practice') {
             const traceBoxes = chars.map(c => `<td class="p-char-box"><span class="p-trace-char">${c}</span></td>`).join("");
             row1Html = `<tr><td class="p-label-cell">①なぞり</td>${traceBoxes}</tr>`;
           }
 
-          const startNum = 2;
-          const totalRows = 5;
+          // 行2〜5: 練習②〜⑤の空マス
+          const startNum = (mode === 'practice') ? 2 : (mode === 'test' ? 2 : 2);
+          const totalRows = (mode === 'practice') ? 5 : 5;
           let practiceRowsHtml = "";
           for (let r = startNum; r <= totalRows; r++) {
             const emptyBoxes = chars.map(() => `<td class="p-char-box"></td>`).join("");
@@ -877,18 +848,19 @@
           }
 
           const pointHintHtml = (mode === 'practice' || mode === 'answer')
-            ? `<span class="p-point-hint">⚠️ ${it.point}</span>`
+            ? `<div class="p-point-hint">⚠️ ${it.point}</div>`
             : "";
 
           return `
             <div class="p-word-card">
               <div class="p-card-top">
-                <div class="p-top-row">
+                <div style="display:flex; justify-content:space-between; align-items:center;">
                   <span class="p-no-badge">問 ${globalIdx}</span>
-                  <span class="p-kana-title">${it.kana}</span>
-                  <span class="p-unit-tag">[${it.unitKey}]</span>
+                  <span style="font-size:6.5pt; color:#666;">[${it.unitKey}]</span>
                 </div>
-                <div class="p-mean-hint">💡 ${it.mean} ${pointHintHtml}</div>
+                <div class="p-kana-title">${it.kana}</div>
+                <div class="p-mean-hint">💡 ${it.mean}</div>
+                ${pointHintHtml}
               </div>
               <table class="p-card-table">
                 <tbody>
@@ -910,12 +882,12 @@
             <div class="p-header">
               <div>
                 <div class="p-title">${pageTitle}</div>
-                <div style="font-size:7pt; color:#444;">範囲: ${unitNames} ｜ 全 ${currentSet.length} 語 (${p+1}/${pagesCount} ページ)</div>
+                <div style="font-size:7.5pt; color:#444;">範囲: ${unitNames} ｜ 全 ${currentSet.length} 語 (${p+1}/${pagesCount} ページ)</div>
               </div>
               <div class="p-meta">
                 <div>日付: <span class="p-line">${todayStr}</span></div>
                 <div>氏名: <span class="p-line"></span></div>
-                <div>得点: <span class="p-line" style="min-width:40px;">　 / ${currentSet.length}</span></div>
+                <div>得点: <span class="p-line" style="min-width:45px;">　 / ${currentSet.length}</span></div>
               </div>
             </div>
             <div class="p-grid-2col">

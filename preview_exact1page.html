@@ -1,0 +1,324 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <title>A4 Print Preview Perfect 1 Page</title>
+  <style>
+    @page {
+      size: A4 portrait;
+      margin: 6mm 8mm;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: "Hiragino Kaku Gothic ProN", "Yu Gothic", "Meiryo", sans-serif;
+      background: #ffffff;
+      color: #000000;
+      -webkit-print-color-adjust: exact;
+      print-color-adjust: exact;
+    }
+    .p-page {
+      width: 100%;
+      height: 284mm;
+      box-sizing: border-box;
+      padding: 0;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+    }
+    .p-header {
+      border-bottom: 2px solid #000000;
+      padding-bottom: 2px;
+      margin-bottom: 4px;
+      display: flex;
+      align-items: flex-end;
+      justify-content: space-between;
+    }
+    .p-title { font-size: 12.5pt; font-weight: bold; letter-spacing: 0.02em; }
+    .p-meta { display: flex; gap: 12px; font-size: 8pt; }
+    .p-line { display: inline-block; border-bottom: 1px solid #000000; min-width: 55px; padding-bottom: 1px; }
+
+    .p-grid-2col {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 4px 6px;
+      flex: 1;
+    }
+    .p-word-card {
+      border: 1.2px solid #000000;
+      border-radius: 3px;
+      padding: 3px 5px;
+      background: #ffffff;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      height: 52mm;
+    }
+    .p-card-top { margin-bottom: 1px; }
+    .p-top-row { display: flex; align-items: baseline; gap: 6px; }
+    .p-no-badge { font-size: 8pt; font-weight: bold; color: #1e3a8a; }
+    .p-kana-title { font-size: 11pt; font-weight: 800; color: #000000; letter-spacing: 0.02em; line-height: 1; }
+    .p-unit-tag { font-size: 6.5pt; color: #666; margin-left: auto; }
+    .p-mean-hint { font-size: 6.8pt; color: #333333; line-height: 1.1; margin-top: 1px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .p-point-hint { color: #dc2626; font-weight: bold; margin-left: 4px; }
+
+    .p-card-table { width: 100%; border-collapse: collapse; margin-top: 1px; }
+    .p-card-table tr { height: 6.2mm; }
+    .p-label-cell {
+      width: 14mm;
+      font-size: 6.5pt;
+      font-weight: bold;
+      color: #333333;
+      text-align: center;
+      border: 1px solid #777777;
+      background: #f8fafc !important;
+      vertical-align: middle;
+      padding: 0;
+    }
+    .p-label-sample { background: #eff6ff !important; color: #1e3a8a; }
+
+    .p-char-box {
+      border: 1px solid #000000;
+      height: 6.2mm;
+      width: 12mm;
+      position: relative;
+      text-align: center;
+      vertical-align: middle;
+      background: #ffffff;
+    }
+    .p-char-box::before {
+      content: "";
+      position: absolute;
+      top: 50%;
+      left: 0;
+      width: 100%;
+      height: 1px;
+      border-top: 1px dashed #cccccc;
+    }
+    .p-char-box::after {
+      content: "";
+      position: absolute;
+      top: 0;
+      left: 50%;
+      width: 1px;
+      height: 100%;
+      border-left: 1px dashed #cccccc;
+    }
+    .p-sample-char {
+      font-size: 11pt;
+      font-weight: bold;
+      color: #000000;
+      position: relative;
+      z-index: 2;
+      display: block;
+      line-height: 1;
+    }
+    .p-trace-char {
+      font-size: 11pt;
+      font-weight: bold;
+      color: #cccccc !important;
+      position: relative;
+      z-index: 2;
+      display: block;
+      line-height: 1;
+    }
+  </style>
+</head>
+<body>
+  <div class="p-page">
+    <div class="p-header">
+      <div>
+        <div class="p-title">中学受験 社会 漢字書き取り特訓（5回練習ドリル）</div>
+        <div style="font-size:7pt; color:#444;">範囲: 第1回 ｜ 全 10 語 (1/1 ページ)</div>
+      </div>
+      <div class="p-meta">
+        <div>日付: <span class="p-line">2026年8月31日</span></div>
+        <div>氏名: <span class="p-line"></span></div>
+        <div>得点: <span class="p-line" style="min-width:40px;">　 / 10</span></div>
+      </div>
+    </div>
+    <div class="p-grid-2col">
+      
+    <div class="p-word-card">
+      <div class="p-card-top">
+        <div class="p-top-row">
+          <span class="p-no-badge">問 1</span>
+          <span class="p-kana-title">いわじゅくいせき</span>
+          <span class="p-unit-tag">[第1回]</span>
+        </div>
+        <div class="p-mean-hint">💡 旧石器時代の遺跡（群馬県） <span class="p-point-hint">⚠️ 「宿」「遺」「跡」の誤字注意</span></div>
+      </div>
+      <table class="p-card-table">
+        <tbody>
+          <tr><td class="p-label-cell p-label-sample">お手本</td><td class="p-char-box"><span class="p-sample-char">岩</span></td><td class="p-char-box"><span class="p-sample-char">宿</span></td><td class="p-char-box"><span class="p-sample-char">遺</span></td><td class="p-char-box"><span class="p-sample-char">跡</span></td></tr>
+          <tr><td class="p-label-cell">①なぞり</td><td class="p-char-box"><span class="p-trace-char">岩</span></td><td class="p-char-box"><span class="p-trace-char">宿</span></td><td class="p-char-box"><span class="p-trace-char">遺</span></td><td class="p-char-box"><span class="p-trace-char">跡</span></td></tr>
+          <tr><td class="p-label-cell">②</td><td class="p-char-box"></td><td class="p-char-box"></td><td class="p-char-box"></td><td class="p-char-box"></td></tr><tr><td class="p-label-cell">③</td><td class="p-char-box"></td><td class="p-char-box"></td><td class="p-char-box"></td><td class="p-char-box"></td></tr><tr><td class="p-label-cell">④</td><td class="p-char-box"></td><td class="p-char-box"></td><td class="p-char-box"></td><td class="p-char-box"></td></tr><tr><td class="p-label-cell">⑤</td><td class="p-char-box"></td><td class="p-char-box"></td><td class="p-char-box"></td><td class="p-char-box"></td></tr>
+        </tbody>
+      </table>
+    </div>
+    
+    <div class="p-word-card">
+      <div class="p-card-top">
+        <div class="p-top-row">
+          <span class="p-no-badge">問 2</span>
+          <span class="p-kana-title">あいざわただひろ</span>
+          <span class="p-unit-tag">[第1回]</span>
+        </div>
+        <div class="p-mean-hint">💡 岩宿遺跡を発見した人物 <span class="p-point-hint">⚠️ 「相」の木偏、「忠」の心、「洋」のさんずい</span></div>
+      </div>
+      <table class="p-card-table">
+        <tbody>
+          <tr><td class="p-label-cell p-label-sample">お手本</td><td class="p-char-box"><span class="p-sample-char">相</span></td><td class="p-char-box"><span class="p-sample-char">沢</span></td><td class="p-char-box"><span class="p-sample-char">忠</span></td><td class="p-char-box"><span class="p-sample-char">洋</span></td></tr>
+          <tr><td class="p-label-cell">①なぞり</td><td class="p-char-box"><span class="p-trace-char">相</span></td><td class="p-char-box"><span class="p-trace-char">沢</span></td><td class="p-char-box"><span class="p-trace-char">忠</span></td><td class="p-char-box"><span class="p-trace-char">洋</span></td></tr>
+          <tr><td class="p-label-cell">②</td><td class="p-char-box"></td><td class="p-char-box"></td><td class="p-char-box"></td><td class="p-char-box"></td></tr><tr><td class="p-label-cell">③</td><td class="p-char-box"></td><td class="p-char-box"></td><td class="p-char-box"></td><td class="p-char-box"></td></tr><tr><td class="p-label-cell">④</td><td class="p-char-box"></td><td class="p-char-box"></td><td class="p-char-box"></td><td class="p-char-box"></td></tr><tr><td class="p-label-cell">⑤</td><td class="p-char-box"></td><td class="p-char-box"></td><td class="p-char-box"></td><td class="p-char-box"></td></tr>
+        </tbody>
+      </table>
+    </div>
+    
+    <div class="p-word-card">
+      <div class="p-card-top">
+        <div class="p-top-row">
+          <span class="p-no-badge">問 3</span>
+          <span class="p-kana-title">のじりこ</span>
+          <span class="p-unit-tag">[第1回]</span>
+        </div>
+        <div class="p-mean-hint">💡 ナウマンゾウ化石が出土（長野県） <span class="p-point-hint">⚠️ 「野」「尻」「湖」</span></div>
+      </div>
+      <table class="p-card-table">
+        <tbody>
+          <tr><td class="p-label-cell p-label-sample">お手本</td><td class="p-char-box"><span class="p-sample-char">野</span></td><td class="p-char-box"><span class="p-sample-char">尻</span></td><td class="p-char-box"><span class="p-sample-char">湖</span></td></tr>
+          <tr><td class="p-label-cell">①なぞり</td><td class="p-char-box"><span class="p-trace-char">野</span></td><td class="p-char-box"><span class="p-trace-char">尻</span></td><td class="p-char-box"><span class="p-trace-char">湖</span></td></tr>
+          <tr><td class="p-label-cell">②</td><td class="p-char-box"></td><td class="p-char-box"></td><td class="p-char-box"></td></tr><tr><td class="p-label-cell">③</td><td class="p-char-box"></td><td class="p-char-box"></td><td class="p-char-box"></td></tr><tr><td class="p-label-cell">④</td><td class="p-char-box"></td><td class="p-char-box"></td><td class="p-char-box"></td></tr><tr><td class="p-label-cell">⑤</td><td class="p-char-box"></td><td class="p-char-box"></td><td class="p-char-box"></td></tr>
+        </tbody>
+      </table>
+    </div>
+    
+    <div class="p-word-card">
+      <div class="p-card-top">
+        <div class="p-top-row">
+          <span class="p-no-badge">問 4</span>
+          <span class="p-kana-title">おおもりかいづか</span>
+          <span class="p-unit-tag">[第1回]</span>
+        </div>
+        <div class="p-mean-hint">💡 モースが発見した貝塚（東京都） <span class="p-point-hint">⚠️ 「塚」の土偏と点</span></div>
+      </div>
+      <table class="p-card-table">
+        <tbody>
+          <tr><td class="p-label-cell p-label-sample">お手本</td><td class="p-char-box"><span class="p-sample-char">大</span></td><td class="p-char-box"><span class="p-sample-char">森</span></td><td class="p-char-box"><span class="p-sample-char">貝</span></td><td class="p-char-box"><span class="p-sample-char">塚</span></td></tr>
+          <tr><td class="p-label-cell">①なぞり</td><td class="p-char-box"><span class="p-trace-char">大</span></td><td class="p-char-box"><span class="p-trace-char">森</span></td><td class="p-char-box"><span class="p-trace-char">貝</span></td><td class="p-char-box"><span class="p-trace-char">塚</span></td></tr>
+          <tr><td class="p-label-cell">②</td><td class="p-char-box"></td><td class="p-char-box"></td><td class="p-char-box"></td><td class="p-char-box"></td></tr><tr><td class="p-label-cell">③</td><td class="p-char-box"></td><td class="p-char-box"></td><td class="p-char-box"></td><td class="p-char-box"></td></tr><tr><td class="p-label-cell">④</td><td class="p-char-box"></td><td class="p-char-box"></td><td class="p-char-box"></td><td class="p-char-box"></td></tr><tr><td class="p-label-cell">⑤</td><td class="p-char-box"></td><td class="p-char-box"></td><td class="p-char-box"></td><td class="p-char-box"></td></tr>
+        </tbody>
+      </table>
+    </div>
+    
+    <div class="p-word-card">
+      <div class="p-card-top">
+        <div class="p-top-row">
+          <span class="p-no-badge">問 5</span>
+          <span class="p-kana-title">さんないまるやまいせき</span>
+          <span class="p-unit-tag">[第1回]</span>
+        </div>
+        <div class="p-mean-hint">💡 縄文時代の大集落遺跡（青森県） <span class="p-point-hint">⚠️ 「三」「内」「丸」「山」「遺」「跡」</span></div>
+      </div>
+      <table class="p-card-table">
+        <tbody>
+          <tr><td class="p-label-cell p-label-sample">お手本</td><td class="p-char-box"><span class="p-sample-char">三</span></td><td class="p-char-box"><span class="p-sample-char">内</span></td><td class="p-char-box"><span class="p-sample-char">丸</span></td><td class="p-char-box"><span class="p-sample-char">山</span></td><td class="p-char-box"><span class="p-sample-char">遺</span></td><td class="p-char-box"><span class="p-sample-char">跡</span></td></tr>
+          <tr><td class="p-label-cell">①なぞり</td><td class="p-char-box"><span class="p-trace-char">三</span></td><td class="p-char-box"><span class="p-trace-char">内</span></td><td class="p-char-box"><span class="p-trace-char">丸</span></td><td class="p-char-box"><span class="p-trace-char">山</span></td><td class="p-char-box"><span class="p-trace-char">遺</span></td><td class="p-char-box"><span class="p-trace-char">跡</span></td></tr>
+          <tr><td class="p-label-cell">②</td><td class="p-char-box"></td><td class="p-char-box"></td><td class="p-char-box"></td><td class="p-char-box"></td><td class="p-char-box"></td><td class="p-char-box"></td></tr><tr><td class="p-label-cell">③</td><td class="p-char-box"></td><td class="p-char-box"></td><td class="p-char-box"></td><td class="p-char-box"></td><td class="p-char-box"></td><td class="p-char-box"></td></tr><tr><td class="p-label-cell">④</td><td class="p-char-box"></td><td class="p-char-box"></td><td class="p-char-box"></td><td class="p-char-box"></td><td class="p-char-box"></td><td class="p-char-box"></td></tr><tr><td class="p-label-cell">⑤</td><td class="p-char-box"></td><td class="p-char-box"></td><td class="p-char-box"></td><td class="p-char-box"></td><td class="p-char-box"></td><td class="p-char-box"></td></tr>
+        </tbody>
+      </table>
+    </div>
+    
+    <div class="p-word-card">
+      <div class="p-card-top">
+        <div class="p-top-row">
+          <span class="p-no-badge">問 6</span>
+          <span class="p-kana-title">たてあなじゅうきょ</span>
+          <span class="p-unit-tag">[第1回]</span>
+        </div>
+        <div class="p-mean-hint">💡 縄文・弥生時代の地面を掘り下げた住居 <span class="p-point-hint">⚠️ 「竪」の字形（堅と間違えない）、「穴」</span></div>
+      </div>
+      <table class="p-card-table">
+        <tbody>
+          <tr><td class="p-label-cell p-label-sample">お手本</td><td class="p-char-box"><span class="p-sample-char">竪</span></td><td class="p-char-box"><span class="p-sample-char">穴</span></td><td class="p-char-box"><span class="p-sample-char">住</span></td><td class="p-char-box"><span class="p-sample-char">居</span></td></tr>
+          <tr><td class="p-label-cell">①なぞり</td><td class="p-char-box"><span class="p-trace-char">竪</span></td><td class="p-char-box"><span class="p-trace-char">穴</span></td><td class="p-char-box"><span class="p-trace-char">住</span></td><td class="p-char-box"><span class="p-trace-char">居</span></td></tr>
+          <tr><td class="p-label-cell">②</td><td class="p-char-box"></td><td class="p-char-box"></td><td class="p-char-box"></td><td class="p-char-box"></td></tr><tr><td class="p-label-cell">③</td><td class="p-char-box"></td><td class="p-char-box"></td><td class="p-char-box"></td><td class="p-char-box"></td></tr><tr><td class="p-label-cell">④</td><td class="p-char-box"></td><td class="p-char-box"></td><td class="p-char-box"></td><td class="p-char-box"></td></tr><tr><td class="p-label-cell">⑤</td><td class="p-char-box"></td><td class="p-char-box"></td><td class="p-char-box"></td><td class="p-char-box"></td></tr>
+        </tbody>
+      </table>
+    </div>
+    
+    <div class="p-word-card">
+      <div class="p-card-top">
+        <div class="p-top-row">
+          <span class="p-no-badge">問 7</span>
+          <span class="p-kana-title">どぐう</span>
+          <span class="p-unit-tag">[第1回]</span>
+        </div>
+        <div class="p-mean-hint">💡 魔よけや豊作を祈る土の人形 <span class="p-point-hint">⚠️ 「偶」の人偏と旁（萬と書かない）</span></div>
+      </div>
+      <table class="p-card-table">
+        <tbody>
+          <tr><td class="p-label-cell p-label-sample">お手本</td><td class="p-char-box"><span class="p-sample-char">土</span></td><td class="p-char-box"><span class="p-sample-char">偶</span></td></tr>
+          <tr><td class="p-label-cell">①なぞり</td><td class="p-char-box"><span class="p-trace-char">土</span></td><td class="p-char-box"><span class="p-trace-char">偶</span></td></tr>
+          <tr><td class="p-label-cell">②</td><td class="p-char-box"></td><td class="p-char-box"></td></tr><tr><td class="p-label-cell">③</td><td class="p-char-box"></td><td class="p-char-box"></td></tr><tr><td class="p-label-cell">④</td><td class="p-char-box"></td><td class="p-char-box"></td></tr><tr><td class="p-label-cell">⑤</td><td class="p-char-box"></td><td class="p-char-box"></td></tr>
+        </tbody>
+      </table>
+    </div>
+    
+    <div class="p-word-card">
+      <div class="p-card-top">
+        <div class="p-top-row">
+          <span class="p-no-badge">問 8</span>
+          <span class="p-kana-title">たかゆかそうこ</span>
+          <span class="p-unit-tag">[第1回]</span>
+        </div>
+        <div class="p-mean-hint">💡 収穫した米を保存した建物 <span class="p-point-hint">⚠️ 「床」「倉」「庫」</span></div>
+      </div>
+      <table class="p-card-table">
+        <tbody>
+          <tr><td class="p-label-cell p-label-sample">お手本</td><td class="p-char-box"><span class="p-sample-char">高</span></td><td class="p-char-box"><span class="p-sample-char">床</span></td><td class="p-char-box"><span class="p-sample-char">倉</span></td><td class="p-char-box"><span class="p-sample-char">庫</span></td></tr>
+          <tr><td class="p-label-cell">①なぞり</td><td class="p-char-box"><span class="p-trace-char">高</span></td><td class="p-char-box"><span class="p-trace-char">床</span></td><td class="p-char-box"><span class="p-trace-char">倉</span></td><td class="p-char-box"><span class="p-trace-char">庫</span></td></tr>
+          <tr><td class="p-label-cell">②</td><td class="p-char-box"></td><td class="p-char-box"></td><td class="p-char-box"></td><td class="p-char-box"></td></tr><tr><td class="p-label-cell">③</td><td class="p-char-box"></td><td class="p-char-box"></td><td class="p-char-box"></td><td class="p-char-box"></td></tr><tr><td class="p-label-cell">④</td><td class="p-char-box"></td><td class="p-char-box"></td><td class="p-char-box"></td><td class="p-char-box"></td></tr><tr><td class="p-label-cell">⑤</td><td class="p-char-box"></td><td class="p-char-box"></td><td class="p-char-box"></td><td class="p-char-box"></td></tr>
+        </tbody>
+      </table>
+    </div>
+    
+    <div class="p-word-card">
+      <div class="p-card-top">
+        <div class="p-top-row">
+          <span class="p-no-badge">問 9</span>
+          <span class="p-kana-title">いしぼうちょう</span>
+          <span class="p-unit-tag">[第1回]</span>
+        </div>
+        <div class="p-mean-hint">💡 弥生時代の稲の穂首狩り用石器 <span class="p-point-hint">⚠️ 「包」「丁」</span></div>
+      </div>
+      <table class="p-card-table">
+        <tbody>
+          <tr><td class="p-label-cell p-label-sample">お手本</td><td class="p-char-box"><span class="p-sample-char">石</span></td><td class="p-char-box"><span class="p-sample-char">包</span></td><td class="p-char-box"><span class="p-sample-char">丁</span></td></tr>
+          <tr><td class="p-label-cell">①なぞり</td><td class="p-char-box"><span class="p-trace-char">石</span></td><td class="p-char-box"><span class="p-trace-char">包</span></td><td class="p-char-box"><span class="p-trace-char">丁</span></td></tr>
+          <tr><td class="p-label-cell">②</td><td class="p-char-box"></td><td class="p-char-box"></td><td class="p-char-box"></td></tr><tr><td class="p-label-cell">③</td><td class="p-char-box"></td><td class="p-char-box"></td><td class="p-char-box"></td></tr><tr><td class="p-label-cell">④</td><td class="p-char-box"></td><td class="p-char-box"></td><td class="p-char-box"></td></tr><tr><td class="p-label-cell">⑤</td><td class="p-char-box"></td><td class="p-char-box"></td><td class="p-char-box"></td></tr>
+        </tbody>
+      </table>
+    </div>
+    
+    <div class="p-word-card">
+      <div class="p-card-top">
+        <div class="p-top-row">
+          <span class="p-no-badge">問 10</span>
+          <span class="p-kana-title">とろいせき</span>
+          <span class="p-unit-tag">[第1回]</span>
+        </div>
+        <div class="p-mean-hint">💡 弥生時代の水田・集落跡（静岡県） <span class="p-point-hint">⚠️ 「登」の冠、「呂」</span></div>
+      </div>
+      <table class="p-card-table">
+        <tbody>
+          <tr><td class="p-label-cell p-label-sample">お手本</td><td class="p-char-box"><span class="p-sample-char">登</span></td><td class="p-char-box"><span class="p-sample-char">呂</span></td><td class="p-char-box"><span class="p-sample-char">遺</span></td><td class="p-char-box"><span class="p-sample-char">跡</span></td></tr>
+          <tr><td class="p-label-cell">①なぞり</td><td class="p-char-box"><span class="p-trace-char">登</span></td><td class="p-char-box"><span class="p-trace-char">呂</span></td><td class="p-char-box"><span class="p-trace-char">遺</span></td><td class="p-char-box"><span class="p-trace-char">跡</span></td></tr>
+          <tr><td class="p-label-cell">②</td><td class="p-char-box"></td><td class="p-char-box"></td><td class="p-char-box"></td><td class="p-char-box"></td></tr><tr><td class="p-label-cell">③</td><td class="p-char-box"></td><td class="p-char-box"></td><td class="p-char-box"></td><td class="p-char-box"></td></tr><tr><td class="p-label-cell">④</td><td class="p-char-box"></td><td class="p-char-box"></td><td class="p-char-box"></td><td class="p-char-box"></td></tr><tr><td class="p-label-cell">⑤</td><td class="p-char-box"></td><td class="p-char-box"></td><td class="p-char-box"></td><td class="p-char-box"></td></tr>
+        </tbody>
+      </table>
+    </div>
+    
+    </div>
+  </div>
+</body>
+</html>
