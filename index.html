@@ -3,18 +3,18 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <title>社会 漢字書き取り特訓 - 5回練習マス目ドリル</title>
+  <title>社会 漢字書き取り特訓 - 苦手復習＆5回練習ドリル</title>
   <style>
     :root {
       --primary: #2563eb;
       --primary-dark: #1d4ed8;
-      --primary-light: #dbeafe;
+      --primary-light: #eff6ff;
       --success: #16a34a;
       --success-light: #dcfce7;
       --danger: #dc2626;
       --danger-light: #fee2e2;
       --text: #1f2937;
-      --text-muted: #6b7280;
+      --text-muted: #64748b;
       --bg: #f8fafc;
       --card-bg: #ffffff;
       --border: #cbd5e1;
@@ -87,7 +87,7 @@
       border-radius: var(--radius);
       padding: 16px;
       margin-bottom: 16px;
-      box-shadow: 0 2px 4px rgba(0,0,0,0.06);
+      box-shadow: 0 2px 4px rgba(0,0,0,0.04);
     }
 
     .card-title {
@@ -100,15 +100,42 @@
       justify-content: space-between;
     }
 
-    .card-title-tag {
-      font-size: 0.78rem;
-      padding: 2px 8px;
-      border-radius: 6px;
-      background: var(--primary-light);
-      color: var(--primary);
-      font-weight: 700;
+    /* メインアクションバナー（明日の復習用） */
+    .action-banner {
+      background: #fff1f2;
+      border: 2px solid #fecdd3;
+      border-radius: var(--radius);
+      padding: 14px;
+      margin-bottom: 16px;
     }
+    .action-banner-title {
+      font-size: 0.95rem;
+      font-weight: 800;
+      color: #9f1239;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+    .action-banner-desc {
+      font-size: 0.82rem;
+      color: #881337;
+      margin: 4px 0 10px 0;
+    }
+    .btn-weak-print {
+      width: 100%;
+      padding: 12px;
+      font-size: 0.95rem;
+      font-weight: 700;
+      color: #ffffff;
+      background: #e11d48;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+      box-shadow: 0 2px 6px rgba(225,29,72,0.25);
+    }
+    .btn-weak-print:hover { background: #be123c; }
 
+    /* 単元セレクター */
     .unit-controls { display: flex; gap: 8px; margin-bottom: 10px; }
     .btn-sm { padding: 5px 12px; font-size: 0.8rem; font-weight: 600; border-radius: 6px; border: 1px solid var(--border); background: #ffffff; cursor: pointer; }
 
@@ -124,8 +151,9 @@
     .chip { padding: 7px 14px; border-radius: 16px; border: 1px solid var(--border); background: #ffffff; font-size: 0.85rem; font-weight: 600; cursor: pointer; }
     .chip.active { background: var(--primary); color: #ffffff; border-color: var(--primary); }
 
-    .btn-main { width: 100%; padding: 13px; font-size: 1rem; font-weight: 700; color: #ffffff; background: var(--primary); border: none; border-radius: var(--radius); cursor: pointer; margin-top: 16px; box-shadow: 0 2px 6px rgba(37,99,235,0.25); }
+    .btn-main { width: 100%; padding: 13px; font-size: 1rem; font-weight: 700; color: #ffffff; background: var(--primary); border: none; border-radius: var(--radius); cursor: pointer; margin-top: 14px; box-shadow: 0 2px 6px rgba(37,99,235,0.25); }
     .btn-main:hover { background: var(--primary-dark); }
+
     .btn-row { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-top: 10px; }
     .btn-outline { padding: 10px; font-size: 0.88rem; font-weight: 700; border-radius: var(--radius); border: 1.5px solid var(--border); background: #ffffff; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 6px; }
     .btn-print-primary { background: #f0f7ff; color: #1e3a8a; border-color: #93c5fd; }
@@ -146,7 +174,7 @@
     .weak-item { display: flex; justify-content: space-between; align-items: center; padding: 10px 12px; border-bottom: 1px solid #f1f5f9; }
 
     /* =========================================================
-       印刷専用スタイル（A4 2列 5回練習カード・1文字1マス完全対応）
+       超頑丈な印刷専用スタイル（絶対に横溢れ・潰れしないレイアウト）
        ========================================================= */
     #print-region {
       display: none;
@@ -154,7 +182,7 @@
 
     @page {
       size: A4 portrait;
-      margin: 6mm 8mm;
+      margin: 10mm 12mm;
     }
 
     @media print {
@@ -176,155 +204,78 @@
         width: 100% !important;
       }
 
-      .p-page {
-        page-break-after: always;
-        height: 284mm;
-        box-sizing: border-box;
-        display: flex;
-        flex-direction: column;
-        justify-content: space-between;
-        padding: 0;
-      }
-
-      .p-page:last-child {
-        page-break-after: avoid;
-      }
-
-      .p-header {
+      .p-head {
         border-bottom: 2px solid #000000;
-        padding-bottom: 2px;
-        margin-bottom: 4px;
+        padding-bottom: 4px;
+        margin-bottom: 10px;
         display: flex;
+        justify-content: space-between;
         align-items: flex-end;
-        justify-content: space-between;
       }
+      .p-title { font-size: 13.5pt; font-weight: bold; letter-spacing: 0.02em; }
+      .p-sub { font-size: 8.5pt; color: #444444; }
+      .p-meta { display: flex; gap: 14px; font-size: 9pt; }
+      .p-line { display: inline-block; border-bottom: 1px solid #000000; min-width: 60px; }
 
-      .p-title {
-        font-size: 12.5pt;
-        font-weight: bold;
-        letter-spacing: 0.02em;
-      }
-
-      .p-meta {
-        display: flex;
-        gap: 12px;
-        font-size: 8pt;
-      }
-
-      .p-line {
-        display: inline-block;
-        border-bottom: 1px solid #000000;
-        min-width: 55px;
-        padding-bottom: 1px;
-      }
-
-      /* 2列グリッド */
-      .p-grid-2col {
-        display: grid;
-        grid-template-columns: 1fr 1fr;
-        gap: 4px 6px;
-        flex: 1;
-      }
-
-      /* 1語の練習カード */
-      .p-word-card {
-        border: 1.2px solid #000000;
-        border-radius: 3px;
-        padding: 3px 5px;
+      /* 1問ごとのブロック（A4にゆったり配置・途中で切れない） */
+      .drill-block {
+        border: 1.5px solid #222222;
+        border-radius: 6px;
+        padding: 7px 10px;
+        margin-bottom: 9px;
+        page-break-inside: avoid;
         background: #ffffff;
-        display: flex;
-        flex-direction: column;
-        justify-content: space-between;
-        height: 52mm;
       }
 
-      .p-card-top {
-        margin-bottom: 1px;
-      }
-
-      .p-top-row {
+      .block-header {
         display: flex;
         align-items: baseline;
-        gap: 6px;
+        gap: 8px;
+        margin-bottom: 2px;
       }
+      .q-num { font-size: 10pt; font-weight: bold; color: #1e3a8a; }
+      .q-kana { font-size: 13pt; font-weight: 800; color: #000000; letter-spacing: 0.03em; }
+      .q-unit { font-size: 7.5pt; color: #666666; margin-left: auto; }
+      .q-hint { font-size: 8pt; color: #444444; margin-bottom: 5px; }
+      .q-point { color: #dc2626; font-weight: bold; margin-left: 6px; }
 
-      .p-no-badge {
-        font-size: 8pt;
-        font-weight: bold;
-        color: #1e3a8a;
-      }
-
-      .p-kana-title {
-        font-size: 11pt;
-        font-weight: 800;
-        color: #000000;
-        letter-spacing: 0.02em;
-        line-height: 1;
-      }
-
-      .p-unit-tag {
-        font-size: 6.5pt;
-        color: #666;
-        margin-left: auto;
-      }
-
-      .p-mean-hint {
-        font-size: 6.8pt;
-        color: #333333;
-        line-height: 1.1;
-        margin-top: 1px;
-        white-space: nowrap;
-        overflow: hidden;
-        text-overflow: ellipsis;
-      }
-
-      .p-point-hint {
-        color: #dc2626;
-        font-weight: bold;
-        margin-left: 4px;
-      }
-
-      /* 練習テーブル */
-      .p-card-table {
-        width: 100%;
+      /* マス目テーブル */
+      .grid-table {
         border-collapse: collapse;
-        margin-top: 1px;
+        margin: 0;
       }
 
-      .p-card-table tr {
-        height: 6.2mm;
-      }
-
-      .p-label-cell {
-        width: 14mm;
-        font-size: 6.5pt;
+      .label-th {
+        width: 20mm;
+        height: 7.2mm;
+        border: 1px solid #555555;
+        background: #f8fafc !important;
+        font-size: 7.5pt;
         font-weight: bold;
         color: #333333;
         text-align: center;
-        border: 1px solid #777777;
-        background: #f8fafc !important;
         vertical-align: middle;
         padding: 0;
       }
-
-      .p-label-sample {
+      .sample-th {
         background: #eff6ff !important;
         color: #1e3a8a;
       }
 
-      /* 1文字ずつのマス目 */
-      .p-char-box {
-        border: 1px solid #000000;
-        height: 6.2mm;
-        width: 12mm;
+      /* 正方形の練習マス */
+      .box-td {
+        width: 15mm;
+        height: 7.2mm;
+        border: 1.2px solid #000000;
         position: relative;
         text-align: center;
         vertical-align: middle;
         background: #ffffff;
+        padding: 0;
       }
 
-      /* 十字リーダー線 */
-      .p-char-box::before {
+      /* 十字リーダー点線 */
+      .box-td::before {
         content: "";
         position: absolute;
         top: 50%;
@@ -333,7 +284,7 @@
         height: 1px;
         border-top: 1px dashed #cccccc;
       }
-      .p-char-box::after {
+      .box-td::after {
         content: "";
         position: absolute;
         top: 0;
@@ -343,33 +294,30 @@
         border-left: 1px dashed #cccccc;
       }
 
-      .p-sample-char {
-        font-size: 11pt;
+      .sample-char {
+        font-size: 12.5pt;
         font-weight: bold;
         color: #000000;
         position: relative;
         z-index: 2;
-        display: block;
         line-height: 1;
       }
 
-      .p-trace-char {
-        font-size: 11pt;
+      .trace-char {
+        font-size: 12.5pt;
         font-weight: bold;
         color: #cccccc !important;
         position: relative;
         z-index: 2;
-        display: block;
         line-height: 1;
       }
 
-      .p-ans-char {
-        font-size: 11pt;
+      .ans-char {
+        font-size: 12.5pt;
         font-weight: bold;
         color: #c00000 !important;
         position: relative;
         z-index: 2;
-        display: block;
         line-height: 1;
       }
     }
@@ -379,7 +327,7 @@
 
   <header>
     <h1>📝 社会 漢字書き取り特訓</h1>
-    <p>ひらがなを漢字に直して5回練習！中学入試頻出重要語マスター</p>
+    <p>昨日できなかった問題だけを今日復習！中学入試頻出重要語マスター</p>
   </header>
 
   <div class="container">
@@ -387,11 +335,27 @@
     <div class="nav-tabs">
       <button class="nav-tab active" id="tab-home" onclick="switchTab('home')">プリント作成・印刷</button>
       <button class="nav-tab" id="tab-check" onclick="switchTab('check')">〇✕採点・記録</button>
-      <button class="nav-tab" id="tab-history" onclick="switchTab('history')">苦手克服・履歴</button>
+      <button class="nav-tab" id="tab-history" onclick="switchTab('history')">苦手リスト</button>
     </div>
 
     <!-- ① ホーム画面 -->
     <div id="screen-home">
+
+      <!-- 最優先：間違えた問題だけを印刷する特設バナー -->
+      <div class="action-banner">
+        <div class="action-banner-title">
+          <span>🔥 前回できなかった問題の復習</span>
+          <span id="banner-weak-badge" style="font-size:0.8rem; background:#fda4af; color:#881337; padding:2px 8px; border-radius:12px;">0問 該当</span>
+        </div>
+        <div class="action-banner-desc">
+          昨日「✕（書けなかった）」とした問題だけを自動抽出して印刷します（できた問題は除外されます）。
+        </div>
+        <button class="btn-weak-print" onclick="generateAndPrintWeakOnly()">
+          🖨️ 前回できなかった問題だけを印刷（復習特訓）
+        </button>
+      </div>
+
+      <!-- 通常のカスタム出題設定 -->
       <div class="card">
         <div class="card-title">
           <span>1. 単元を選ぶ</span>
@@ -406,58 +370,41 @@
         <div class="unit-grid" id="unit-grid-container"></div>
 
         <div class="setting-group">
-          <div class="setting-label">2. 出題語数（各語 1文字1マス×5回練習）</div>
-          <div class="chip-row" id="count-chips">
-            <button class="chip" data-count="6" onclick="setCount(6)">6語</button>
-            <button class="chip active" data-count="10" onclick="setCount(10)">10語 (A4 1枚ぴったり)</button>
-            <button class="chip" data-count="20" onclick="setCount(20)">20語 (A4 2枚)</button>
-            <button class="chip" data-count="all" onclick="setCount('all')">全語</button>
+          <div class="setting-label">2. 出題モード</div>
+          <div class="chip-row" id="mode-chips">
+            <button class="chip active" data-mode="weak-only" onclick="setMode('weak-only')">🔥 前回まちがえた問題のみ</button>
+            <button class="chip" data-mode="unattempted" onclick="setMode('unattempted')">🆕 まだやってない問題優先</button>
+            <button class="chip" data-mode="all-random" onclick="setMode('all-random')">🎲 全問からランダム</button>
           </div>
         </div>
 
         <div class="setting-group">
-          <div class="setting-label">3. 出題モード</div>
-          <div class="chip-row" id="mode-chips">
-            <button class="chip active" data-mode="weak" onclick="setMode('weak')">🔥 苦手・未練習優先</button>
-            <button class="chip" data-mode="random" onclick="setMode('random')">🎲 ランダム</button>
-            <button class="chip" data-mode="order" onclick="setMode('order')">📖 順番通り</button>
+          <div class="setting-label">3. 出題語数</div>
+          <div class="chip-row" id="count-chips">
+            <button class="chip" data-count="4" onclick="setCount(4)">4語 (A4 1枚・ゆったり)</button>
+            <button class="chip active" data-count="8" onclick="setCount(8)">8語 (A4 2枚)</button>
+            <button class="chip" data-count="12" onclick="setCount(12)">12語 (A4 3枚)</button>
+            <button class="chip" data-count="all" onclick="setCount('all')">全該当語</button>
           </div>
         </div>
 
-        <button class="btn-main" onclick="generateTodaySet()">
-          🚀 今日の特訓ドリルを作成する
+        <button class="btn-main" onclick="generateCustomSet()">
+          🚀 今日の練習プリントを作成・画面で確認
         </button>
-
-        <div class="setting-group" style="background:#f1f5f9; padding:12px; border-radius:8px; margin-top:14px;">
-          <div class="setting-label" style="margin-bottom:6px; color:#1e3a8a;">📥 完成版PDFを直接ダウンロード・印刷</div>
-          <div style="display:grid; grid-template-columns:1fr 1fr; gap:8px;">
-            <a href="pdfs/第1回_社会漢字_5回練習ドリル_全20語.pdf" target="_blank" class="btn-outline" style="text-decoration:none; font-size:0.82rem; background:#ffffff; color:#1d4ed8; border-color:#93c5fd; font-weight:bold;">
-              📄 第1回 練習ドリルPDF (全20語)
-            </a>
-            <a href="pdfs/第2回_社会漢字_5回練習ドリル_全20語.pdf" target="_blank" class="btn-outline" style="text-decoration:none; font-size:0.82rem; background:#ffffff; color:#1d4ed8; border-color:#93c5fd; font-weight:bold;">
-              📄 第2回 練習ドリルPDF (全20語)
-            </a>
-            <a href="pdfs/第1回_社会漢字_模範解答.pdf" target="_blank" class="btn-outline" style="text-decoration:none; font-size:0.82rem; background:#ffffff; color:#dc2626; border-color:#fca5a5; font-weight:bold;">
-              📕 第1回 模範解答PDF
-            </a>
-            <a href="pdfs/第2回_社会漢字_模範解答.pdf" target="_blank" class="btn-outline" style="text-decoration:none; font-size:0.82rem; background:#ffffff; color:#dc2626; border-color:#fca5a5; font-weight:bold;">
-              📕 第2回 模範解答PDF
-            </a>
-          </div>
-        </div>
 
         <div class="btn-row">
-          <button class="btn-outline btn-print-primary" onclick="printDrillCards('practice')">
-            🖨️ 練習用（お手本＆なぞりつき）
+          <button class="btn-outline btn-print-primary" onclick="printCurrentSet('practice')">
+            🖨️ 練習用を印刷（お手本＆なぞり）
           </button>
-          <button class="btn-outline btn-print-primary" onclick="printDrillCards('test')">
-            🖨️ テスト用（お手本なし）
+          <button class="btn-outline btn-print-primary" onclick="printCurrentSet('test')">
+            🖨️ テスト用を印刷（お手本なし）
           </button>
         </div>
-        <button class="btn-outline" style="width:100%; margin-top:8px; color:#c00000; border-color:#fca5a5;" onclick="printDrillCards('answer')">
-          📄 模範解答（赤字お手本）を印刷
+        <button class="btn-outline" style="width:100%; margin-top:8px; color:#c00000; border-color:#fca5a5;" onclick="printCurrentSet('answer')">
+          📄 模範解答（赤字つき）を印刷
         </button>
       </div>
+
     </div>
 
     <!-- ② 〇✕採点画面 -->
@@ -470,13 +417,13 @@
           </button>
         </div>
         <p style="font-size: 0.83rem; color: var(--text-muted); margin-bottom: 14px;">
-          ひらがなを見て正しい漢字が書けたかを判定してください。「✕」にした語は次回優先して出題されます。
+          今日書けた問題は「⭕」、書けなかった問題は「❌」にしてください。<b>「❌」にした問題だけが明日自動的に出題されます。</b>
         </p>
 
         <div id="check-list-container"></div>
 
         <button class="btn-main" style="background: var(--success);" onclick="saveCheckResults()">
-          💾 採点結果を保存する
+          💾 採点結果を保存する（明日へ引き継ぎ）
         </button>
       </div>
     </div>
@@ -485,9 +432,9 @@
     <div id="screen-history" style="display: none;">
       <div class="card">
         <div class="card-title">
-          <span>苦手な漢字（要復習）</span>
-          <button class="btn-sm" style="background:#fee2e2; color:#dc2626; border-color:#fca5a5;" onclick="createWeakSetAndPrint()">
-            🖨️ 苦手特訓プリント作成
+          <span>現在まちがえたままの漢字（復習対象）</span>
+          <button class="btn-sm" style="background:#fee2e2; color:#dc2626; border-color:#fca5a5;" onclick="generateAndPrintWeakOnly()">
+            🖨️ 復習プリント印刷
           </button>
         </div>
         <div id="weak-list-container"></div>
@@ -509,19 +456,20 @@
   <script src="kanji-data.js"></script>
 
   <script>
-    const SETTINGS_KEY = "kanji_app_settings_cache_v4";
-    const HISTORY_KEY = "kanji_drill_app_history_v4";
+    const SETTINGS_KEY = "kanji_app_settings_cache_v5";
+    const HISTORY_KEY = "kanji_app_history_results_v5";
 
     let selectedUnits = new Set(["第1回", "第2回"]);
-    let currentCount = 10;
-    let currentMode = "weak";
+    let currentMode = "weak-only";
+    let currentCount = 8;
     let currentSet = [];
     let currentResults = {};
 
     window.addEventListener("DOMContentLoaded", () => {
       loadCachedSettings();
       renderUnitGrid();
-      generateTodaySet(false);
+      updateWeakBadge();
+      generateCustomSet(false);
       updateSelectedCountLabel();
     });
 
@@ -611,6 +559,7 @@
     function updateSelectedCountLabel() {
       const pool = getFilteredPool();
       document.getElementById("selected-units-count").textContent = `${selectedUnits.size}単元 (${pool.length}語) 選択中`;
+      updateWeakBadge();
     }
 
     function setCount(cnt) {
@@ -649,7 +598,23 @@
       } catch (e) {}
     }
 
-    function generateTodaySet(switchView = true) {
+    function updateWeakBadge() {
+      const pool = getFilteredPool();
+      const hist = getHistory();
+      const weakItems = pool.filter(d => {
+        const h = hist[d.id];
+        return h && h.lastResult === "ng";
+      });
+      const badge = document.getElementById("banner-weak-badge");
+      if (badge) {
+        badge.textContent = `${weakItems.length}問 該当`;
+      }
+    }
+
+    // ==========================================
+    // 動的選出ロジック
+    // ==========================================
+    function generateCustomSet(switchView = true) {
       const pool = getFilteredPool();
       if (pool.length === 0) {
         alert("単元を1つ以上選択してください。");
@@ -657,28 +622,31 @@
       }
 
       const hist = getHistory();
-      let list = [...pool];
+      let list = [];
 
-      if (currentMode === "weak") {
-        list.sort((a, b) => {
-          const hA = hist[a.id] || { attempts: 0, correct: 0, lastResult: "none" };
-          const hB = hist[b.id] || { attempts: 0, correct: 0, lastResult: "none" };
-
-          const isWrongA = hA.lastResult === "ng" ? 1 : 0;
-          const isWrongB = hB.lastResult === "ng" ? 1 : 0;
-          if (isWrongA !== isWrongB) return isWrongB - isWrongA;
-
-          if (hA.attempts === 0 && hB.attempts > 0) return -1;
-          if (hB.attempts === 0 && hA.attempts > 0) return 1;
-
-          const rateA = hA.attempts > 0 ? hA.correct / hA.attempts : 0;
-          const rateB = hB.attempts > 0 ? hB.correct / hB.attempts : 0;
-          if (rateA !== rateB) return rateA - rateB;
-
-          return Math.random() - 0.5;
+      if (currentMode === "weak-only") {
+        // 前回「✕」だった問題のみ（できた問題は完全除外）
+        list = pool.filter(d => {
+          const h = hist[d.id];
+          return h && h.lastResult === "ng";
         });
-      } else if (currentMode === "random") {
-        list.sort(() => Math.random() - 0.5);
+        if (list.length === 0) {
+          // 間違えた問題がなければ未挑戦の問題を提示
+          list = pool.filter(d => !hist[d.id] || hist[d.id].attempts === 0);
+          if (list.length === 0) {
+            alert("🎉 素晴らしい！選択された単元で間違えた問題はありません！全問正解しています。全問からランダムで復習します。");
+            list = [...pool];
+          }
+        }
+      } else if (currentMode === "unattempted") {
+        // 未挑戦優先
+        list = pool.filter(d => !hist[d.id] || hist[d.id].attempts === 0);
+        if (list.length < currentCount) {
+          const weak = pool.filter(d => hist[d.id] && hist[d.id].lastResult === "ng");
+          list = [...list, ...weak];
+        }
+      } else {
+        list = [...pool].sort(() => Math.random() - 0.5);
       }
 
       const targetCount = currentCount === "all" ? list.length : Math.min(parseInt(currentCount, 10), list.length);
@@ -691,10 +659,28 @@
       if (switchView) switchTab("check");
     }
 
+    // 「前回できなかった問題だけを印刷」ワンタップ実行
+    function generateAndPrintWeakOnly() {
+      const pool = getFilteredPool();
+      const hist = getHistory();
+      const weakList = pool.filter(d => {
+        const h = hist[d.id];
+        return h && h.lastResult === "ng";
+      });
+
+      if (weakList.length === 0) {
+        alert("現在、前回間違えた問題（✕）はありません！すべて書けています！🎉");
+        return;
+      }
+
+      currentSet = weakList;
+      printCurrentSet('practice');
+    }
+
     function renderCheckList() {
       const container = document.getElementById("check-list-container");
       if (currentSet.length === 0) {
-        container.innerHTML = "<p style='text-align:center; padding:20px; color:#64748b;'>語句が選択されていません。「プリント作成」から作成してください。</p>";
+        container.innerHTML = "<p style='text-align:center; padding:20px; color:#64748b;'>問題が選択されていません。「プリント作成」から作成してください。</p>";
         return;
       }
 
@@ -707,7 +693,7 @@
 
         div.innerHTML = `
           <div class="check-head">
-            <span>第 ${index + 1} 語</span>
+            <span>第 ${index + 1} 問</span>
             <span>${item.unitKey}</span>
           </div>
           <div class="check-kana-text">${item.kana}</div>
@@ -748,11 +734,11 @@
     function saveCheckResults() {
       const hist = getHistory();
       const todayStr = new Date().toISOString().split("T")[0];
-      let okCount = 0;
+      let ngCount = 0;
 
       currentSet.forEach(item => {
         const res = currentResults[item.id] || "ok";
-        if (res === "ok") okCount++;
+        if (res === "ng") ngCount++;
 
         if (!hist[item.id]) {
           hist[item.id] = { attempts: 0, correct: 0, lastResult: "none", lastDate: "" };
@@ -764,8 +750,9 @@
       });
 
       saveHistory(hist);
-      alert(`🎉 採点結果を保存しました！\n正解: ${okCount} / ${currentSet.length} 語\n次回以降の出題に反映されます。`);
-      switchTab("history");
+      updateWeakBadge();
+      alert(`🎉 採点結果を保存しました！\n書けなかった問題: ${ngCount} 語\n「✕（書けなかった）」にした問題は、明日【前回できなかった問題の復習】からそのまま印刷して復習できます！`);
+      switchTab("home");
     }
 
     function renderHistoryList() {
@@ -775,13 +762,13 @@
 
       KANJI_DATA.forEach(d => {
         const h = hist[d.id];
-        if (h && (h.lastResult === "ng" || (h.attempts > 0 && h.correct < h.attempts))) {
+        if (h && h.lastResult === "ng") {
           weakItems.push({ ...d, hist: h });
         }
       });
 
       if (weakItems.length === 0) {
-        container.innerHTML = "<p style='text-align:center; padding:20px; color:#16a34a; font-weight:600;'>現在、苦手登録されている漢字はありません！すべて書けています！🎉</p>";
+        container.innerHTML = "<p style='text-align:center; padding:20px; color:#16a34a; font-weight:600;'>現在、間違えたままの漢字はありません！すべて書けています！🎉</p>";
         return;
       }
 
@@ -792,140 +779,111 @@
         div.innerHTML = `
           <div>
             <div style="font-size:0.8rem; color:#64748b;">${it.kana} (${it.unitKey})</div>
-            <div style="font-size:1.1rem; font-weight:bold; color:#0f172a;">${it.word}</div>
+            <div style="font-size:1.15rem; font-weight:bold; color:#0f172a;">${it.word}</div>
             <div style="font-size:0.75rem; color:#dc2626;">⚠️ ${it.point}</div>
           </div>
           <div style="font-size:0.75rem; font-weight:bold; padding:4px 8px; border-radius:10px; background:#fee2e2; color:#dc2626;">
-            直近: ${it.hist.lastResult === "ng" ? "✕" : "〇"} (${it.hist.correct}/${it.hist.attempts})
+            直近: ✕ 未正解 (${it.hist.correct}/${it.hist.attempts})
           </div>
         `;
         container.appendChild(div);
       });
     }
 
-    function createWeakSetAndPrint() {
-      const hist = getHistory();
-      const weakList = KANJI_DATA.filter(d => {
-        const h = hist[d.id];
-        return h && h.lastResult === "ng";
-      });
-
-      if (weakList.length === 0) {
-        alert("直近で間違えた漢字がありません。通常のプリントを印刷してください。");
-        return;
-      }
-
-      currentSet = weakList;
-      printDrillCards('practice');
-    }
-
     function clearHistoryData() {
       if (confirm("これまでの学習履歴・正誤データをすべてリセットしますか？")) {
         localStorage.removeItem(HISTORY_KEY);
         alert("履歴をリセットしました。");
+        updateWeakBadge();
         renderHistoryList();
       }
     }
 
     // =========================================================
-    // 印刷ロジック（A4 2列 5回練習カード形式・1文字1マス）
-    // mode: 'practice' (お手本+なぞり+4回練習) | 'test' (お手本なし+5回練習) | 'answer' (赤字お手本)
+    // 超頑丈な印刷レンダラー（絶対に横溢れ・欠けしない）
     // =========================================================
-    function printDrillCards(mode = 'practice') {
-      if (currentSet.length === 0) generateTodaySet(false);
+    function printCurrentSet(mode = 'practice') {
+      if (currentSet.length === 0) generateCustomSet(false);
       const printRegion = document.getElementById("print-region");
       const todayStr = new Date().toLocaleDateString("ja-JP", { year: "numeric", month: "long", day: "numeric" });
       const unitNames = Array.from(selectedUnits).join("・") || "全単元";
 
-      const pageSize = 10;
-      const pagesCount = Math.ceil(currentSet.length / pageSize);
-      let pagesHtml = "";
+      let blocksHtml = currentSet.map((it, idx) => {
+        const rawWord = it.word.split('/')[0].trim();
+        const chars = Array.from(rawWord);
 
-      for (let p = 0; p < pagesCount; p++) {
-        const pageItems = currentSet.slice(p * pageSize, (p + 1) * pageSize);
-        
-        let cardsHtml = pageItems.map((it, idx) => {
-          const globalIdx = p * pageSize + idx + 1;
-          const rawWord = it.word.split('/')[0].trim();
-          const chars = Array.from(rawWord);
+        // お手本 / 解答行
+        let sampleRowHtml = "";
+        if (mode === 'practice') {
+          const boxes = chars.map(c => `<td class="box-td sample-char">${c}</td>`).join("");
+          sampleRowHtml = `<tr><th class="label-th sample-th">お手本</th>${boxes}</tr>`;
+        } else if (mode === 'answer') {
+          const boxes = chars.map(c => `<td class="box-td ans-char">${c}</td>`).join("");
+          sampleRowHtml = `<tr><th class="label-th" style="background:#fff5f5; color:#c00000;">解答</th>${boxes}</tr>`;
+        } else {
+          const emptyBoxes = chars.map(() => `<td class="box-td"></td>`).join("");
+          sampleRowHtml = `<tr><th class="label-th">①</th>${emptyBoxes}</tr>`;
+        }
 
-          let sampleRowHtml = "";
-          if (mode === 'practice') {
-            const boxes = chars.map(c => `<td class="p-char-box"><span class="p-sample-char">${c}</span></td>`).join("");
-            sampleRowHtml = `<tr><td class="p-label-cell p-label-sample">お手本</td>${boxes}</tr>`;
-          } else if (mode === 'answer') {
-            const boxes = chars.map(c => `<td class="p-char-box"><span class="p-ans-char">${c}</span></td>`).join("");
-            sampleRowHtml = `<tr><td class="p-label-cell" style="background:#fff5f5; color:#c00000;">解答</td>${boxes}</tr>`;
-          } else {
-            const emptyBoxes = chars.map(() => `<td class="p-char-box"></td>`).join("");
-            sampleRowHtml = `<tr><td class="p-label-cell">①</td>${emptyBoxes}</tr>`;
-          }
+        // ①なぞり行
+        let traceRowHtml = "";
+        if (mode === 'practice') {
+          const traceBoxes = chars.map(c => `<td class="box-td trace-char">${c}</td>`).join("");
+          traceRowHtml = `<tr><th class="label-th">①なぞり</th>${traceBoxes}</tr>`;
+        }
 
-          let row1Html = "";
-          if (mode === 'practice') {
-            const traceBoxes = chars.map(c => `<td class="p-char-box"><span class="p-trace-char">${c}</span></td>`).join("");
-            row1Html = `<tr><td class="p-label-cell">①なぞり</td>${traceBoxes}</tr>`;
-          }
+        // ②〜⑤練習行
+        let practiceRowsHtml = "";
+        for (let r = 2; r <= 5; r++) {
+          const emptyBoxes = chars.map(() => `<td class="box-td"></td>`).join("");
+          const tag = ["①","②","③","④","⑤"][r-1];
+          practiceRowsHtml += `<tr><th class="label-th">${tag}</th>${emptyBoxes}</tr>`;
+        }
 
-          const startNum = 2;
-          const totalRows = 5;
-          let practiceRowsHtml = "";
-          for (let r = startNum; r <= totalRows; r++) {
-            const emptyBoxes = chars.map(() => `<td class="p-char-box"></td>`).join("");
-            const kanjiNum = ["①","②","③","④","⑤"][r-1];
-            practiceRowsHtml += `<tr><td class="p-label-cell">${kanjiNum}</td>${emptyBoxes}</tr>`;
-          }
+        const pointHint = (mode === 'practice' || mode === 'answer')
+          ? `<span class="q-point">⚠️ ${it.point}</span>`
+          : "";
 
-          const pointHintHtml = (mode === 'practice' || mode === 'answer')
-            ? `<span class="p-point-hint">⚠️ ${it.point}</span>`
-            : "";
-
-          return `
-            <div class="p-word-card">
-              <div class="p-card-top">
-                <div class="p-top-row">
-                  <span class="p-no-badge">問 ${globalIdx}</span>
-                  <span class="p-kana-title">${it.kana}</span>
-                  <span class="p-unit-tag">[${it.unitKey}]</span>
-                </div>
-                <div class="p-mean-hint">💡 ${it.mean} ${pointHintHtml}</div>
-              </div>
-              <table class="p-card-table">
-                <tbody>
-                  ${sampleRowHtml}
-                  ${row1Html}
-                  ${practiceRowsHtml}
-                </tbody>
-              </table>
+        return `
+          <div class="drill-block">
+            <div class="block-header">
+              <div class="q-num">【第 ${idx + 1} 問】</div>
+              <div class="q-kana">${it.kana}</div>
+              <div class="q-unit">[${it.unitKey}]</div>
             </div>
-          `;
-        }).join("");
-
-        const pageTitle = (mode === 'answer')
-          ? '<span style="color:#c00000;">中学受験 社会 漢字書き取り特訓（模範解答）</span>'
-          : (mode === 'test' ? '中学受験 社会 漢字書き取り特訓（実戦テスト）' : '中学受験 社会 漢字書き取り特訓（5回練習ドリル）');
-
-        pagesHtml += `
-          <div class="p-page">
-            <div class="p-header">
-              <div>
-                <div class="p-title">${pageTitle}</div>
-                <div style="font-size:7pt; color:#444;">範囲: ${unitNames} ｜ 全 ${currentSet.length} 語 (${p+1}/${pagesCount} ページ)</div>
-              </div>
-              <div class="p-meta">
-                <div>日付: <span class="p-line">${todayStr}</span></div>
-                <div>氏名: <span class="p-line"></span></div>
-                <div>得点: <span class="p-line" style="min-width:40px;">　 / ${currentSet.length}</span></div>
-              </div>
-            </div>
-            <div class="p-grid-2col">
-              ${cardsHtml}
-            </div>
+            <div class="q-hint">💡 意味: ${it.mean} ${pointHint}</div>
+            <table class="grid-table">
+              <tbody>
+                ${sampleRowHtml}
+                ${traceRowHtml}
+                ${practiceRowsHtml}
+              </tbody>
+            </table>
           </div>
         `;
-      }
+      }).join("");
 
-      printRegion.innerHTML = pagesHtml;
+      const pageTitle = (mode === 'answer')
+        ? '<span style="color:#c00000;">中学受験 社会 漢字書き取り特訓（模範解答）</span>'
+        : (mode === 'test' ? '中学受験 社会 漢字書き取り特訓（実戦テスト）' : '中学受験 社会 漢字書き取り特訓（苦手復習・5回練習）');
+
+      printRegion.innerHTML = `
+        <div class="p-head">
+          <div>
+            <div class="p-title">${pageTitle}</div>
+            <div class="p-sub">範囲: ${unitNames} ｜ 全 ${currentSet.length} 語</div>
+          </div>
+          <div class="p-meta">
+            <div>日付: <span class="p-line">${todayStr}</span></div>
+            <div>氏名: <span class="p-line"></span></div>
+            <div>得点: <span class="p-line" style="min-width:40px;">　 / ${currentSet.length}</span></div>
+          </div>
+        </div>
+        <div class="drill-container">
+          ${blocksHtml}
+        </div>
+      `;
+
       window.print();
     }
   </script>

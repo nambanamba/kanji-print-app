@@ -1,0 +1,215 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <title>Robust Kanji Drill Print</title>
+  <style>
+    @page {
+      size: A4 portrait;
+      margin: 10mm 12mm;
+    }
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+    body {
+      font-family: "Hiragino Kaku Gothic ProN", "Yu Gothic", "Meiryo", sans-serif;
+      background: #ffffff;
+      color: #000000;
+      -webkit-print-color-adjust: exact;
+      print-color-adjust: exact;
+    }
+
+    /* ページヘッダー */
+    .p-head {
+      border-bottom: 2px solid #000000;
+      padding-bottom: 4px;
+      margin-bottom: 10px;
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-end;
+    }
+    .p-title { font-size: 14pt; font-weight: bold; }
+    .p-sub { font-size: 8.5pt; color: #444444; }
+    .p-meta { display: flex; gap: 14px; font-size: 9pt; }
+    .p-line { display: inline-block; border-bottom: 1px solid #000000; min-width: 60px; }
+
+    /* 問題ブロック（1問1ブロックで1ページに3〜4問） */
+    .drill-block {
+      border: 1.5px solid #222222;
+      border-radius: 6px;
+      padding: 8px 12px;
+      margin-bottom: 10px;
+      page-break-inside: avoid;
+      background: #ffffff;
+    }
+
+    .block-header {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin-bottom: 2px;
+    }
+    .q-num { font-size: 10.5pt; font-weight: bold; color: #1e3a8a; }
+    .q-kana { font-size: 14pt; font-weight: 800; color: #000000; letter-spacing: 0.03em; }
+    .q-unit { font-size: 8pt; color: #666666; margin-left: auto; }
+    .q-hint { font-size: 8.5pt; color: #444444; margin-bottom: 6px; }
+    .q-point { color: #dc2626; font-weight: bold; margin-left: 8px; }
+
+    /* マス目テーブル */
+    .grid-table {
+      border-collapse: collapse;
+      margin: 0;
+    }
+
+    .label-th {
+      width: 22mm;
+      height: 7.5mm;
+      border: 1px solid #444444;
+      background: #f8fafc !important;
+      font-size: 7.5pt;
+      font-weight: bold;
+      color: #333333;
+      text-align: center;
+      vertical-align: middle;
+      padding: 0;
+    }
+    .sample-th {
+      background: #eff6ff !important;
+      color: #1e3a8a;
+    }
+
+    /* 1文字1マスの正方形枠 */
+    .box-td {
+      width: 16mm;
+      height: 7.5mm;
+      border: 1.2px solid #000000;
+      position: relative;
+      text-align: center;
+      vertical-align: middle;
+      background: #ffffff;
+      padding: 0;
+    }
+
+    /* 十字リーダー点線 */
+    .box-td::before {
+      content: "";
+      position: absolute;
+      top: 50%;
+      left: 0;
+      width: 100%;
+      height: 1px;
+      border-top: 1px dashed #cccccc;
+    }
+    .box-td::after {
+      content: "";
+      position: absolute;
+      top: 0;
+      left: 50%;
+      width: 1px;
+      height: 100%;
+      border-left: 1px dashed #cccccc;
+    }
+
+    .sample-char {
+      font-size: 13pt;
+      font-weight: bold;
+      color: #000000;
+      position: relative;
+      z-index: 2;
+      line-height: 1;
+    }
+
+    .trace-char {
+      font-size: 13pt;
+      font-weight: bold;
+      color: #cccccc !important;
+      position: relative;
+      z-index: 2;
+      line-height: 1;
+    }
+  </style>
+</head>
+<body>
+  <div class="p-head">
+    <div>
+      <div class="p-title">中学受験 社会 漢字書き取り特訓（苦手克服・5回練習）</div>
+      <div class="p-sub">範囲: 前回間違えた問題 ｜ 全 4 語 (1/1 ページ)</div>
+    </div>
+    <div class="p-meta">
+      <div>日付: <span class="p-line">2026年9月1日</span></div>
+      <div>氏名: <span class="p-line"></span></div>
+      <div>得点: <span class="p-line" style="min-width:40px;">　 / 4</span></div>
+    </div>
+  </div>
+
+  <div class="drill-container">
+    
+    <div class="drill-block">
+      <div class="block-header">
+        <div class="q-num">【第 1 問】</div>
+        <div class="q-kana">いわじゅくいせき</div>
+        <div class="q-unit">[第1回]</div>
+      </div>
+      <div class="q-hint">💡 意味: 旧石器時代の遺跡（群馬県）　<span class="q-point">⚠️ 「宿」「遺」「跡」の誤字注意</span></div>
+      <table class="grid-table">
+        <tbody>
+          <tr><th class="label-th sample-th">お手本</th><td class="box-td sample-char">岩</td><td class="box-td sample-char">宿</td><td class="box-td sample-char">遺</td><td class="box-td sample-char">跡</td></tr>
+          <tr><th class="label-th">①なぞり</th><td class="box-td trace-char">岩</td><td class="box-td trace-char">宿</td><td class="box-td trace-char">遺</td><td class="box-td trace-char">跡</td></tr>
+          <tr><th class="label-th">②</th><td class="box-td"></td><td class="box-td"></td><td class="box-td"></td><td class="box-td"></td></tr><tr><th class="label-th">③</th><td class="box-td"></td><td class="box-td"></td><td class="box-td"></td><td class="box-td"></td></tr><tr><th class="label-th">④</th><td class="box-td"></td><td class="box-td"></td><td class="box-td"></td><td class="box-td"></td></tr><tr><th class="label-th">⑤</th><td class="box-td"></td><td class="box-td"></td><td class="box-td"></td><td class="box-td"></td></tr>
+        </tbody>
+      </table>
+    </div>
+    
+    <div class="drill-block">
+      <div class="block-header">
+        <div class="q-num">【第 2 問】</div>
+        <div class="q-kana">よしのがりいせき</div>
+        <div class="q-unit">[第1回]</div>
+      </div>
+      <div class="q-hint">💡 意味: 日本最大級の環濠集落（佐賀県）　<span class="q-point">⚠️ 「吉」「野」「里」</span></div>
+      <table class="grid-table">
+        <tbody>
+          <tr><th class="label-th sample-th">お手本</th><td class="box-td sample-char">吉</td><td class="box-td sample-char">野</td><td class="box-td sample-char">ヶ</td><td class="box-td sample-char">里</td><td class="box-td sample-char">遺</td><td class="box-td sample-char">跡</td></tr>
+          <tr><th class="label-th">①なぞり</th><td class="box-td trace-char">吉</td><td class="box-td trace-char">野</td><td class="box-td trace-char">ヶ</td><td class="box-td trace-char">里</td><td class="box-td trace-char">遺</td><td class="box-td trace-char">跡</td></tr>
+          <tr><th class="label-th">②</th><td class="box-td"></td><td class="box-td"></td><td class="box-td"></td><td class="box-td"></td><td class="box-td"></td><td class="box-td"></td></tr><tr><th class="label-th">③</th><td class="box-td"></td><td class="box-td"></td><td class="box-td"></td><td class="box-td"></td><td class="box-td"></td><td class="box-td"></td></tr><tr><th class="label-th">④</th><td class="box-td"></td><td class="box-td"></td><td class="box-td"></td><td class="box-td"></td><td class="box-td"></td><td class="box-td"></td></tr><tr><th class="label-th">⑤</th><td class="box-td"></td><td class="box-td"></td><td class="box-td"></td><td class="box-td"></td><td class="box-td"></td><td class="box-td"></td></tr>
+        </tbody>
+      </table>
+    </div>
+    
+    <div class="drill-block">
+      <div class="block-header">
+        <div class="q-num">【第 3 問】</div>
+        <div class="q-kana">どぐう</div>
+        <div class="q-unit">[第1回]</div>
+      </div>
+      <div class="q-hint">💡 意味: 魔よけや豊作を祈る土の人形　<span class="q-point">⚠️ 「偶」の人偏と旁</span></div>
+      <table class="grid-table">
+        <tbody>
+          <tr><th class="label-th sample-th">お手本</th><td class="box-td sample-char">土</td><td class="box-td sample-char">偶</td></tr>
+          <tr><th class="label-th">①なぞり</th><td class="box-td trace-char">土</td><td class="box-td trace-char">偶</td></tr>
+          <tr><th class="label-th">②</th><td class="box-td"></td><td class="box-td"></td></tr><tr><th class="label-th">③</th><td class="box-td"></td><td class="box-td"></td></tr><tr><th class="label-th">④</th><td class="box-td"></td><td class="box-td"></td></tr><tr><th class="label-th">⑤</th><td class="box-td"></td><td class="box-td"></td></tr>
+        </tbody>
+      </table>
+    </div>
+    
+    <div class="drill-block">
+      <div class="block-header">
+        <div class="q-num">【第 4 問】</div>
+        <div class="q-kana">かんのわのなのこくおう</div>
+        <div class="q-unit">[第1回]</div>
+      </div>
+      <div class="q-hint">💡 意味: 志賀島で発見された金印の文字　<span class="q-point">⚠️ 「委」「奴」</span></div>
+      <table class="grid-table">
+        <tbody>
+          <tr><th class="label-th sample-th">お手本</th><td class="box-td sample-char">漢</td><td class="box-td sample-char">委</td><td class="box-td sample-char">奴</td><td class="box-td sample-char">国</td><td class="box-td sample-char">王</td></tr>
+          <tr><th class="label-th">①なぞり</th><td class="box-td trace-char">漢</td><td class="box-td trace-char">委</td><td class="box-td trace-char">奴</td><td class="box-td trace-char">国</td><td class="box-td trace-char">王</td></tr>
+          <tr><th class="label-th">②</th><td class="box-td"></td><td class="box-td"></td><td class="box-td"></td><td class="box-td"></td><td class="box-td"></td></tr><tr><th class="label-th">③</th><td class="box-td"></td><td class="box-td"></td><td class="box-td"></td><td class="box-td"></td><td class="box-td"></td></tr><tr><th class="label-th">④</th><td class="box-td"></td><td class="box-td"></td><td class="box-td"></td><td class="box-td"></td><td class="box-td"></td></tr><tr><th class="label-th">⑤</th><td class="box-td"></td><td class="box-td"></td><td class="box-td"></td><td class="box-td"></td><td class="box-td"></td></tr>
+        </tbody>
+      </table>
+    </div>
+    
+  </div>
+</body>
+</html>
