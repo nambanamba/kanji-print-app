@@ -3,16 +3,13 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <title>社会 漢字テスト＆練習ドリル - 毎日10問</title>
+  <title>社会 漢字テスト＆練習ドリル</title>
   <style>
     :root {
       --primary: #2563eb;
       --primary-dark: #1d4ed8;
-      --primary-light: #eff6ff;
       --success: #16a34a;
-      --success-light: #dcfce7;
       --danger: #dc2626;
-      --danger-light: #fee2e2;
       --text: #1f2937;
       --text-muted: #64748b;
       --bg: #f8fafc;
@@ -21,12 +18,7 @@
       --radius: 10px;
     }
 
-    * {
-      box-sizing: border-box;
-      margin: 0;
-      padding: 0;
-      -webkit-tap-highlight-color: transparent;
-    }
+    * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
 
     body {
       font-family: "Hiragino Kaku Gothic ProN", "Yu Gothic", "Meiryo", sans-serif;
@@ -38,21 +30,15 @@
 
     header {
       background: linear-gradient(135deg, #1e3a8a, #2563eb);
-      color: #ffffff;
+      color: #fff;
       padding: 16px;
       text-align: center;
     }
+    header h1 { font-size: 1.2rem; font-weight: 700; }
+    header p { font-size: 0.8rem; opacity: 0.9; margin-top: 2px; }
 
-    header h1 { font-size: 1.25rem; font-weight: 700; }
-    header p { font-size: 0.82rem; opacity: 0.9; margin-top: 2px; }
+    .container { max-width: 800px; margin: 0 auto; padding: 14px; }
 
-    .container {
-      max-width: 800px;
-      margin: 0 auto;
-      padding: 14px;
-    }
-
-    /* ナビゲーション */
     .nav-tabs {
       display: flex;
       background: #e2e8f0;
@@ -61,12 +47,11 @@
       margin-bottom: 16px;
       gap: 4px;
     }
-
     .nav-tab {
       flex: 1;
       text-align: center;
-      padding: 10px 6px;
-      font-size: 0.92rem;
+      padding: 10px 4px;
+      font-size: 0.88rem;
       font-weight: 700;
       border-radius: 7px;
       cursor: pointer;
@@ -75,12 +60,7 @@
       color: var(--text-muted);
       transition: all 0.15s ease;
     }
-
-    .nav-tab.active {
-      background: #ffffff;
-      color: var(--primary);
-      box-shadow: 0 1px 3px rgba(0,0,0,0.08);
-    }
+    .nav-tab.active { background: #fff; color: var(--primary); box-shadow: 0 1px 3px rgba(0,0,0,0.08); }
 
     .card {
       background: var(--card-bg);
@@ -90,18 +70,15 @@
       margin-bottom: 16px;
       box-shadow: 0 2px 4px rgba(0,0,0,0.04);
     }
-
     .card-title {
       font-size: 1.05rem;
       font-weight: 700;
-      color: #1e293b;
-      margin-bottom: 10px;
+      margin-bottom: 12px;
       display: flex;
       align-items: center;
       justify-content: space-between;
     }
 
-    /* 進捗バー */
     .progress-box {
       background: #eff6ff;
       border: 1.5px solid #bfdbfe;
@@ -109,55 +86,56 @@
       padding: 14px;
       margin-bottom: 16px;
     }
-    .progress-title {
-      font-size: 0.92rem;
-      font-weight: 700;
-      color: #1e3a8a;
-      display: flex;
-      justify-content: space-between;
-      margin-bottom: 6px;
-    }
-    .progress-bar-bg {
-      background: #dbeafe;
-      border-radius: 8px;
-      height: 12px;
-      overflow: hidden;
-    }
-    .progress-bar-fill {
-      background: var(--success);
-      height: 100%;
-      width: 0%;
-      transition: width 0.3s ease;
-    }
-    .progress-sub {
-      font-size: 0.78rem;
-      color: #475569;
-      margin-top: 6px;
-    }
+    .progress-title { font-size: 0.92rem; font-weight: 700; color: #1e3a8a; display: flex; justify-content: space-between; margin-bottom: 6px; }
+    .progress-bar-bg { background: #dbeafe; border-radius: 8px; height: 12px; overflow: hidden; }
+    .progress-bar-fill { background: var(--success); height: 100%; width: 0%; transition: width 0.3s ease; }
+    .progress-sub { font-size: 0.78rem; color: #475569; margin-top: 6px; }
 
-    /* 単元セレクター */
     .unit-controls { display: flex; gap: 8px; margin-bottom: 10px; }
-    .btn-sm { padding: 5px 12px; font-size: 0.8rem; font-weight: 600; border-radius: 6px; border: 1px solid var(--border); background: #ffffff; cursor: pointer; }
+    .btn-sm { padding: 5px 12px; font-size: 0.8rem; font-weight: 600; border-radius: 6px; border: 1px solid var(--border); background: #fff; cursor: pointer; }
 
     .unit-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 8px; }
-    .unit-btn { display: flex; align-items: center; justify-content: space-between; padding: 10px 12px; border-radius: 8px; border: 2px solid var(--border); background: #ffffff; cursor: pointer; font-size: 0.9rem; font-weight: 600; text-align: left; }
+    .unit-btn { display: flex; align-items: center; justify-content: space-between; padding: 10px 12px; border-radius: 8px; border: 2px solid var(--border); background: #fff; cursor: pointer; font-size: 0.9rem; font-weight: 600; text-align: left; }
     .unit-btn.selected { border-color: var(--primary); background: #eff6ff; color: var(--primary-dark); }
     .unit-badge { font-size: 0.72rem; padding: 2px 6px; border-radius: 10px; background: #e2e8f0; color: #475569; }
-    .unit-btn.selected .unit-badge { background: var(--primary); color: #ffffff; }
+    .unit-btn.selected .unit-badge { background: var(--primary); color: #fff; }
 
     .setting-group { margin-top: 14px; padding-top: 14px; border-top: 1px solid #f1f5f9; }
     .setting-label { font-size: 0.88rem; font-weight: 700; margin-bottom: 8px; color: #334155; }
-    .chip-row { display: flex; flex-wrap: wrap; gap: 8px; }
-    .chip { padding: 7px 14px; border-radius: 16px; border: 1px solid var(--border); background: #ffffff; font-size: 0.85rem; font-weight: 600; cursor: pointer; }
-    .chip.active { background: var(--primary); color: #ffffff; border-color: var(--primary); }
 
-    /* メイン印刷ボタン */
+    /* 問題数のカスタム入力 */
+    .count-row { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
+    .chip-row { display: flex; flex-wrap: wrap; gap: 8px; }
+    .chip { padding: 7px 14px; border-radius: 16px; border: 1px solid var(--border); background: #fff; font-size: 0.85rem; font-weight: 600; cursor: pointer; }
+    .chip.active { background: var(--primary); color: #fff; border-color: var(--primary); }
+
+    .count-custom-box {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      background: #fff;
+      border: 1.5px solid var(--border);
+      border-radius: 8px;
+      padding: 4px 10px;
+    }
+    .count-custom-box label { font-size: 0.82rem; color: #475569; font-weight: 600; white-space: nowrap; }
+    .count-input {
+      width: 52px;
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      padding: 4px 6px;
+      font-size: 1rem;
+      font-weight: 700;
+      text-align: center;
+    }
+    .count-input:focus { outline: 2px solid var(--primary); }
+
     .btn-main {
       width: 100%;
       padding: 15px;
       font-size: 1.1rem;
       font-weight: 800;
-      color: #ffffff;
+      color: #fff;
       background: var(--primary);
       border: none;
       border-radius: var(--radius);
@@ -171,8 +149,8 @@
     }
     .btn-main:hover { background: var(--primary-dark); }
 
-    /* 〇✕採点 */
-    .check-item { background: #ffffff; border: 1.5px solid var(--border); border-radius: var(--radius); padding: 14px; margin-bottom: 12px; }
+    /* 採点画面 */
+    .check-item { background: #fff; border: 1.5px solid var(--border); border-radius: var(--radius); padding: 14px; margin-bottom: 12px; }
     .check-item.is-correct { border-color: #86efac; background: #f0fdf4; }
     .check-item.is-wrong { border-color: #fca5a5; background: #fef2f2; }
     .check-head { display: flex; justify-content: space-between; font-size: 0.8rem; color: var(--text-muted); font-weight: 700; margin-bottom: 4px; }
@@ -181,175 +159,134 @@
     .check-ans-box { background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 6px; padding: 8px 12px; margin-bottom: 10px; }
     .check-ans-word { font-size: 1.25rem; font-weight: 800; color: #dc2626; }
     .toggle-row { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
-    .toggle-btn { padding: 10px; font-size: 0.95rem; font-weight: 700; border-radius: 6px; border: 2px solid var(--border); background: #ffffff; cursor: pointer; }
-    .toggle-btn.btn-ok.active { background: var(--success); color: #ffffff; border-color: var(--success); }
-    .toggle-btn.btn-ng.active { background: var(--danger); color: #ffffff; border-color: var(--danger); }
-    
+    .toggle-btn { padding: 10px; font-size: 0.95rem; font-weight: 700; border-radius: 6px; border: 2px solid var(--border); background: #fff; cursor: pointer; }
+    .toggle-btn.btn-ok.active { background: var(--success); color: #fff; border-color: var(--success); }
+    .toggle-btn.btn-ng.active { background: var(--danger); color: #fff; border-color: var(--danger); }
+
     .status-badge-passed { font-size: 0.72rem; font-weight: 700; padding: 3px 8px; border-radius: 10px; background: #dcfce7; color: #16a34a; }
     .status-badge-unpassed { font-size: 0.72rem; font-weight: 700; padding: 3px 8px; border-radius: 10px; background: #fee2e2; color: #dc2626; }
     .history-row { display: flex; justify-content: space-between; align-items: center; padding: 10px 12px; border-bottom: 1px solid #f1f5f9; }
 
     /* =========================================================
-       A4縦1枚：上段テスト＋下段練習マス目（絶対にはみ出ない設計）
+       印刷専用スタイル
+       ページは問題数に応じて自動で枚数が増える。
+       練習マス目は絶対に行の途中でページ切れしない。
+       なぞり枠は広め（高さ 22mm）。
        ========================================================= */
-    #print-region {
-      display: none;
-    }
+    #print-region { display: none; }
 
-    @page {
-      size: A4 portrait;
-      margin: 8mm 10mm;
-    }
+    @page { size: A4 portrait; margin: 9mm 11mm; }
 
     @media print {
-      body {
-        background: #ffffff !important;
-        padding: 0 !important;
-        margin: 0 !important;
-        color: #000000 !important;
-        -webkit-print-color-adjust: exact;
-        print-color-adjust: exact;
-      }
+      body { background: #fff !important; padding: 0 !important; margin: 0 !important; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+      header, .container { display: none !important; }
+      #print-region { display: block !important; }
 
-      header, .container {
-        display: none !important;
-      }
-
-      #print-region {
-        display: block !important;
-        width: 100% !important;
-      }
-
-      .page-container {
-        width: 100%;
-        height: 280mm;
-        box-sizing: border-box;
-        display: flex;
-        flex-direction: column;
-        justify-content: space-between;
-        page-break-after: always;
-      }
-
-      .page-container:last-child {
-        page-break-after: avoid;
-      }
-
+      /* ---- ヘッダー ---- */
       .p-head {
-        border-bottom: 2px solid #000000;
-        padding-bottom: 2px;
-        margin-bottom: 4px;
+        border-bottom: 2px solid #000;
+        padding-bottom: 3px;
+        margin-bottom: 6px;
         display: flex;
         justify-content: space-between;
         align-items: flex-end;
       }
       .p-title { font-size: 13pt; font-weight: bold; }
       .p-meta { display: flex; gap: 14px; font-size: 8.5pt; }
-      .p-line { display: inline-block; border-bottom: 1px solid #000000; min-width: 55px; }
+      .p-line { display: inline-block; border-bottom: 1px solid #000; min-width: 55px; }
 
+      /* ---- セクション見出し ---- */
       .section-title {
         font-size: 9pt;
         font-weight: bold;
         background: #f1f5f9;
         border-left: 4px solid #1e3a8a;
         padding: 2px 6px;
-        margin-bottom: 4px;
+        margin-bottom: 5px;
+        page-break-after: avoid;
       }
 
-      /* 上段：テスト欄（2列・10問） */
-      .test-section {
-        margin-bottom: 6px;
-      }
-      .test-grid {
-        display: grid;
-        grid-template-columns: 1fr 1fr;
-        gap: 3px 12px;
-      }
+      /* ---- ① 上段：テスト欄 ---- */
+      .test-section { margin-bottom: 8px; page-break-inside: avoid; }
+      .test-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 3px 14px; }
       .test-item {
         display: flex;
         align-items: center;
         justify-content: space-between;
-        border-bottom: 1px dashed #cbd5e1;
-        padding-bottom: 2px;
+        border-bottom: 1px dashed #c4c4c4;
+        padding: 2px 0;
+        page-break-inside: avoid;
       }
-      .test-q-text {
-        font-size: 9.5pt;
-        line-height: 1.1;
-      }
-      .test-hint {
-        font-size: 6.8pt;
-        color: #555555;
-      }
+      .test-q-text { font-size: 9.5pt; line-height: 1.2; }
+      .test-hint { font-size: 6.5pt; color: #555; }
       .test-ans-box {
-        width: 36mm;
-        height: 9mm;
-        border: 1.5px solid #000000;
-        background: #ffffff;
+        width: 38mm;
+        height: 10mm;
+        border: 1.5px solid #000;
         border-radius: 2px;
         flex-shrink: 0;
       }
 
-      /* 下段：練習マス目欄 */
-      .practice-section {
-        flex: 1;
-        display: flex;
-        flex-direction: column;
-      }
+      /* ---- ② 下段：練習マス目テーブル ---- */
       .practice-table {
         width: 100%;
         border-collapse: collapse;
         table-layout: fixed;
       }
+      .practice-table thead tr {
+        page-break-after: avoid;
+      }
       .practice-table th {
         background: #f8fafc !important;
-        border: 1px solid #000000;
+        border: 1px solid #000;
         font-size: 7.5pt;
         padding: 2px;
         text-align: center;
       }
+
+      /* ★ 各行は必ず丸ごと1ページに収める（ページ途中で切れない） */
       .p-row {
-        height: 17.5mm;
+        height: 22mm;       /* ← なぞり枠をここで大きくする */
+        page-break-inside: avoid;
+        break-inside: avoid;
       }
+
       .p-no-td {
-        width: 5%;
-        border: 1px solid #000000;
+        border: 1px solid #000;
         text-align: center;
         font-size: 9pt;
         font-weight: bold;
+        vertical-align: middle;
       }
       .p-word-td {
-        width: 25%;
-        border: 1px solid #000000;
+        border: 1px solid #000;
         padding: 2px 6px;
         vertical-align: middle;
       }
       .p-sample-word {
-        font-size: 13.5pt;
+        font-size: 14pt;
         font-weight: bold;
-        color: #000000;
-        letter-spacing: 0.05em;
+        letter-spacing: 0.06em;
         line-height: 1.1;
       }
-      .p-kana-sub {
-        font-size: 7pt;
-        color: #555555;
-      }
+      .p-kana-sub { font-size: 7pt; color: #555; }
+
       .p-box-td {
-        width: 14%;
-        border: 1px solid #000000;
+        border: 1px solid #000;
         padding: 0;
         vertical-align: middle;
         text-align: center;
       }
       .p-grid-cell {
         width: 100%;
-        height: 100%;
-        min-height: 17mm;
+        height: 22mm;    /* ← 同じ高さ */
         position: relative;
         display: flex;
         align-items: center;
         justify-content: center;
-        background: #ffffff;
+        background: #fff;
       }
+      /* 十字点線リーダー */
       .p-grid-cell::before {
         content: "";
         position: absolute;
@@ -357,7 +294,7 @@
         left: 0;
         width: 100%;
         height: 1px;
-        border-top: 1px dashed #cccccc;
+        border-top: 1px dashed #bbb;
       }
       .p-grid-cell::after {
         content: "";
@@ -366,15 +303,16 @@
         left: 50%;
         width: 1px;
         height: 100%;
-        border-left: 1px dashed #cccccc;
+        border-left: 1px dashed #bbb;
       }
       .p-trace-txt {
-        font-size: 13pt;
+        font-size: 14pt;
         font-weight: bold;
-        color: #cccccc !important;
-        letter-spacing: 0.05em;
+        color: #c8c8c8 !important;
+        letter-spacing: 0.06em;
         position: relative;
         z-index: 2;
+        line-height: 1;
       }
     }
   </style>
@@ -387,10 +325,10 @@
   </header>
 
   <div class="container">
-    
+
     <div class="nav-tabs">
-      <button class="nav-tab active" id="tab-home" onclick="switchTab('home')">① 今日の10問を印刷</button>
-      <button class="nav-tab" id="tab-check" onclick="switchTab('check')">② できた / できなかった チェック</button>
+      <button class="nav-tab active" id="tab-home" onclick="switchTab('home')">① 印刷・問題設定</button>
+      <button class="nav-tab" id="tab-check" onclick="switchTab('check')">② できた / できなかった</button>
       <button class="nav-tab" id="tab-history" onclick="switchTab('history')">進捗一覧</button>
     </div>
 
@@ -400,68 +338,68 @@
       <div class="progress-box">
         <div class="progress-title">
           <span>🎯 クリア進捗</span>
-          <span id="progress-text">0 / 40 語 クリア</span>
+          <span id="progress-text">0 / 0 語 クリア</span>
         </div>
-        <div class="progress-bar-bg">
-          <div class="progress-bar-fill" id="progress-fill"></div>
-        </div>
-        <div class="progress-sub" id="progress-sub-text">
-          💡 「できた」のチェックが入っていない問題の中から自動で10問が選ばれます。
-        </div>
+        <div class="progress-bar-bg"><div class="progress-bar-fill" id="progress-fill"></div></div>
+        <div class="progress-sub" id="progress-sub-text">💡 「できた」チェックが入っていない問題から自動選出されます。</div>
       </div>
 
       <div class="card">
         <div class="card-title">
           <span>単元を選ぶ</span>
-          <span class="card-title-tag" id="selected-units-count">選択中</span>
+          <span id="selected-units-count" style="font-size:0.82rem; color:var(--text-muted); font-weight:600;"></span>
         </div>
 
         <div class="unit-controls">
           <button class="btn-sm" onclick="selectAllUnits()">すべて選ぶ</button>
           <button class="btn-sm" onclick="clearAllUnits()">クリア</button>
         </div>
-
         <div class="unit-grid" id="unit-grid-container"></div>
 
         <div class="setting-group">
-          <div class="setting-label">出題語数</div>
-          <div class="chip-row" id="count-chips">
-            <button class="chip active" data-count="10" onclick="setCount(10)">10語 (A4 1枚・標準)</button>
-            <button class="chip" data-count="5" onclick="setCount(5)">5語</button>
-            <button class="chip" data-count="all" onclick="setCount('all')">未クリア全問</button>
+          <div class="setting-label">今日の出題語数（自分で決める）</div>
+          <div class="count-row">
+            <div class="chip-row" id="count-chips">
+              <button class="chip" data-count="5" onclick="setCount(5)">5語</button>
+              <button class="chip active" data-count="10" onclick="setCount(10)">10語</button>
+              <button class="chip" data-count="15" onclick="setCount(15)">15語</button>
+              <button class="chip" data-count="20" onclick="setCount(20)">20語</button>
+              <button class="chip" data-count="all" onclick="setCount('all')">未クリア全問</button>
+            </div>
+            <div class="count-custom-box">
+              <label for="count-custom-input">自由入力:</label>
+              <input type="number" id="count-custom-input" class="count-input" min="1" max="99" placeholder="12" onchange="setCountCustom(this.value)" />
+              <span style="font-size:0.82rem; color:#475569;">語</span>
+            </div>
           </div>
         </div>
 
         <button class="btn-main" onclick="generateDailySetAndPrint()">
-          🖨️ 今日の10問を印刷する (A4 1枚)
+          🖨️ 今日の問題を印刷する（A4 縦）
         </button>
       </div>
 
     </div>
 
-    <!-- ② 〇✕採点画面 -->
+    <!-- ② 採点画面 -->
     <div id="screen-check" style="display: none;">
       <div class="card">
         <div class="card-title">
-          <span>今日の10問 できたチェック</span>
-          <button class="btn-sm" style="background:#dcfce7; color:#16a34a; border-color:#86efac;" onclick="markAllCorrect()">
-            ✨ すべてできた（〇）
-          </button>
+          <span>今日の採点</span>
+          <button class="btn-sm" style="background:#dcfce7; color:#16a34a; border-color:#86efac;" onclick="markAllCorrect()">✨ すべてできた</button>
         </div>
         <p style="font-size: 0.83rem; color: var(--text-muted); margin-bottom: 14px;">
           書けた問題は「⭕ できた」、書けなかった問題は「❌ できなかった」にしてください。<br>
           <b>「⭕ できた」にした問題は次回以降出題されなくなります。</b>
         </p>
-
         <div id="check-list-container"></div>
-
         <button class="btn-main" style="background: var(--success);" onclick="saveCheckResults()">
-          💾 判定結果を保存する（明日へ引き継ぎ）
+          💾 採点結果を保存する（明日へ引き継ぎ）
         </button>
       </div>
     </div>
 
-    <!-- ③ 進捗一覧画面 -->
+    <!-- ③ 進捗一覧 -->
     <div id="screen-history" style="display: none;">
       <div class="card">
         <div class="card-title">
@@ -470,32 +408,29 @@
         </div>
         <div id="history-list-container"></div>
       </div>
-
       <div class="card">
-        <div class="card-title"><span>学習データ管理</span></div>
-        <button class="btn-sm" style="color: var(--danger); border-color: #fca5a5;" onclick="clearHistoryData()">
-          🗑️ クリア履歴をリセット（最初からやり直す）
-        </button>
+        <div class="card-title"><span>データ管理</span></div>
+        <button class="btn-sm" style="color: var(--danger); border-color: #fca5a5;" onclick="clearHistoryData()">🗑️ クリア履歴をリセット</button>
       </div>
     </div>
 
   </div>
 
-  <!-- 印刷用領域 -->
   <div id="print-region"></div>
 
   <script src="kanji-data.js"></script>
-
   <script>
-    const SETTINGS_KEY = "kanji_app_settings_simple_v1";
-    const MASTERY_KEY = "kanji_app_mastery_simple_v1";
+    const SETTINGS_KEY = "kanji_app_settings_v2";
+    const MASTERY_KEY  = "kanji_app_mastery_v2";
 
-    let selectedUnits = new Set(["第1回", "第2回"]);
-    let currentCount = 10;
-    let currentSet = [];
+    let selectedUnits = new Set();
+    let currentCount  = 10;
+    let currentSet    = [];
     let currentResults = {};
 
     window.addEventListener("DOMContentLoaded", () => {
+      // デフォルトで全単元を選択
+      KANJI_UNITS.forEach(u => selectedUnits.add(u.key));
       loadCachedSettings();
       renderUnitGrid();
       updateProgressDisplay();
@@ -503,19 +438,22 @@
       generateDailySet(false);
     });
 
+    /* ---------- 設定の保存・読込 ---------- */
     function loadCachedSettings() {
       try {
         const raw = localStorage.getItem(SETTINGS_KEY);
-        if (raw) {
-          const cached = JSON.parse(raw);
-          if (Array.isArray(cached.selectedUnits) && cached.selectedUnits.length > 0) {
-            selectedUnits = new Set(cached.selectedUnits);
-          }
-          if (cached.count) {
-            currentCount = cached.count;
-            document.querySelectorAll("#count-chips .chip").forEach(c => {
-              c.classList.toggle("active", c.dataset.count == currentCount);
-            });
+        if (!raw) return;
+        const cached = JSON.parse(raw);
+        if (Array.isArray(cached.selectedUnits) && cached.selectedUnits.length > 0) {
+          selectedUnits = new Set(cached.selectedUnits);
+        }
+        if (cached.count !== undefined) {
+          currentCount = cached.count;
+          document.querySelectorAll("#count-chips .chip").forEach(c => {
+            c.classList.toggle("active", c.dataset.count == currentCount);
+          });
+          if (typeof currentCount === "number") {
+            document.getElementById("count-custom-input").value = currentCount;
           }
         }
       } catch (e) {}
@@ -523,46 +461,37 @@
 
     function saveCachedSettings() {
       try {
-        const settings = {
+        localStorage.setItem(SETTINGS_KEY, JSON.stringify({
           selectedUnits: Array.from(selectedUnits),
           count: currentCount
-        };
-        localStorage.setItem(SETTINGS_KEY, JSON.stringify(settings));
+        }));
       } catch (e) {}
     }
 
+    /* ---------- タブ切り替え ---------- */
     function switchTab(tab) {
       document.querySelectorAll(".nav-tab").forEach(t => t.classList.remove("active"));
       document.getElementById(`tab-${tab}`).classList.add("active");
-
-      document.getElementById("screen-home").style.display = tab === "home" ? "block" : "none";
-      document.getElementById("screen-check").style.display = tab === "check" ? "block" : "none";
+      document.getElementById("screen-home").style.display    = tab === "home"    ? "block" : "none";
+      document.getElementById("screen-check").style.display   = tab === "check"   ? "block" : "none";
       document.getElementById("screen-history").style.display = tab === "history" ? "block" : "none";
-
-      if (tab === "home") updateProgressDisplay();
-      if (tab === "check") renderCheckList();
+      if (tab === "home")    updateProgressDisplay();
+      if (tab === "check")   renderCheckList();
       if (tab === "history") renderHistoryList();
     }
 
-    function getMasteryData() {
-      try {
-        const raw = localStorage.getItem(MASTERY_KEY);
-        return raw ? JSON.parse(raw) : {};
-      } catch (e) {
-        return {};
-      }
+    /* ---------- マスタリーデータ ---------- */
+    function getMastery() {
+      try { return JSON.parse(localStorage.getItem(MASTERY_KEY)) || {}; } catch(e) { return {}; }
+    }
+    function saveMastery(data) {
+      try { localStorage.setItem(MASTERY_KEY, JSON.stringify(data)); } catch(e) {}
     }
 
-    function saveMasteryData(data) {
-      try {
-        localStorage.setItem(MASTERY_KEY, JSON.stringify(data));
-      } catch (e) {}
-    }
-
+    /* ---------- 単元グリッド ---------- */
     function renderUnitGrid() {
       const container = document.getElementById("unit-grid-container");
       container.innerHTML = "";
-
       KANJI_UNITS.forEach(u => {
         const isSel = selectedUnits.has(u.key);
         const btn = document.createElement("button");
@@ -584,146 +513,117 @@
 
     function selectAllUnits() {
       KANJI_UNITS.forEach(u => selectedUnits.add(u.key));
-      renderUnitGrid();
-      updateSelectedCountLabel();
-      updateProgressDisplay();
-      saveCachedSettings();
+      renderUnitGrid(); updateSelectedCountLabel(); updateProgressDisplay(); saveCachedSettings();
     }
 
     function clearAllUnits() {
       selectedUnits.clear();
-      renderUnitGrid();
-      updateSelectedCountLabel();
-      updateProgressDisplay();
-      saveCachedSettings();
+      renderUnitGrid(); updateSelectedCountLabel(); updateProgressDisplay(); saveCachedSettings();
     }
 
     function updateSelectedCountLabel() {
-      const pool = getFilteredPool();
-      document.getElementById("selected-units-count").textContent = `${selectedUnits.size}単元 (${pool.length}語) 選択中`;
+      const pool = getPool();
+      document.getElementById("selected-units-count").textContent = `${selectedUnits.size}単元 / ${pool.length}語 選択中`;
     }
 
+    /* ---------- 問題数設定 ---------- */
     function setCount(cnt) {
       currentCount = cnt;
-      document.querySelectorAll("#count-chips .chip").forEach(c => {
-        c.classList.toggle("active", c.dataset.count == cnt);
-      });
+      document.querySelectorAll("#count-chips .chip").forEach(c => c.classList.toggle("active", c.dataset.count == cnt));
+      if (typeof cnt === "number") document.getElementById("count-custom-input").value = cnt;
+      else document.getElementById("count-custom-input").value = "";
       saveCachedSettings();
     }
 
-    function getFilteredPool() {
-      if (selectedUnits.size === 0) return [];
-      return KANJI_DATA.filter(d => selectedUnits.has(d.unitKey));
+    function setCountCustom(val) {
+      const n = parseInt(val, 10);
+      if (!isNaN(n) && n >= 1) {
+        currentCount = n;
+        document.querySelectorAll("#count-chips .chip").forEach(c => c.classList.remove("active"));
+      }
+      saveCachedSettings();
     }
 
+    /* ---------- プール取得 ---------- */
+    function getPool() {
+      return selectedUnits.size === 0 ? [] : KANJI_DATA.filter(d => selectedUnits.has(d.unitKey));
+    }
+
+    /* ---------- 進捗バー ---------- */
     function updateProgressDisplay() {
-      const pool = getFilteredPool();
-      const mastery = getMasteryData();
-      if (pool.length === 0) {
+      const pool = getPool();
+      const mastery = getMastery();
+      const total = pool.length;
+      if (total === 0) {
         document.getElementById("progress-text").textContent = "単元を選択してください";
         document.getElementById("progress-fill").style.width = "0%";
         return;
       }
-
-      let passedCount = 0;
-      pool.forEach(d => {
-        if (mastery[d.id] && mastery[d.id].passed === true) {
-          passedCount++;
-        }
-      });
-
-      const percent = Math.round((passedCount / pool.length) * 100);
-      document.getElementById("progress-text").textContent = `${passedCount} / ${pool.length} 語 クリア (${percent}%)`;
-      document.getElementById("progress-fill").style.width = `${percent}%`;
-
-      const remaining = pool.length - passedCount;
-      if (remaining === 0) {
-        document.getElementById("progress-sub-text").innerHTML = "🎉 <b>全問クリア達成！おめでとうございます！</b>";
-      } else {
-        document.getElementById("progress-sub-text").textContent = `残り ${remaining} 語が未クリアです（明日はこの中から出題されます）。`;
-      }
+      const passed = pool.filter(d => mastery[d.id] && mastery[d.id].passed).length;
+      const pct = Math.round((passed / total) * 100);
+      document.getElementById("progress-text").textContent = `${passed} / ${total} 語 クリア (${pct}%)`;
+      document.getElementById("progress-fill").style.width = `${pct}%`;
+      const remaining = total - passed;
+      document.getElementById("progress-sub-text").textContent =
+        remaining === 0
+          ? "🎉 全問クリア達成！おめでとうございます！"
+          : `残り ${remaining} 語が未クリアです（次回はこの中から出題されます）。`;
     }
 
-    // =========================================================
-    // 今日の10問 自動選出ロジック
-    // 「前日以前にできた（passed）チェックが入っていないもの」だけから選出
-    // =========================================================
+    /* ---------- 今日の問題を選出 ---------- */
     function generateDailySet(alertIfEmpty = true) {
-      const pool = getFilteredPool();
-      if (pool.length === 0) {
-        if (alertIfEmpty) alert("単元を1つ以上選択してください。");
-        return;
+      const pool = getPool();
+      if (pool.length === 0) { if (alertIfEmpty) alert("単元を1つ以上選択してください。"); return; }
+
+      const mastery = getMastery();
+      let unpassed = pool.filter(d => !mastery[d.id] || !mastery[d.id].passed);
+
+      if (unpassed.length === 0) {
+        if (alertIfEmpty) alert("🎉 選択単元の漢字はすべてクリア済み！全問からランダムで出題します。");
+        unpassed = [...pool].sort(() => Math.random() - 0.5);
       }
 
-      const mastery = getMasteryData();
+      const targetCount = currentCount === "all"
+        ? unpassed.length
+        : Math.min(parseInt(currentCount, 10) || 10, unpassed.length);
 
-      // 前日以前に「できた（passed）」チェックが入っていない問題だけを抽出
-      const unpassedList = pool.filter(d => {
-        return !mastery[d.id] || mastery[d.id].passed !== true;
-      });
-
-      if (unpassedList.length === 0) {
-        if (alertIfEmpty) {
-          alert("🎉 素晴らしい！選択された単元の漢字はすべて「できた」になっています！\n復習のため、全問からランダムで10問作成します。");
-        }
-        currentSet = [...pool].sort(() => Math.random() - 0.5).slice(0, currentCount === "all" ? pool.length : parseInt(currentCount, 10));
-      } else {
-        const targetCount = currentCount === "all" ? unpassedList.length : Math.min(parseInt(currentCount, 10), unpassedList.length);
-        currentSet = unpassedList.slice(0, targetCount);
-      }
-
+      currentSet = unpassed.slice(0, targetCount);
       currentResults = {};
-      currentSet.forEach(item => {
-        currentResults[item.id] = "ok"; // デフォルトは「できた」
-      });
+      currentSet.forEach(item => { currentResults[item.id] = "ok"; });
     }
 
     function generateDailySetAndPrint() {
       generateDailySet(true);
-      if (currentSet.length > 0) {
-        printSinglePage();
-      }
+      if (currentSet.length > 0) printSinglePage();
     }
 
+    /* ---------- 採点リスト ---------- */
     function renderCheckList() {
       const container = document.getElementById("check-list-container");
+      if (currentSet.length === 0) generateDailySet(false);
       if (currentSet.length === 0) {
-        generateDailySet(false);
-      }
-
-      if (currentSet.length === 0) {
-        container.innerHTML = "<p style='text-align:center; padding:20px; color:#64748b;'>問題がありません。「今日の10問を印刷」してください。</p>";
+        container.innerHTML = "<p style='text-align:center;padding:20px;color:#64748b;'>問題がありません。「① 印刷・問題設定」から問題を作成してください。</p>";
         return;
       }
-
       container.innerHTML = "";
       currentSet.forEach((item, index) => {
         const res = currentResults[item.id] || "ok";
         const div = document.createElement("div");
         div.className = `check-item ${res === "ok" ? "is-correct" : "is-wrong"}`;
         div.id = `check-item-${item.id}`;
-
         div.innerHTML = `
-          <div class="check-head">
-            <span>第 ${index + 1} 問</span>
-            <span>${item.unitKey}</span>
-          </div>
+          <div class="check-head"><span>第 ${index + 1} 問</span><span>${item.unitKey}</span></div>
           <div class="check-kana-text">${item.kana}</div>
           <div class="check-mean-text">💡 ${item.mean}</div>
           <div class="check-ans-box">
-            <span style="font-size:0.75rem; color:#64748b; font-weight:bold;">正解: </span>
+            <span style="font-size:0.75rem;color:#64748b;font-weight:bold;">正解: </span>
             <span class="check-ans-word">${item.word}</span>
-            <span style="font-size:0.75rem; color:#dc2626; margin-left:8px;">⚠️ ${item.point}</span>
+            <span style="font-size:0.75rem;color:#dc2626;margin-left:8px;">⚠️ ${item.point}</span>
           </div>
           <div class="toggle-row">
-            <button class="toggle-btn btn-ok ${res === "ok" ? "active" : ""}" onclick="setResult('${item.id}', 'ok')">
-              ⭕ できた（クリア）
-            </button>
-            <button class="toggle-btn btn-ng ${res === "ng" ? "active" : ""}" onclick="setResult('${item.id}', 'ng')">
-              ❌ できなかった（明日へ）
-            </button>
-          </div>
-        `;
+            <button class="toggle-btn btn-ok ${res === "ok" ? "active" : ""}" onclick="setResult('${item.id}', 'ok')">⭕ できた（クリア）</button>
+            <button class="toggle-btn btn-ng ${res === "ng" ? "active" : ""}" onclick="setResult('${item.id}', 'ng')">❌ できなかった（明日へ）</button>
+          </div>`;
         container.appendChild(div);
       });
     }
@@ -739,165 +639,125 @@
       }
     }
 
-    function markAllCorrect() {
-      currentSet.forEach(item => setResult(item.id, "ok"));
-    }
+    function markAllCorrect() { currentSet.forEach(item => setResult(item.id, "ok")); }
 
     function saveCheckResults() {
-      const mastery = getMasteryData();
+      const mastery = getMastery();
       const todayStr = new Date().toISOString().split("T")[0];
-      let okCount = 0;
-      let ngCount = 0;
-
+      let okCount = 0, ngCount = 0;
       currentSet.forEach(item => {
         const res = currentResults[item.id] || "ok";
-        if (res === "ok") {
-          okCount++;
-          mastery[item.id] = { passed: true, lastDate: todayStr };
-        } else {
-          ngCount++;
-          mastery[item.id] = { passed: false, lastDate: todayStr };
-        }
+        if (res === "ok") { okCount++; mastery[item.id] = { passed: true, lastDate: todayStr }; }
+        else { ngCount++; mastery[item.id] = { passed: false, lastDate: todayStr }; }
       });
-
-      saveMasteryData(mastery);
+      saveMastery(mastery);
       updateProgressDisplay();
-
-      alert(`🎉 判定結果を保存しました！\n・できた: ${okCount} 語（次回以降は除外）\n・できなかった: ${ngCount} 語（明日また出題）\n\n明日は残りの未クリア問題から10問が出題されます！`);
+      alert(`🎉 保存しました！\nできた: ${okCount} 語（次回除外）\nできなかった: ${ngCount} 語（明日も出題）`);
       switchTab("home");
     }
 
+    /* ---------- 進捗一覧 ---------- */
     function renderHistoryList() {
-      const pool = getFilteredPool();
-      const mastery = getMasteryData();
+      const pool = getPool();
+      const mastery = getMastery();
       const container = document.getElementById("history-list-container");
-
-      if (pool.length === 0) {
-        container.innerHTML = "<p style='text-align:center; padding:20px; color:#64748b;'>単元を選択してください。</p>";
-        return;
-      }
-
+      if (pool.length === 0) { container.innerHTML = "<p style='text-align:center;padding:20px;color:#64748b;'>単元を選択してください。</p>"; return; }
       container.innerHTML = "";
       pool.forEach(it => {
-        const m = mastery[it.id];
-        const isPassed = m && m.passed === true;
-
+        const isPassed = mastery[it.id] && mastery[it.id].passed === true;
         const div = document.createElement("div");
         div.className = "history-row";
         div.innerHTML = `
           <div>
-            <div style="font-size:0.8rem; color:#64748b;">${it.kana} (${it.unitKey})</div>
-            <div style="font-size:1.15rem; font-weight:bold; color:#0f172a;">${it.word}</div>
-            <div style="font-size:0.75rem; color:#dc2626;">⚠️ ${it.point}</div>
+            <div style="font-size:0.8rem;color:#64748b;">${it.kana} (${it.unitKey})</div>
+            <div style="font-size:1.1rem;font-weight:bold;">${it.word}</div>
+            <div style="font-size:0.75rem;color:#dc2626;">⚠️ ${it.point}</div>
           </div>
-          <div>
-            <span class="${isPassed ? 'status-badge-passed' : 'status-badge-unpassed'}">
-              ${isPassed ? '⭕ クリア済み' : '❌ 未クリア'}
-            </span>
-          </div>
-        `;
+          <span class="${isPassed ? 'status-badge-passed' : 'status-badge-unpassed'}">${isPassed ? '⭕ クリア済み' : '❌ 未クリア'}</span>`;
         container.appendChild(div);
       });
     }
 
     function clearHistoryData() {
-      if (confirm("これまでのクリア履歴をすべてリセットしますか？")) {
+      if (confirm("クリア履歴をすべてリセットしますか？")) {
         localStorage.removeItem(MASTERY_KEY);
-        alert("リセットしました。全問が未クリア状態になりました。");
+        alert("リセットしました。");
         updateProgressDisplay();
         renderHistoryList();
       }
     }
 
-    // =========================================================
-    // A4縦 1枚印刷（上段：テスト ＆ 下段：練習マス目）
-    // =========================================================
+    /* =========================================================
+       印刷レンダラー
+       上段：テスト欄 ／ 下段：なぞり＋練習マス目
+       行は必ず page-break-inside: avoid で切れない
+       ========================================================= */
     function printSinglePage() {
-      const printRegion = document.getElementById("print-region");
       const todayStr = new Date().toLocaleDateString("ja-JP", { year: "numeric", month: "long", day: "numeric" });
       const unitNames = Array.from(selectedUnits).join("・") || "全単元";
+      const n = currentSet.length;
 
-      // 上段テスト欄（2列）
-      const half = Math.ceil(currentSet.length / 2);
-      const leftItems = currentSet.slice(0, half);
-      const rightItems = currentSet.slice(half);
-
-      const leftHtml = leftItems.map((it, idx) => `
+      /* 上段テスト欄（2列） */
+      const half = Math.ceil(n / 2);
+      const makeTestItem = (it, idx) => `
         <div class="test-item">
           <div class="test-q-text"><b>${idx + 1}.</b> ${it.kana} <span class="test-hint">(${it.mean})</span></div>
           <div class="test-ans-box"></div>
-        </div>
-      `).join("");
+        </div>`;
+      const leftHtml  = currentSet.slice(0, half).map((it, i) => makeTestItem(it, i)).join("");
+      const rightHtml = currentSet.slice(half).map((it, i) => makeTestItem(it, half + i)).join("");
 
-      const rightHtml = rightItems.map((it, idx) => `
-        <div class="test-item">
-          <div class="test-q-text"><b>${half + idx + 1}.</b> ${it.kana} <span class="test-hint">(${it.mean})</span></div>
-          <div class="test-ans-box"></div>
-        </div>
-      `).join("");
-
-      // 下段練習マス目欄
+      /* 下段 練習マス目 */
       const practiceRowsHtml = currentSet.map((it, idx) => `
         <tr class="p-row">
-          <td class="p-no-td">${idx + 1}</td>
-          <td class="p-word-td">
+          <td class="p-no-td" style="width:4%;">${idx + 1}</td>
+          <td class="p-word-td" style="width:22%;">
             <div class="p-sample-word">${it.word}</div>
             <div class="p-kana-sub">${it.kana}</div>
           </td>
-          <td class="p-box-td"><div class="p-grid-cell"><span class="p-trace-txt">${it.word}</span></div></td>
-          <td class="p-box-td"><div class="p-grid-cell"></div></td>
-          <td class="p-box-td"><div class="p-grid-cell"></div></td>
-          <td class="p-box-td"><div class="p-grid-cell"></div></td>
-          <td class="p-box-td"><div class="p-grid-cell"></div></td>
-        </tr>
-      `).join("");
+          <td class="p-box-td" style="width:15%;"><div class="p-grid-cell"><span class="p-trace-txt">${it.word}</span></div></td>
+          <td class="p-box-td" style="width:15%;"><div class="p-grid-cell"></div></td>
+          <td class="p-box-td" style="width:15%;"><div class="p-grid-cell"></div></td>
+          <td class="p-box-td" style="width:15%;"><div class="p-grid-cell"></div></td>
+          <td class="p-box-td" style="width:14%;"><div class="p-grid-cell"></div></td>
+        </tr>`).join("");
 
-      printRegion.innerHTML = `
-        <div class="page-container">
+      document.getElementById("print-region").innerHTML = `
+        <div class="p-head">
           <div>
-            <div class="p-head">
-              <div>
-                <div class="p-title">中学受験 社会 漢字テスト＆練習プリント（今日の10問）</div>
-              </div>
-              <div class="p-meta">
-                <div>日付: <span class="p-line">${todayStr}</span></div>
-                <div>氏名: <span class="p-line"></span></div>
-                <div>得点: <span class="p-line" style="min-width:40px;">　 / ${currentSet.length}</span></div>
-              </div>
-            </div>
-
-            <!-- ① 上段：テスト欄 -->
-            <div class="test-section">
-              <div class="section-title">① まずテストしてみよう（ひらがなを正しい漢字で書く）</div>
-              <div class="test-grid">
-                <div>${leftHtml}</div>
-                <div>${rightHtml}</div>
-              </div>
-            </div>
+            <div class="p-title">中学受験 社会 漢字テスト＆練習プリント（${n}問）</div>
+            <div style="font-size:8pt;color:#555;margin-top:1px;">範囲: ${unitNames}</div>
           </div>
-
-          <!-- ② 下段：練習マス目欄 -->
-          <div class="practice-section">
-            <div class="section-title">② お手本を見て練習しよう（なぞり書き ＋ 4回練習マス）</div>
-            <table class="practice-table">
-              <thead>
-                <tr>
-                  <th style="width:5%;">No</th>
-                  <th style="width:25%;">お手本（漢字）</th>
-                  <th style="width:14%;">① なぞり</th>
-                  <th style="width:14%;">② 練習</th>
-                  <th style="width:14%;">③ 練習</th>
-                  <th style="width:14%;">④ 練習</th>
-                  <th style="width:14%;">⑤ 練習</th>
-                </tr>
-              </thead>
-              <tbody>
-                ${practiceRowsHtml}
-              </tbody>
-            </table>
+          <div class="p-meta">
+            <div>日付: <span class="p-line">${todayStr}</span></div>
+            <div>氏名: <span class="p-line"></span></div>
+            <div>得点: <span class="p-line" style="min-width:38px;"> / ${n}</span></div>
           </div>
         </div>
-      `;
+
+        <div class="test-section">
+          <div class="section-title">① まずテストしてみよう（ひらがなを正しい漢字で書く）</div>
+          <div class="test-grid">
+            <div>${leftHtml}</div>
+            <div>${rightHtml}</div>
+          </div>
+        </div>
+
+        <div class="section-title" style="margin-top:8px;">② お手本を見て練習しよう（なぞり書き ＋ 4回練習マス）</div>
+        <table class="practice-table">
+          <thead>
+            <tr>
+              <th style="width:4%;">No</th>
+              <th style="width:22%;">お手本</th>
+              <th style="width:15%;">① なぞり</th>
+              <th style="width:15%;">② 練習</th>
+              <th style="width:15%;">③ 練習</th>
+              <th style="width:15%;">④ 練習</th>
+              <th style="width:14%;">⑤ 練習</th>
+            </tr>
+          </thead>
+          <tbody>${practiceRowsHtml}</tbody>
+        </table>`;
 
       window.print();
     }
