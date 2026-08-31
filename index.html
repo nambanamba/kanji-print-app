@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <title>社会 漢字書き取り特訓 - 苦手復習＆5回練習ドリル</title>
+  <title>社会 漢字書き取り特訓 - 毎日10問クリアドリル</title>
   <style>
     :root {
       --primary: #2563eb;
@@ -29,7 +29,7 @@
     }
 
     body {
-      font-family: "Hiragino Kaku Gothic ProN", "Yu Gothic", "Meiryo", -apple-system, sans-serif;
+      font-family: "Hiragino Kaku Gothic ProN", "Yu Gothic", "Meiryo", sans-serif;
       background-color: var(--bg);
       color: var(--text);
       line-height: 1.5;
@@ -52,6 +52,7 @@
       padding: 14px;
     }
 
+    /* ナビゲーション */
     .nav-tabs {
       display: flex;
       background: #e2e8f0;
@@ -64,8 +65,8 @@
     .nav-tab {
       flex: 1;
       text-align: center;
-      padding: 9px 6px;
-      font-size: 0.88rem;
+      padding: 10px 6px;
+      font-size: 0.9rem;
       font-weight: 700;
       border-radius: 7px;
       cursor: pointer;
@@ -100,40 +101,39 @@
       justify-content: space-between;
     }
 
-    /* メインアクションバナー（明日の復習用） */
-    .action-banner {
-      background: #fff1f2;
-      border: 2px solid #fecdd3;
+    /* 進捗バー */
+    .progress-box {
+      background: #eff6ff;
+      border: 1.5px solid #bfdbfe;
       border-radius: var(--radius);
       padding: 14px;
       margin-bottom: 16px;
     }
-    .action-banner-title {
-      font-size: 0.95rem;
-      font-weight: 800;
-      color: #9f1239;
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-    }
-    .action-banner-desc {
-      font-size: 0.82rem;
-      color: #881337;
-      margin: 4px 0 10px 0;
-    }
-    .btn-weak-print {
-      width: 100%;
-      padding: 12px;
-      font-size: 0.95rem;
+    .progress-title {
+      font-size: 0.9rem;
       font-weight: 700;
-      color: #ffffff;
-      background: #e11d48;
-      border: none;
-      border-radius: 8px;
-      cursor: pointer;
-      box-shadow: 0 2px 6px rgba(225,29,72,0.25);
+      color: #1e3a8a;
+      display: flex;
+      justify-content: space-between;
+      margin-bottom: 6px;
     }
-    .btn-weak-print:hover { background: #be123c; }
+    .progress-bar-bg {
+      background: #dbeafe;
+      border-radius: 8px;
+      height: 12px;
+      overflow: hidden;
+    }
+    .progress-bar-fill {
+      background: var(--success);
+      height: 100%;
+      width: 0%;
+      transition: width 0.3s ease;
+    }
+    .progress-sub {
+      font-size: 0.78rem;
+      color: #475569;
+      margin-top: 6px;
+    }
 
     /* 単元セレクター */
     .unit-controls { display: flex; gap: 8px; margin-bottom: 10px; }
@@ -151,7 +151,7 @@
     .chip { padding: 7px 14px; border-radius: 16px; border: 1px solid var(--border); background: #ffffff; font-size: 0.85rem; font-weight: 600; cursor: pointer; }
     .chip.active { background: var(--primary); color: #ffffff; border-color: var(--primary); }
 
-    .btn-main { width: 100%; padding: 13px; font-size: 1rem; font-weight: 700; color: #ffffff; background: var(--primary); border: none; border-radius: var(--radius); cursor: pointer; margin-top: 14px; box-shadow: 0 2px 6px rgba(37,99,235,0.25); }
+    .btn-main { width: 100%; padding: 14px; font-size: 1.05rem; font-weight: 700; color: #ffffff; background: var(--primary); border: none; border-radius: var(--radius); cursor: pointer; margin-top: 16px; box-shadow: 0 2px 6px rgba(37,99,235,0.25); display: flex; align-items: center; justify-content: center; gap: 8px; }
     .btn-main:hover { background: var(--primary-dark); }
 
     .btn-row { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-top: 10px; }
@@ -171,10 +171,12 @@
     .toggle-btn { padding: 10px; font-size: 0.95rem; font-weight: 700; border-radius: 6px; border: 2px solid var(--border); background: #ffffff; cursor: pointer; }
     .toggle-btn.btn-ok.active { background: var(--success); color: #ffffff; border-color: var(--success); }
     .toggle-btn.btn-ng.active { background: var(--danger); color: #ffffff; border-color: var(--danger); }
-    .weak-item { display: flex; justify-content: space-between; align-items: center; padding: 10px 12px; border-bottom: 1px solid #f1f5f9; }
+    
+    .status-badge-passed { font-size: 0.72rem; font-weight: 700; padding: 3px 8px; border-radius: 10px; background: #dcfce7; color: #16a34a; }
+    .status-badge-unpassed { font-size: 0.72rem; font-weight: 700; padding: 3px 8px; border-radius: 10px; background: #fee2e2; color: #dc2626; }
 
     /* =========================================================
-       超頑丈な印刷専用スタイル（絶対に横溢れ・潰れしないレイアウト）
+       印刷専用スタイル（絶対に横溢れ・欠けしない頑丈レイアウト）
        ========================================================= */
     #print-region {
       display: none;
@@ -217,7 +219,6 @@
       .p-meta { display: flex; gap: 14px; font-size: 9pt; }
       .p-line { display: inline-block; border-bottom: 1px solid #000000; min-width: 60px; }
 
-      /* 1問ごとのブロック（A4にゆったり配置・途中で切れない） */
       .drill-block {
         border: 1.5px solid #222222;
         border-radius: 6px;
@@ -239,7 +240,6 @@
       .q-hint { font-size: 8pt; color: #444444; margin-bottom: 5px; }
       .q-point { color: #dc2626; font-weight: bold; margin-left: 6px; }
 
-      /* マス目テーブル */
       .grid-table {
         border-collapse: collapse;
         margin: 0;
@@ -262,7 +262,6 @@
         color: #1e3a8a;
       }
 
-      /* 正方形の練習マス */
       .box-td {
         width: 15mm;
         height: 7.2mm;
@@ -274,7 +273,6 @@
         padding: 0;
       }
 
-      /* 十字リーダー点線 */
       .box-td::before {
         content: "";
         position: absolute;
@@ -327,38 +325,37 @@
 
   <header>
     <h1>📝 社会 漢字書き取り特訓</h1>
-    <p>昨日できなかった問題だけを今日復習！中学入試頻出重要語マスター</p>
+    <p>できた問題は自動除外！未クリア問題から毎日10問ステップアップ</p>
   </header>
 
   <div class="container">
     
     <div class="nav-tabs">
-      <button class="nav-tab active" id="tab-home" onclick="switchTab('home')">プリント作成・印刷</button>
-      <button class="nav-tab" id="tab-check" onclick="switchTab('check')">〇✕採点・記録</button>
-      <button class="nav-tab" id="tab-history" onclick="switchTab('history')">苦手リスト</button>
+      <button class="nav-tab active" id="tab-home" onclick="switchTab('home')">① 今日の10問作成・印刷</button>
+      <button class="nav-tab" id="tab-check" onclick="switchTab('check')">② 採点・できたチェック</button>
+      <button class="nav-tab" id="tab-history" onclick="switchTab('history')">進捗一覧</button>
     </div>
 
     <!-- ① ホーム画面 -->
     <div id="screen-home">
 
-      <!-- 最優先：間違えた問題だけを印刷する特設バナー -->
-      <div class="action-banner">
-        <div class="action-banner-title">
-          <span>🔥 前回できなかった問題の復習</span>
-          <span id="banner-weak-badge" style="font-size:0.8rem; background:#fda4af; color:#881337; padding:2px 8px; border-radius:12px;">0問 該当</span>
+      <!-- 進捗サマリー -->
+      <div class="progress-box">
+        <div class="progress-title">
+          <span>🎯 学習進捗（クリア状況）</span>
+          <span id="progress-text">0 / 40 語 クリア</span>
         </div>
-        <div class="action-banner-desc">
-          昨日「✕（書けなかった）」とした問題だけを自動抽出して印刷します（できた問題は除外されます）。
+        <div class="progress-bar-bg">
+          <div class="progress-bar-fill" id="progress-fill"></div>
         </div>
-        <button class="btn-weak-print" onclick="generateAndPrintWeakOnly()">
-          🖨️ 前回できなかった問題だけを印刷（復習特訓）
-        </button>
+        <div class="progress-sub" id="progress-sub-text">
+          💡 「できた」のチェックが入った問題は明日以降自動的に除外されます。
+        </div>
       </div>
 
-      <!-- 通常のカスタム出題設定 -->
       <div class="card">
         <div class="card-title">
-          <span>1. 単元を選ぶ</span>
+          <span>1. 出題する単元</span>
           <span class="card-title-tag" id="selected-units-count">選択中</span>
         </div>
 
@@ -370,34 +367,26 @@
         <div class="unit-grid" id="unit-grid-container"></div>
 
         <div class="setting-group">
-          <div class="setting-label">2. 出題モード</div>
-          <div class="chip-row" id="mode-chips">
-            <button class="chip active" data-mode="weak-only" onclick="setMode('weak-only')">🔥 前回まちがえた問題のみ</button>
-            <button class="chip" data-mode="unattempted" onclick="setMode('unattempted')">🆕 まだやってない問題優先</button>
-            <button class="chip" data-mode="all-random" onclick="setMode('all-random')">🎲 全問からランダム</button>
-          </div>
-        </div>
-
-        <div class="setting-group">
-          <div class="setting-label">3. 出題語数</div>
+          <div class="setting-label">2. 今日の出題語数</div>
           <div class="chip-row" id="count-chips">
-            <button class="chip" data-count="4" onclick="setCount(4)">4語 (A4 1枚・ゆったり)</button>
-            <button class="chip active" data-count="8" onclick="setCount(8)">8語 (A4 2枚)</button>
-            <button class="chip" data-count="12" onclick="setCount(12)">12語 (A4 3枚)</button>
-            <button class="chip" data-count="all" onclick="setCount('all')">全該当語</button>
+            <button class="chip" data-count="5" onclick="setCount(5)">5語</button>
+            <button class="chip active" data-count="10" onclick="setCount(10)">10語 (標準)</button>
+            <button class="chip" data-count="15" onclick="setCount(15)">15語</button>
+            <button class="chip" data-count="20" onclick="setCount(20)">20語</button>
+            <button class="chip" data-count="all" onclick="setCount('all')">未クリア全問</button>
           </div>
         </div>
 
-        <button class="btn-main" onclick="generateCustomSet()">
-          🚀 今日の練習プリントを作成・画面で確認
+        <button class="btn-main" onclick="generateDailySetAndGo()">
+          🚀 今日の10問を作成する（未クリアから自動選出）
         </button>
 
         <div class="btn-row">
           <button class="btn-outline btn-print-primary" onclick="printCurrentSet('practice')">
-            🖨️ 練習用を印刷（お手本＆なぞり）
+            🖨️ 練習用プリントを印刷（お手本＆なぞり）
           </button>
           <button class="btn-outline btn-print-primary" onclick="printCurrentSet('test')">
-            🖨️ テスト用を印刷（お手本なし）
+            🖨️ テスト用プリントを印刷（お手本なし）
           </button>
         </div>
         <button class="btn-outline" style="width:100%; margin-top:8px; color:#c00000; border-color:#fca5a5;" onclick="printCurrentSet('answer')">
@@ -411,39 +400,38 @@
     <div id="screen-check" style="display: none;">
       <div class="card">
         <div class="card-title">
-          <span>今日の書き取り 採点・登録</span>
+          <span>今日の10問 採点・登録</span>
           <button class="btn-sm" style="background:#dcfce7; color:#16a34a; border-color:#86efac;" onclick="markAllCorrect()">
-            ✨ すべて書けた（〇）
+            ✨ すべてできた（〇）
           </button>
         </div>
         <p style="font-size: 0.83rem; color: var(--text-muted); margin-bottom: 14px;">
-          今日書けた問題は「⭕」、書けなかった問題は「❌」にしてください。<b>「❌」にした問題だけが明日自動的に出題されます。</b>
+          今日書けた問題は「⭕ できた」、書けなかった問題は「❌ できなかった」にしてください。<br>
+          <b>「⭕ できた」にした問題は次回以降出題されなくなります。</b>
         </p>
 
         <div id="check-list-container"></div>
 
         <button class="btn-main" style="background: var(--success);" onclick="saveCheckResults()">
-          💾 採点結果を保存する（明日へ引き継ぎ）
+          💾 今日の採点結果を保存する（次回へ反映）
         </button>
       </div>
     </div>
 
-    <!-- ③ 苦手履歴画面 -->
+    <!-- ③ 進捗一覧画面 -->
     <div id="screen-history" style="display: none;">
       <div class="card">
         <div class="card-title">
-          <span>現在まちがえたままの漢字（復習対象）</span>
-          <button class="btn-sm" style="background:#fee2e2; color:#dc2626; border-color:#fca5a5;" onclick="generateAndPrintWeakOnly()">
-            🖨️ 復習プリント印刷
-          </button>
+          <span>全問題のクリア状況一覧</span>
+          <button class="btn-sm" onclick="renderHistoryList()">🔄 更新</button>
         </div>
-        <div id="weak-list-container"></div>
+        <div id="history-list-container"></div>
       </div>
 
       <div class="card">
         <div class="card-title"><span>学習データ管理</span></div>
         <button class="btn-outline" style="color: var(--danger); border-color: #fca5a5;" onclick="clearHistoryData()">
-          🗑️ 学習履歴をリセット
+          🗑️ クリア履歴をリセット（最初からやり直す）
         </button>
       </div>
     </div>
@@ -456,21 +444,20 @@
   <script src="kanji-data.js"></script>
 
   <script>
-    const SETTINGS_KEY = "kanji_app_settings_cache_v5";
-    const HISTORY_KEY = "kanji_app_history_results_v5";
+    const SETTINGS_KEY = "kanji_app_settings_mastery_v1";
+    const MASTERY_KEY = "kanji_app_mastery_status_v1"; // 各問題のクリア状態 { [id]: { passed: true/false, lastDate: "..." } }
 
     let selectedUnits = new Set(["第1回", "第2回"]);
-    let currentMode = "weak-only";
-    let currentCount = 8;
+    let currentCount = 10;
     let currentSet = [];
     let currentResults = {};
 
     window.addEventListener("DOMContentLoaded", () => {
       loadCachedSettings();
       renderUnitGrid();
-      updateWeakBadge();
-      generateCustomSet(false);
+      updateProgressDisplay();
       updateSelectedCountLabel();
+      generateDailySet(false);
     });
 
     function loadCachedSettings() {
@@ -487,12 +474,6 @@
               c.classList.toggle("active", c.dataset.count == currentCount);
             });
           }
-          if (cached.mode) {
-            currentMode = cached.mode;
-            document.querySelectorAll("#mode-chips .chip").forEach(c => {
-              c.classList.toggle("active", c.dataset.mode == currentMode);
-            });
-          }
         }
       } catch (e) {}
     }
@@ -501,8 +482,7 @@
       try {
         const settings = {
           selectedUnits: Array.from(selectedUnits),
-          count: currentCount,
-          mode: currentMode
+          count: currentCount
         };
         localStorage.setItem(SETTINGS_KEY, JSON.stringify(settings));
       } catch (e) {}
@@ -516,8 +496,24 @@
       document.getElementById("screen-check").style.display = tab === "check" ? "block" : "none";
       document.getElementById("screen-history").style.display = tab === "history" ? "block" : "none";
 
+      if (tab === "home") updateProgressDisplay();
       if (tab === "check") renderCheckList();
       if (tab === "history") renderHistoryList();
+    }
+
+    function getMasteryData() {
+      try {
+        const raw = localStorage.getItem(MASTERY_KEY);
+        return raw ? JSON.parse(raw) : {};
+      } catch (e) {
+        return {};
+      }
+    }
+
+    function saveMasteryData(data) {
+      try {
+        localStorage.setItem(MASTERY_KEY, JSON.stringify(data));
+      } catch (e) {}
     }
 
     function renderUnitGrid() {
@@ -539,6 +535,7 @@
       else selectedUnits.add(key);
       renderUnitGrid();
       updateSelectedCountLabel();
+      updateProgressDisplay();
       saveCachedSettings();
     }
 
@@ -546,6 +543,7 @@
       KANJI_UNITS.forEach(u => selectedUnits.add(u.key));
       renderUnitGrid();
       updateSelectedCountLabel();
+      updateProgressDisplay();
       saveCachedSettings();
     }
 
@@ -553,13 +551,13 @@
       selectedUnits.clear();
       renderUnitGrid();
       updateSelectedCountLabel();
+      updateProgressDisplay();
       saveCachedSettings();
     }
 
     function updateSelectedCountLabel() {
       const pool = getFilteredPool();
       document.getElementById("selected-units-count").textContent = `${selectedUnits.size}単元 (${pool.length}語) 選択中`;
-      updateWeakBadge();
     }
 
     function setCount(cnt) {
@@ -570,117 +568,90 @@
       saveCachedSettings();
     }
 
-    function setMode(mode) {
-      currentMode = mode;
-      document.querySelectorAll("#mode-chips .chip").forEach(c => {
-        c.classList.toggle("active", c.dataset.mode == mode);
-      });
-      saveCachedSettings();
-    }
-
     function getFilteredPool() {
       if (selectedUnits.size === 0) return [];
       return KANJI_DATA.filter(d => selectedUnits.has(d.unitKey));
     }
 
-    function getHistory() {
-      try {
-        const raw = localStorage.getItem(HISTORY_KEY);
-        return raw ? JSON.parse(raw) : {};
-      } catch (e) {
-        return {};
-      }
-    }
-
-    function saveHistory(hist) {
-      try {
-        localStorage.setItem(HISTORY_KEY, JSON.stringify(hist));
-      } catch (e) {}
-    }
-
-    function updateWeakBadge() {
+    function updateProgressDisplay() {
       const pool = getFilteredPool();
-      const hist = getHistory();
-      const weakItems = pool.filter(d => {
-        const h = hist[d.id];
-        return h && h.lastResult === "ng";
+      const mastery = getMasteryData();
+      if (pool.length === 0) {
+        document.getElementById("progress-text").textContent = "単元を選択してください";
+        document.getElementById("progress-fill").style.width = "0%";
+        return;
+      }
+
+      let passedCount = 0;
+      pool.forEach(d => {
+        if (mastery[d.id] && mastery[d.id].passed === true) {
+          passedCount++;
+        }
       });
-      const badge = document.getElementById("banner-weak-badge");
-      if (badge) {
-        badge.textContent = `${weakItems.length}問 該当`;
+
+      const percent = Math.round((passedCount / pool.length) * 100);
+      document.getElementById("progress-text").textContent = `${passedCount} / ${pool.length} 語 クリア (${percent}%)`;
+      document.getElementById("progress-fill").style.width = `${percent}%`;
+
+      const remaining = pool.length - passedCount;
+      if (remaining === 0) {
+        document.getElementById("progress-sub-text").innerHTML = "🎉 <b>全問クリア達成！おめでとうございます！</b>";
+      } else {
+        document.getElementById("progress-sub-text").textContent = `残り ${remaining} 語が未クリアです（明日はこの中から出題されます）。`;
       }
     }
 
-    // ==========================================
-    // 動的選出ロジック
-    // ==========================================
-    function generateCustomSet(switchView = true) {
+    // =========================================================
+    // 今日の10問 自動選出ロジック
+    // 「前日以前にできた（〇）チェックが入っていないもの」だけから選出
+    // =========================================================
+    function generateDailySet(alertIfEmpty = true) {
       const pool = getFilteredPool();
       if (pool.length === 0) {
-        alert("単元を1つ以上選択してください。");
+        if (alertIfEmpty) alert("単元を1つ以上選択してください。");
         return;
       }
 
-      const hist = getHistory();
-      let list = [];
+      const mastery = getMasteryData();
 
-      if (currentMode === "weak-only") {
-        // 前回「✕」だった問題のみ（できた問題は完全除外）
-        list = pool.filter(d => {
-          const h = hist[d.id];
-          return h && h.lastResult === "ng";
-        });
-        if (list.length === 0) {
-          // 間違えた問題がなければ未挑戦の問題を提示
-          list = pool.filter(d => !hist[d.id] || hist[d.id].attempts === 0);
-          if (list.length === 0) {
-            alert("🎉 素晴らしい！選択された単元で間違えた問題はありません！全問正解しています。全問からランダムで復習します。");
-            list = [...pool];
-          }
+      // ★ 前日以前に「できた（passed）」チェックが入っていない問題だけを抽出
+      const unpassedList = pool.filter(d => {
+        return !mastery[d.id] || mastery[d.id].passed !== true;
+      });
+
+      if (unpassedList.length === 0) {
+        if (alertIfEmpty) {
+          alert("🎉 素晴らしい！選択された単元の漢字はすべて「できた」になっています！\n復習のため、全問からランダムで10問作成します。");
         }
-      } else if (currentMode === "unattempted") {
-        // 未挑戦優先
-        list = pool.filter(d => !hist[d.id] || hist[d.id].attempts === 0);
-        if (list.length < currentCount) {
-          const weak = pool.filter(d => hist[d.id] && hist[d.id].lastResult === "ng");
-          list = [...list, ...weak];
-        }
+        currentSet = [...pool].sort(() => Math.random() - 0.5).slice(0, currentCount === "all" ? pool.length : parseInt(currentCount, 10));
       } else {
-        list = [...pool].sort(() => Math.random() - 0.5);
+        // 未クリアの問題から指定語数分を選出
+        const targetCount = currentCount === "all" ? unpassedList.length : Math.min(parseInt(currentCount, 10), unpassedList.length);
+        currentSet = unpassedList.slice(0, targetCount);
       }
 
-      const targetCount = currentCount === "all" ? list.length : Math.min(parseInt(currentCount, 10), list.length);
-      currentSet = list.slice(0, targetCount);
       currentResults = {};
       currentSet.forEach(item => {
-        currentResults[item.id] = "ok";
+        currentResults[item.id] = "ok"; // デフォルトは「できた」
       });
-
-      if (switchView) switchTab("check");
     }
 
-    // 「前回できなかった問題だけを印刷」ワンタップ実行
-    function generateAndPrintWeakOnly() {
-      const pool = getFilteredPool();
-      const hist = getHistory();
-      const weakList = pool.filter(d => {
-        const h = hist[d.id];
-        return h && h.lastResult === "ng";
-      });
-
-      if (weakList.length === 0) {
-        alert("現在、前回間違えた問題（✕）はありません！すべて書けています！🎉");
-        return;
+    function generateDailySetAndGo() {
+      generateDailySet(true);
+      if (currentSet.length > 0) {
+        // 印刷ダイアログを起動
+        printCurrentSet('practice');
       }
-
-      currentSet = weakList;
-      printCurrentSet('practice');
     }
 
     function renderCheckList() {
       const container = document.getElementById("check-list-container");
       if (currentSet.length === 0) {
-        container.innerHTML = "<p style='text-align:center; padding:20px; color:#64748b;'>問題が選択されていません。「プリント作成」から作成してください。</p>";
+        generateDailySet(false);
+      }
+
+      if (currentSet.length === 0) {
+        container.innerHTML = "<p style='text-align:center; padding:20px; color:#64748b;'>問題がありません。「今日の10問を作成」してください。</p>";
         return;
       }
 
@@ -705,10 +676,10 @@
           </div>
           <div class="toggle-row">
             <button class="toggle-btn btn-ok ${res === "ok" ? "active" : ""}" onclick="setResult('${item.id}', 'ok')">
-              ⭕ 書けた（〇）
+              ⭕ できた（クリア）
             </button>
             <button class="toggle-btn btn-ng ${res === "ng" ? "active" : ""}" onclick="setResult('${item.id}', 'ng')">
-              ❌ 書けなかった（✕）
+              ❌ できなかった（明日へ持ち越し）
             </button>
           </div>
         `;
@@ -732,48 +703,44 @@
     }
 
     function saveCheckResults() {
-      const hist = getHistory();
+      const mastery = getMasteryData();
       const todayStr = new Date().toISOString().split("T")[0];
+      let okCount = 0;
       let ngCount = 0;
 
       currentSet.forEach(item => {
         const res = currentResults[item.id] || "ok";
-        if (res === "ng") ngCount++;
-
-        if (!hist[item.id]) {
-          hist[item.id] = { attempts: 0, correct: 0, lastResult: "none", lastDate: "" };
+        if (res === "ok") {
+          okCount++;
+          mastery[item.id] = { passed: true, lastDate: todayStr };
+        } else {
+          ngCount++;
+          mastery[item.id] = { passed: false, lastDate: todayStr };
         }
-        hist[item.id].attempts += 1;
-        if (res === "ok") hist[item.id].correct += 1;
-        hist[item.id].lastResult = res;
-        hist[item.id].lastDate = todayStr;
       });
 
-      saveHistory(hist);
-      updateWeakBadge();
-      alert(`🎉 採点結果を保存しました！\n書けなかった問題: ${ngCount} 語\n「✕（書けなかった）」にした問題は、明日【前回できなかった問題の復習】からそのまま印刷して復習できます！`);
+      saveMasteryData(mastery);
+      updateProgressDisplay();
+
+      alert(`🎉 採点結果を保存しました！\n・できた（クリア）: ${okCount} 語（次回以降は除外されます）\n・できなかった: ${ngCount} 語（明日また出題されます）\n\nお疲れ様でした！明日も頑張りましょう！`);
       switchTab("home");
     }
 
     function renderHistoryList() {
-      const hist = getHistory();
-      const container = document.getElementById("weak-list-container");
-      const weakItems = [];
+      const pool = getFilteredPool();
+      const mastery = getMasteryData();
+      const container = document.getElementById("history-list-container");
 
-      KANJI_DATA.forEach(d => {
-        const h = hist[d.id];
-        if (h && h.lastResult === "ng") {
-          weakItems.push({ ...d, hist: h });
-        }
-      });
-
-      if (weakItems.length === 0) {
-        container.innerHTML = "<p style='text-align:center; padding:20px; color:#16a34a; font-weight:600;'>現在、間違えたままの漢字はありません！すべて書けています！🎉</p>";
+      if (pool.length === 0) {
+        container.innerHTML = "<p style='text-align:center; padding:20px; color:#64748b;'>単元を選択してください。</p>";
         return;
       }
 
       container.innerHTML = "";
-      weakItems.forEach(it => {
+      pool.forEach(it => {
+        const m = mastery[it.id];
+        const isPassed = m && m.passed === true;
+
         const div = document.createElement("div");
         div.className = "weak-item";
         div.innerHTML = `
@@ -782,8 +749,10 @@
             <div style="font-size:1.15rem; font-weight:bold; color:#0f172a;">${it.word}</div>
             <div style="font-size:0.75rem; color:#dc2626;">⚠️ ${it.point}</div>
           </div>
-          <div style="font-size:0.75rem; font-weight:bold; padding:4px 8px; border-radius:10px; background:#fee2e2; color:#dc2626;">
-            直近: ✕ 未正解 (${it.hist.correct}/${it.hist.attempts})
+          <div>
+            <span class="${isPassed ? 'status-badge-passed' : 'status-badge-unpassed'}">
+              ${isPassed ? '⭕ クリア済み' : '❌ 未クリア'}
+            </span>
           </div>
         `;
         container.appendChild(div);
@@ -791,19 +760,19 @@
     }
 
     function clearHistoryData() {
-      if (confirm("これまでの学習履歴・正誤データをすべてリセットしますか？")) {
-        localStorage.removeItem(HISTORY_KEY);
-        alert("履歴をリセットしました。");
-        updateWeakBadge();
+      if (confirm("これまでのクリア状況をすべてリセットし、全問未クリア状態に戻しますか？")) {
+        localStorage.removeItem(MASTERY_KEY);
+        alert("リセットしました。全問が未クリア状態になりました。");
+        updateProgressDisplay();
         renderHistoryList();
       }
     }
 
     // =========================================================
-    // 超頑丈な印刷レンダラー（絶対に横溢れ・欠けしない）
+    // 印刷レンダラー
     // =========================================================
     function printCurrentSet(mode = 'practice') {
-      if (currentSet.length === 0) generateCustomSet(false);
+      if (currentSet.length === 0) generateDailySet(false);
       const printRegion = document.getElementById("print-region");
       const todayStr = new Date().toLocaleDateString("ja-JP", { year: "numeric", month: "long", day: "numeric" });
       const unitNames = Array.from(selectedUnits).join("・") || "全単元";
@@ -812,7 +781,6 @@
         const rawWord = it.word.split('/')[0].trim();
         const chars = Array.from(rawWord);
 
-        // お手本 / 解答行
         let sampleRowHtml = "";
         if (mode === 'practice') {
           const boxes = chars.map(c => `<td class="box-td sample-char">${c}</td>`).join("");
@@ -825,14 +793,12 @@
           sampleRowHtml = `<tr><th class="label-th">①</th>${emptyBoxes}</tr>`;
         }
 
-        // ①なぞり行
         let traceRowHtml = "";
         if (mode === 'practice') {
           const traceBoxes = chars.map(c => `<td class="box-td trace-char">${c}</td>`).join("");
           traceRowHtml = `<tr><th class="label-th">①なぞり</th>${traceBoxes}</tr>`;
         }
 
-        // ②〜⑤練習行
         let practiceRowsHtml = "";
         for (let r = 2; r <= 5; r++) {
           const emptyBoxes = chars.map(() => `<td class="box-td"></td>`).join("");
@@ -865,7 +831,7 @@
 
       const pageTitle = (mode === 'answer')
         ? '<span style="color:#c00000;">中学受験 社会 漢字書き取り特訓（模範解答）</span>'
-        : (mode === 'test' ? '中学受験 社会 漢字書き取り特訓（実戦テスト）' : '中学受験 社会 漢字書き取り特訓（苦手復習・5回練習）');
+        : (mode === 'test' ? '中学受験 社会 漢字書き取り特訓（実戦テスト）' : '中学受験 社会 漢字書き取り特訓（5回練習ドリル）');
 
       printRegion.innerHTML = `
         <div class="p-head">
