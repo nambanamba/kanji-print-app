@@ -1,0 +1,1074 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>社会 漢字特訓プリント - 中学受験マスター</title>
+  <style>
+    :root {
+      --primary: #2563eb;
+      --primary-dark: #1d4ed8;
+      --primary-light: #dbeafe;
+      --success: #16a34a;
+      --success-light: #dcfce7;
+      --danger: #dc2626;
+      --danger-light: #fee2e2;
+      --warning: #d97706;
+      --text: #1f2937;
+      --text-muted: #6b7280;
+      --bg: #f8fafc;
+      --card-bg: #ffffff;
+      --border: #e2e8f0;
+      --radius: 12px;
+      --shadow: 0 4px 6px -1px rgba(0,0,0,0.07), 0 2px 4px -2px rgba(0,0,0,0.05);
+      --shadow-lg: 0 10px 15px -3px rgba(0,0,0,0.08), 0 4px 6px -4px rgba(0,0,0,0.04);
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Hiragino Kaku Gothic ProN", "Yu Gothic", "Meiryo", sans-serif;
+      background-color: var(--bg);
+      color: var(--text);
+      line-height: 1.6;
+      padding-bottom: 60px;
+    }
+
+    /* ヘッダー */
+    header {
+      background: linear-gradient(135deg, #1e3a8a, #2563eb);
+      color: #ffffff;
+      padding: 20px 16px;
+      text-align: center;
+      box-shadow: var(--shadow);
+      position: sticky;
+      top: 0;
+      z-index: 100;
+    }
+
+    header h1 {
+      font-size: 1.35rem;
+      font-weight: 700;
+      letter-spacing: 0.03em;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+    }
+
+    header p {
+      font-size: 0.85rem;
+      opacity: 0.9;
+      margin-top: 4px;
+    }
+
+    /* メインコンテナ */
+    .container {
+      max-width: 800px;
+      margin: 0 auto;
+      padding: 16px;
+    }
+
+    /* ナビゲーションタブ */
+    .nav-tabs {
+      display: flex;
+      background: #e2e8f0;
+      padding: 4px;
+      border-radius: var(--radius);
+      margin-bottom: 20px;
+      gap: 4px;
+    }
+
+    .nav-tab {
+      flex: 1;
+      text-align: center;
+      padding: 10px 8px;
+      font-size: 0.9rem;
+      font-weight: 600;
+      border-radius: 8px;
+      cursor: pointer;
+      border: none;
+      background: transparent;
+      color: var(--text-muted);
+      transition: all 0.2s ease;
+    }
+
+    .nav-tab.active {
+      background: #ffffff;
+      color: var(--primary);
+      box-shadow: 0 2px 4px rgba(0,0,0,0.06);
+    }
+
+    /* カード */
+    .card {
+      background: var(--card-bg);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 20px;
+      margin-bottom: 20px;
+      box-shadow: var(--shadow);
+    }
+
+    .card-title {
+      font-size: 1.1rem;
+      font-weight: 700;
+      color: #1e293b;
+      margin-bottom: 12px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .card-title-tag {
+      font-size: 0.78rem;
+      padding: 3px 8px;
+      border-radius: 6px;
+      background: var(--primary-light);
+      color: var(--primary);
+      font-weight: 600;
+    }
+
+    /* 単元セレクター */
+    .unit-controls {
+      display: flex;
+      gap: 8px;
+      margin-bottom: 12px;
+    }
+
+    .btn-sm {
+      padding: 6px 12px;
+      font-size: 0.8rem;
+      font-weight: 600;
+      border-radius: 6px;
+      border: 1px solid var(--border);
+      background: #ffffff;
+      cursor: pointer;
+    }
+
+    .btn-sm:hover {
+      background: #f1f5f9;
+    }
+
+    .unit-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+      gap: 10px;
+    }
+
+    .unit-btn {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 12px 14px;
+      border-radius: 8px;
+      border: 2px solid var(--border);
+      background: #ffffff;
+      cursor: pointer;
+      font-size: 0.92rem;
+      font-weight: 600;
+      text-align: left;
+      transition: all 0.15s ease;
+    }
+
+    .unit-btn.selected {
+      border-color: var(--primary);
+      background: #eff6ff;
+      color: var(--primary-dark);
+    }
+
+    .unit-badge {
+      font-size: 0.75rem;
+      padding: 2px 7px;
+      border-radius: 12px;
+      background: #e2e8f0;
+      color: #475569;
+    }
+
+    .unit-btn.selected .unit-badge {
+      background: var(--primary);
+      color: #ffffff;
+    }
+
+    /* 設定グループ */
+    .setting-group {
+      margin-top: 16px;
+      padding-top: 16px;
+      border-top: 1px solid var(--border);
+    }
+
+    .setting-label {
+      font-size: 0.9rem;
+      font-weight: 600;
+      margin-bottom: 8px;
+      color: #334155;
+    }
+
+    .chip-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+    }
+
+    .chip {
+      padding: 8px 16px;
+      border-radius: 20px;
+      border: 1px solid var(--border);
+      background: #ffffff;
+      font-size: 0.88rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.15s ease;
+    }
+
+    .chip.active {
+      background: var(--primary);
+      color: #ffffff;
+      border-color: var(--primary);
+    }
+
+    /* アクションボタン */
+    .btn-main {
+      width: 100%;
+      padding: 14px 20px;
+      font-size: 1.05rem;
+      font-weight: 700;
+      color: #ffffff;
+      background: var(--primary);
+      border: none;
+      border-radius: var(--radius);
+      cursor: pointer;
+      box-shadow: 0 4px 10px rgba(37,99,235,0.25);
+      transition: all 0.2s ease;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      margin-top: 16px;
+    }
+
+    .btn-main:hover {
+      background: var(--primary-dark);
+      transform: translateY(-1px);
+    }
+
+    .btn-row {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+      margin-top: 12px;
+    }
+
+    .btn-outline {
+      padding: 12px 14px;
+      font-size: 0.92rem;
+      font-weight: 600;
+      color: var(--text);
+      background: #ffffff;
+      border: 1.5px solid var(--border);
+      border-radius: var(--radius);
+      cursor: pointer;
+      transition: all 0.15s ease;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+    }
+
+    .btn-outline:hover {
+      background: #f8fafc;
+      border-color: #cbd5e1;
+    }
+
+    .btn-print {
+      color: #1e3a8a;
+      border-color: #93c5fd;
+      background: #f0f7ff;
+    }
+
+    .btn-print:hover {
+      background: #e0f2fe;
+    }
+
+    /* 〇✕採点カード */
+    .check-item {
+      background: #ffffff;
+      border: 1.5px solid var(--border);
+      border-radius: var(--radius);
+      padding: 16px;
+      margin-bottom: 14px;
+      transition: all 0.2s ease;
+    }
+
+    .check-item.is-correct {
+      border-color: #86efac;
+      background: #f0fdf4;
+    }
+
+    .check-item.is-wrong {
+      border-color: #fca5a5;
+      background: #fef2f2;
+    }
+
+    .check-head {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 8px;
+    }
+
+    .check-no {
+      font-weight: 700;
+      font-size: 0.95rem;
+      color: var(--primary);
+    }
+
+    .check-source {
+      font-size: 0.78rem;
+      color: var(--text-muted);
+    }
+
+    .check-q {
+      font-size: 0.95rem;
+      line-height: 1.5;
+      margin-bottom: 12px;
+      color: #1e293b;
+    }
+
+    .check-word-box {
+      background: #f1f5f9;
+      border-radius: 8px;
+      padding: 10px 14px;
+      margin-bottom: 12px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .check-word-title {
+      font-size: 0.78rem;
+      font-weight: 600;
+      color: var(--text-muted);
+    }
+
+    .check-word-text {
+      font-size: 1.25rem;
+      font-weight: 700;
+      color: #0f172a;
+      letter-spacing: 0.05em;
+    }
+
+    .check-point-text {
+      font-size: 0.82rem;
+      color: #dc2626;
+      margin-top: 4px;
+    }
+
+    /* 〇✕トグルボタングループ */
+    .toggle-row {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+      margin-top: 10px;
+    }
+
+    .toggle-btn {
+      padding: 12px;
+      font-size: 1.1rem;
+      font-weight: 700;
+      border-radius: 8px;
+      border: 2px solid var(--border);
+      background: #ffffff;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      transition: all 0.15s ease;
+    }
+
+    .toggle-btn.btn-ok.active {
+      background: var(--success);
+      color: #ffffff;
+      border-color: var(--success);
+      box-shadow: 0 3px 8px rgba(22,163,74,0.25);
+    }
+
+    .toggle-btn.btn-ng.active {
+      background: var(--danger);
+      color: #ffffff;
+      border-color: var(--danger);
+      box-shadow: 0 3px 8px rgba(220,38,38,0.25);
+    }
+
+    /* 苦手リスト */
+    .weak-item {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 12px 14px;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .weak-item:last-child {
+      border-bottom: none;
+    }
+
+    .weak-word {
+      font-weight: 700;
+      font-size: 1.05rem;
+      color: #0f172a;
+    }
+
+    .weak-meta {
+      font-size: 0.8rem;
+      color: var(--text-muted);
+      margin-top: 2px;
+    }
+
+    .weak-badge {
+      font-size: 0.78rem;
+      font-weight: 700;
+      padding: 4px 10px;
+      border-radius: 12px;
+      background: var(--danger-light);
+      color: var(--danger);
+    }
+
+    /* 印刷領域スタイル */
+    #print-region {
+      display: none;
+    }
+
+    @media print {
+      body {
+        background: #ffffff !important;
+        padding: 0 !important;
+        margin: 0 !important;
+        font-size: 10.5pt;
+        color: #000000 !important;
+      }
+
+      header, .container {
+        display: none !important;
+      }
+
+      #print-region {
+        display: block !important;
+        width: 100% !important;
+        padding: 10mm 15mm;
+        box-sizing: border-box;
+      }
+
+      .print-header {
+        border-bottom: 2px solid #000000;
+        padding-bottom: 8px;
+        margin-bottom: 16px;
+        display: flex;
+        align-items: flex-end;
+        justify-content: space-between;
+      }
+
+      .print-title {
+        font-size: 16pt;
+        font-weight: bold;
+        letter-spacing: 0.05em;
+      }
+
+      .print-subtitle {
+        font-size: 10pt;
+        color: #333333;
+        margin-top: 4px;
+      }
+
+      .print-meta-box {
+        display: flex;
+        gap: 20px;
+        font-size: 10pt;
+      }
+
+      .print-field {
+        display: inline-block;
+        border-bottom: 1px solid #000000;
+        min-width: 100px;
+        padding-bottom: 2px;
+      }
+
+      .print-grid {
+        display: flex;
+        flex-direction: column;
+        gap: 14px;
+      }
+
+      .print-item {
+        page-break-inside: avoid;
+        border: 1px solid #cccccc;
+        border-radius: 6px;
+        padding: 10px 14px;
+        display: flex;
+        justify-content: space-between;
+        align-items: stretch;
+        gap: 16px;
+      }
+
+      .print-q-col {
+        flex: 1;
+      }
+
+      .print-q-head {
+        font-weight: bold;
+        font-size: 10.5pt;
+        margin-bottom: 4px;
+      }
+
+      .print-q-text {
+        font-size: 9.8pt;
+        line-height: 1.45;
+      }
+
+      .print-ans-box {
+        width: 140px;
+        min-height: 55px;
+        border: 1.5px solid #000000;
+        border-radius: 4px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        flex-shrink: 0;
+        background: #ffffff;
+      }
+
+      .print-ans-text {
+        font-size: 14pt;
+        font-weight: bold;
+        color: #c00000;
+      }
+
+      .print-point-note {
+        font-size: 8.5pt;
+        color: #666666;
+        margin-top: 4px;
+      }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- アプリヘッダー -->
+  <header>
+    <h1>📝 社会 漢字特訓マスター</h1>
+    <p>予習シリーズ5年下 準拠・厳選漢字プリント & 〇✕記録</p>
+  </header>
+
+  <!-- メインUI -->
+  <div class="container">
+    
+    <!-- ナビゲーション -->
+    <div class="nav-tabs">
+      <button class="nav-tab active" id="tab-home" onclick="switchTab('home')">プリント作成・印刷</button>
+      <button class="nav-tab" id="tab-check" onclick="switchTab('check')">〇✕採点・記録</button>
+      <button class="nav-tab" id="tab-history" onclick="switchTab('history')">苦手克服・履歴</button>
+    </div>
+
+    <!-- ① ホーム画面（設定 & 印刷） -->
+    <div id="screen-home">
+      <div class="card">
+        <div class="card-title">
+          <span>1. 単元を選ぶ</span>
+          <span class="card-title-tag" id="selected-units-count">2単元 選択中</span>
+        </div>
+
+        <div class="unit-controls">
+          <button class="btn-sm" onclick="selectAllUnits()">すべて選ぶ</button>
+          <button class="btn-sm" onclick="clearAllUnits()">クリア</button>
+        </div>
+
+        <div class="unit-grid" id="unit-grid-container">
+          <!-- JSで動的生成 -->
+        </div>
+
+        <div class="setting-group">
+          <div class="setting-label">2. 出題問題数</div>
+          <div class="chip-row" id="count-chips">
+            <button class="chip" data-count="5" onclick="setCount(5)">5問</button>
+            <button class="chip active" data-count="10" onclick="setCount(10)">10問</button>
+            <button class="chip" data-count="15" onclick="setCount(15)">15問</button>
+            <button class="chip" data-count="20" onclick="setCount(20)">20問</button>
+            <button class="chip" data-count="all" onclick="setCount('all')">全問</button>
+          </div>
+        </div>
+
+        <div class="setting-group">
+          <div class="setting-label">3. 出題モード</div>
+          <div class="chip-row" id="mode-chips">
+            <button class="chip active" data-mode="weak" onclick="setMode('weak')">🔥 苦手・未出題優先</button>
+            <button class="chip" data-mode="random" onclick="setMode('random')">🎲 ランダム</button>
+            <button class="chip" data-mode="order" onclick="setMode('order')">📖 出題順（番号順）</button>
+          </div>
+        </div>
+
+        <button class="btn-main" onclick="generateTodaySet()">
+          🚀 今日の特訓セットを作成する
+        </button>
+
+        <div class="btn-row">
+          <button class="btn-outline btn-print" onclick="printProblems()">
+            🖨️ 問題用紙を印刷 (A4)
+          </button>
+          <button class="btn-outline btn-print" onclick="printAnswers()">
+            📄 解答用紙を印刷 (A4)
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- ② 〇✕採点・記録画面 -->
+    <div id="screen-check" style="display: none;">
+      <div class="card">
+        <div class="card-title">
+          <span>今日の漢字 採点・登録</span>
+          <button class="btn-sm" style="background:#dcfce7; color:#16a34a; border-color:#86efac;" onclick="markAllCorrect()">
+            ✨ すべて〇にする
+          </button>
+        </div>
+        <p style="font-size: 0.85rem; color: var(--text-muted); margin-bottom: 16px;">
+          手書きしたプリントの丸つけ結果を登録してください。「〇」「✕」を押して保存すると、次回以降の苦手優先出題に反映されます。
+        </p>
+
+        <div id="check-list-container">
+          <!-- JSで動的生成 -->
+        </div>
+
+        <button class="btn-main" style="background: var(--success);" onclick="saveCheckResults()">
+          💾 採点結果を保存する
+        </button>
+      </div>
+    </div>
+
+    <!-- ③ 苦手克服・履歴画面 -->
+    <div id="screen-history" style="display: none;">
+      <div class="card">
+        <div class="card-title">
+          <span>苦手な漢字ワード</span>
+          <button class="btn-sm" style="background:#fee2e2; color:#dc2626; border-color:#fca5a5;" onclick="createWeakSetAndPrint()">
+            🖨️ 苦手特訓プリント作成
+          </button>
+        </div>
+        <div id="weak-list-container">
+          <!-- JSで動的生成 -->
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-title">
+          <span>学習データ管理</span>
+        </div>
+        <p style="font-size: 0.85rem; color: var(--text-muted); margin-bottom: 12px;">
+          ブラウザに保存されている学習履歴や〇✕データをリセットできます。
+        </p>
+        <button class="btn-outline" style="color: var(--danger); border-color: #fca5a5;" onclick="clearHistoryData()">
+          🗑️ 学習履歴をリセット
+        </button>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- 印刷用レンダリング領域 -->
+  <div id="print-region"></div>
+
+  <!-- データファイル読み込み -->
+  <script src="kanji-data.js"></script>
+
+  <!-- アプリロジック -->
+  <script>
+    // 状態管理
+    const STORAGE_KEY = "kanji_print_app_history_v1";
+    let selectedUnits = new Set(["第1回", "第2回"]);
+    let currentCount = 10;
+    let currentMode = "weak";
+    let currentSet = [];
+    let currentResults = {}; // { id: "ok" | "ng" }
+
+    // 初期化
+    window.addEventListener("DOMContentLoaded", () => {
+      renderUnitGrid();
+      generateTodaySet(false);
+      updateSelectedCountLabel();
+    });
+
+    // タブ切り替え
+    function switchTab(tab) {
+      document.querySelectorAll(".nav-tab").forEach(t => t.classList.remove("active"));
+      document.getElementById(`tab-${tab}`).classList.add("active");
+
+      document.getElementById("screen-home").style.display = tab === "home" ? "block" : "none";
+      document.getElementById("screen-check").style.display = tab === "check" ? "block" : "none";
+      document.getElementById("screen-history").style.display = tab === "history" ? "block" : "none";
+
+      if (tab === "check") {
+        renderCheckList();
+      } else if (tab === "history") {
+        renderHistoryList();
+      }
+    }
+
+    // 単元選択UIの描画
+    function renderUnitGrid() {
+      const container = document.getElementById("unit-grid-container");
+      container.innerHTML = "";
+
+      KANJI_UNITS.forEach(u => {
+        const isSel = selectedUnits.has(u.key);
+        const btn = document.createElement("button");
+        btn.className = `unit-btn ${isSel ? "selected" : ""}`;
+        btn.innerHTML = `
+          <span>${u.name}</span>
+          <span class="unit-badge">${u.count}題</span>
+        `;
+        btn.onclick = () => toggleUnit(u.key);
+        container.appendChild(btn);
+      });
+    }
+
+    function toggleUnit(key) {
+      if (selectedUnits.has(key)) {
+        selectedUnits.delete(key);
+      } else {
+        selectedUnits.add(key);
+      }
+      renderUnitGrid();
+      updateSelectedCountLabel();
+    }
+
+    function selectAllUnits() {
+      KANJI_UNITS.forEach(u => selectedUnits.add(u.key));
+      renderUnitGrid();
+      updateSelectedCountLabel();
+    }
+
+    function clearAllUnits() {
+      selectedUnits.clear();
+      renderUnitGrid();
+      updateSelectedCountLabel();
+    }
+
+    function updateSelectedCountLabel() {
+      const pool = getFilteredPool();
+      document.getElementById("selected-units-count").textContent = `${selectedUnits.size}単元 (${pool.length}題) 選択中`;
+    }
+
+    // 設定変更
+    function setCount(cnt) {
+      currentCount = cnt;
+      document.querySelectorAll("#count-chips .chip").forEach(c => {
+        c.classList.toggle("active", c.dataset.count == cnt);
+      });
+    }
+
+    function setMode(mode) {
+      currentMode = mode;
+      document.querySelectorAll("#mode-chips .chip").forEach(c => {
+        c.classList.toggle("active", c.dataset.mode == mode);
+      });
+    }
+
+    // フィルターされた問題プールの取得
+    function getFilteredPool() {
+      if (selectedUnits.size === 0) return [];
+      return KANJI_DATA.filter(d => selectedUnits.has(d.unitKey));
+    }
+
+    // ローカルストレージの履歴取得
+    function getHistory() {
+      try {
+        const raw = localStorage.getItem(STORAGE_KEY);
+        return raw ? JSON.parse(raw) : {};
+      } catch (e) {
+        return {};
+      }
+    }
+
+    function saveHistory(hist) {
+      try {
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(hist));
+      } catch (e) {}
+    }
+
+    // 今日の問題セットを生成
+    function generateTodaySet(switchView = true) {
+      const pool = getFilteredPool();
+      if (pool.length === 0) {
+        alert("単元を1つ以上選択してください。");
+        return;
+      }
+
+      const hist = getHistory();
+      let list = [...pool];
+
+      if (currentMode === "weak") {
+        // 苦手優先（直近✕ > 未出題 > 正解率低 > その他）
+        list.sort((a, b) => {
+          const hA = hist[a.id] || { attempts: 0, correct: 0, lastResult: "none" };
+          const hB = hist[b.id] || { attempts: 0, correct: 0, lastResult: "none" };
+
+          // 直近✕を最優先
+          const isWrongA = hA.lastResult === "ng" ? 1 : 0;
+          const isWrongB = hB.lastResult === "ng" ? 1 : 0;
+          if (isWrongA !== isWrongB) return isWrongB - isWrongA;
+
+          // 未出題を次に優先
+          if (hA.attempts === 0 && hB.attempts > 0) return -1;
+          if (hB.attempts === 0 && hA.attempts > 0) return 1;
+
+          // 正答率の低い順
+          const rateA = hA.attempts > 0 ? hA.correct / hA.attempts : 0;
+          const rateB = hB.attempts > 0 ? hB.correct / hB.attempts : 0;
+          if (rateA !== rateB) return rateA - rateB;
+
+          return Math.random() - 0.5;
+        });
+      } else if (currentMode === "random") {
+        list.sort(() => Math.random() - 0.5);
+      } else {
+        // 番号順（そのまま）
+      }
+
+      const targetCount = currentCount === "all" ? list.length : Math.min(parseInt(currentCount, 10), list.length);
+      currentSet = list.slice(0, targetCount);
+      currentResults = {};
+      currentSet.forEach(item => {
+        currentResults[item.id] = "ok"; // デフォルトは〇
+      });
+
+      if (switchView) {
+        switchTab("check");
+      }
+    }
+
+    // 〇✕採点リストの描画
+    function renderCheckList() {
+      const container = document.getElementById("check-list-container");
+      if (currentSet.length === 0) {
+        container.innerHTML = "<p style='text-align:center; padding:20px; color:#64748b;'>問題が選択されていません。「プリント作成」から作成してください。</p>";
+        return;
+      }
+
+      container.innerHTML = "";
+      currentSet.forEach((item, index) => {
+        const res = currentResults[item.id] || "ok";
+        const div = document.createElement("div");
+        div.className = `check-item ${res === "ok" ? "is-correct" : "is-wrong"}`;
+        div.id = `check-item-${item.id}`;
+
+        div.innerHTML = `
+          <div class="check-head">
+            <span class="check-no">第 ${index + 1} 問 【${item.unitKey}】</span>
+            <span class="check-source">${item.note}</span>
+          </div>
+          <div class="check-q">${item.q}</div>
+          <div class="check-word-box">
+            <div>
+              <div class="check-word-title">覚えるべき漢字（正解）</div>
+              <div class="check-word-text">${item.word}</div>
+              <div class="check-point-text">⚠️ ${item.point}</div>
+            </div>
+          </div>
+          <div class="toggle-row">
+            <button class="toggle-btn btn-ok ${res === "ok" ? "active" : ""}" onclick="setResult('${item.id}', 'ok')">
+              ⭕ 正解（〇）
+            </button>
+            <button class="toggle-btn btn-ng ${res === "ng" ? "active" : ""}" onclick="setResult('${item.id}', 'ng')">
+              ❌ まちがい（✕）
+            </button>
+          </div>
+        `;
+        container.appendChild(div);
+      });
+    }
+
+    function setResult(id, val) {
+      currentResults[id] = val;
+      const el = document.getElementById(`check-item-${id}`);
+      if (el) {
+        el.classList.toggle("is-correct", val === "ok");
+        el.classList.toggle("is-wrong", val === "ng");
+        el.querySelector(".btn-ok").classList.toggle("active", val === "ok");
+        el.querySelector(".btn-ng").classList.toggle("active", val === "ng");
+      }
+    }
+
+    function markAllCorrect() {
+      currentSet.forEach(item => {
+        setResult(item.id, "ok");
+      });
+    }
+
+    // 採点結果の保存
+    function saveCheckResults() {
+      const hist = getHistory();
+      const todayStr = new Date().toISOString().split("T")[0];
+      let okCount = 0;
+
+      currentSet.forEach(item => {
+        const res = currentResults[item.id] || "ok";
+        if (res === "ok") okCount++;
+
+        if (!hist[item.id]) {
+          hist[item.id] = { attempts: 0, correct: 0, lastResult: "none", lastDate: "" };
+        }
+        hist[item.id].attempts += 1;
+        if (res === "ok") {
+          hist[item.id].correct += 1;
+        }
+        hist[item.id].lastResult = res;
+        hist[item.id].lastDate = todayStr;
+      });
+
+      saveHistory(hist);
+      alert(`🎉 採点結果を保存しました！\n得点: ${okCount} / ${currentSet.length} 問 正解\n次回以降の出題に反映されます。`);
+      switchTab("history");
+    }
+
+    // 苦手リスト・履歴の描画
+    function renderHistoryList() {
+      const hist = getHistory();
+      const container = document.getElementById("weak-list-container");
+      const weakItems = [];
+
+      KANJI_DATA.forEach(d => {
+        const h = hist[d.id];
+        if (h && (h.lastResult === "ng" || (h.attempts > 0 && h.correct < h.attempts))) {
+          weakItems.push({ ...d, hist: h });
+        }
+      });
+
+      if (weakItems.length === 0) {
+        container.innerHTML = "<p style='text-align:center; padding:20px; color:#16a34a; font-weight:600;'>現在、苦手登録されている漢字はありません！素晴らしい！🎉</p>";
+        return;
+      }
+
+      container.innerHTML = "";
+      weakItems.forEach(it => {
+        const div = document.createElement("div");
+        div.className = "weak-item";
+        div.innerHTML = `
+          <div>
+            <div class="weak-word">${it.word} <small style="color:var(--text-muted); font-size:0.8rem;">(${it.unitKey})</small></div>
+            <div class="weak-meta">${it.point}</div>
+          </div>
+          <div class="weak-badge">直近: ${it.hist.lastResult === "ng" ? "✕ まちがい" : "〇 正解"} (${it.hist.correct}/${it.hist.attempts})</div>
+        `;
+        container.appendChild(div);
+      });
+    }
+
+    // 苦手特訓プリントの作成と印刷
+    function createWeakSetAndPrint() {
+      const hist = getHistory();
+      const weakList = KANJI_DATA.filter(d => {
+        const h = hist[d.id];
+        return h && h.lastResult === "ng";
+      });
+
+      if (weakList.length === 0) {
+        alert("直近で間違えた漢字がありません。通常のプリントを印刷してください。");
+        return;
+      }
+
+      currentSet = weakList;
+      printProblems();
+    }
+
+    function clearHistoryData() {
+      if (confirm("これまでの学習履歴・正誤データをすべてリセットしますか？")) {
+        localStorage.removeItem(STORAGE_KEY);
+        alert("履歴をリセットしました。");
+        renderHistoryList();
+      }
+    }
+
+    // ==========================================
+    // 印刷ロジック
+    // ==========================================
+    function printProblems() {
+      if (currentSet.length === 0) generateTodaySet(false);
+      const printRegion = document.getElementById("print-region");
+      const todayStr = new Date().toLocaleDateString("ja-JP", { year: "numeric", month: "long", day: "numeric" });
+      const unitNames = Array.from(selectedUnits).join("・") || "全単元";
+
+      let itemsHtml = currentSet.map((it, idx) => `
+        <div class="print-item">
+          <div class="print-q-col">
+            <div class="print-q-head">問 ${idx + 1}　<small>[${it.unitKey}] ${it.note}</small></div>
+            <div class="print-q-text">${it.q}</div>
+          </div>
+          <div class="print-ans-box"></div>
+        </div>
+      `).join("");
+
+      printRegion.innerHTML = `
+        <div class="print-header">
+          <div>
+            <div class="print-title">中学受験 社会 漢字特訓プリント（問題用紙）</div>
+            <div class="print-subtitle">範囲: ${unitNames}　｜　全 ${currentSet.length} 問</div>
+          </div>
+          <div class="print-meta-box">
+            <div>日付: <span class="print-field">${todayStr}</span></div>
+            <div>氏名: <span class="print-field"></span></div>
+            <div>得点: <span class="print-field" style="min-width:60px;">　　 / ${currentSet.length}</span></div>
+          </div>
+        </div>
+        <div class="print-grid">
+          ${itemsHtml}
+        </div>
+      `;
+
+      window.print();
+    }
+
+    function printAnswers() {
+      if (currentSet.length === 0) generateTodaySet(false);
+      const printRegion = document.getElementById("print-region");
+      const todayStr = new Date().toLocaleDateString("ja-JP", { year: "numeric", month: "long", day: "numeric" });
+      const unitNames = Array.from(selectedUnits).join("・") || "全単元";
+
+      let itemsHtml = currentSet.map((it, idx) => `
+        <div class="print-item">
+          <div class="print-q-col">
+            <div class="print-q-head">問 ${idx + 1}　<small>[${it.unitKey}] ${it.note}</small></div>
+            <div class="print-q-text">${it.q}</div>
+            <div class="print-point-note">⚠️ 漢字ポイント: ${it.point}</div>
+          </div>
+          <div class="print-ans-box">
+            <span class="print-ans-text">${it.word}</span>
+          </div>
+        </div>
+      `).join("");
+
+      printRegion.innerHTML = `
+        <div class="print-header">
+          <div>
+            <div class="print-title" style="color:#c00000;">中学受験 社会 漢字特訓プリント（模範解答）</div>
+            <div class="print-subtitle">範囲: ${unitNames}　｜　全 ${currentSet.length} 問</div>
+          </div>
+          <div class="print-meta-box">
+            <div>日付: <span class="print-field">${todayStr}</span></div>
+            <div>氏名: <span class="print-field"></span></div>
+            <div>得点: <span class="print-field" style="min-width:60px;">　　 / ${currentSet.length}</span></div>
+          </div>
+        </div>
+        <div class="print-grid">
+          ${itemsHtml}
+        </div>
+      `;
+
+      window.print();
+    }
+  </script>
+</body>
+</html>
