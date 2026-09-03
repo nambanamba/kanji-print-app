@@ -347,7 +347,7 @@
           <span id="progress-text">0 / 0 語 クリア</span>
         </div>
         <div class="progress-bar-bg"><div class="progress-bar-fill" id="progress-fill"></div></div>
-        <div class="progress-sub" id="progress-sub-text">💡 「できた」チェックが入っていない問題から自動選出されます。</div>
+        <div class="progress-sub" id="progress-sub-text">💡 まだやっていない語→間違えた語の順に、前から選ばれます。</div>
       </div>
 
       <div class="card">
@@ -380,9 +380,9 @@
           </div>
         </div>
 
-        <button class="btn-main" onclick="generateDailySetAndPrint()">
-          🖨️ 今日の問題を印刷する（A4 縦）
-        </button>
+        <button class="btn-main" onclick="printTestSheet()">🖨️ ① テストプリントを印刷（A4）</button>
+        <button class="btn-main" style="background:#0891b2; box-shadow:0 4px 10px rgba(8,145,178,0.3); margin-top:10px;" onclick="printPracticeSheet()">🖨️ ② 練習プリントを印刷（A4）</button>
+        <p style="font-size:0.76rem; color:var(--text-muted); margin-top:10px; text-align:center;">①②は同じ問題セットで印刷されます。<a href="#" onclick="rerollSet(); return false;" style="color:var(--primary);">🔄 別の問題に出題し直す</a></p>
       </div>
 
     </div>
@@ -550,6 +550,7 @@
     function toggleUnit(key) {
       if (selectedUnits.has(key)) selectedUnits.delete(key);
       else selectedUnits.add(key);
+      currentSet = [];
       renderUnitGrid();
       updateSelectedCountLabel();
       updateProgressDisplay();
@@ -558,11 +559,13 @@
 
     function selectAllUnits() {
       KANJI_UNITS.forEach(u => selectedUnits.add(u.key));
+      currentSet = [];
       renderUnitGrid(); updateSelectedCountLabel(); updateProgressDisplay(); saveCachedSettings();
     }
 
     function clearAllUnits() {
       selectedUnits.clear();
+      currentSet = [];
       renderUnitGrid(); updateSelectedCountLabel(); updateProgressDisplay(); saveCachedSettings();
     }
 
@@ -574,6 +577,7 @@
     /* ---------- 問題数設定 ---------- */
     function setCount(cnt) {
       currentCount = cnt;
+      currentSet = [];
       document.querySelectorAll("#count-chips .chip").forEach(c => c.classList.toggle("active", c.dataset.count == cnt));
       if (typeof cnt === "number") document.getElementById("count-custom-input").value = cnt;
       else document.getElementById("count-custom-input").value = "";
@@ -584,6 +588,7 @@
       const n = parseInt(val, 10);
       if (!isNaN(n) && n >= 1) {
         currentCount = n;
+        currentSet = [];
         document.querySelectorAll("#count-chips .chip").forEach(c => c.classList.remove("active"));
       }
       saveCachedSettings();
@@ -619,33 +624,30 @@
           : `残り ${remaining} 語が未クリアです（次回はこの中から優先して出題されます）。`;
     }
 
-    /* ---------- 今日の問題を選出：苦手優先（クイズ本体の復習ミックスと同じ考え方）
-       ①正解より失敗が多い語を、正解したのが一番昔のものから
-       ②残り（失敗経験がある語）も同様に、正解したのが一番昔のものから
-       ③一度も失敗していない語（順不同） ---------- */
+    /* ---------- 今日の問題を選出：未実施最優先、各グループ内はデータの並び順のまま
+       （ソート・シャッフルなし。ユーザー指示：2026-09-04）
+       ①未実施（一度も解いていない語）
+       ②苦手（間違い＞正解）
+       ③やや苦手（間違いはあるが正解の方が多い）
+       ④クリア済み（間違いなし） ---------- */
     function generateDailySet(alertIfEmpty = true) {
       const pool = getPool();
       if (pool.length === 0) { if (alertIfEmpty) alert("単元を1つ以上選択してください。"); return; }
 
       const mastery = getMastery();
-      const lastCorrectOf = d => { const s = mastery[d.id]; return (s && s.lastCorrectAt) ? s.lastCorrectAt : 0; };
-      const tier1 = [], tier2 = [], tier3 = [];
+      const tierNever = [], tierWorse = [], tierBetter = [], tierClean = [];
       pool.forEach(d => {
         const s = mastery[d.id];
-        const wrong = s ? (s.wrong||0) : 0, correct = s ? (s.correct||0) : 0;
-        if (wrong > correct) tier1.push(d);
-        else if (wrong > 0) tier2.push(d);
-        else tier3.push(d);
+        if (!s) { tierNever.push(d); return; }
+        const wrong = s.wrong||0, correct = s.correct||0;
+        if (wrong > correct) tierWorse.push(d);
+        else if (wrong > 0) tierBetter.push(d);
+        else tierClean.push(d);
       });
-      tier1.sort((a,b) => lastCorrectOf(a) - lastCorrectOf(b));
-      tier2.sort((a,b) => lastCorrectOf(a) - lastCorrectOf(b));
-      let ordered = tier1.concat(tier2).concat([...tier3].sort(() => Math.random() - 0.5));
+      let ordered = tierNever.concat(tierWorse).concat(tierBetter).concat(tierClean);
 
-      // 「すべてクリア済み」は本当に全語がクリア済み（クイズ済み）の場合だけ表示する。
-      // まだ一度も解いていない語がtier3に残っているだけの場合（wrong=correct=0）を
-      // 「クリア済み」と誤判定しないよう、pool全体のisClearedItemで判定する。
-      if (alertIfEmpty && pool.every(d => isClearedItem(d.id))) {
-        alert("🎉 選択単元の漢字はすべてクリア済み！全問からランダムで出題します。");
+      if (alertIfEmpty && tierNever.length === 0 && tierWorse.length === 0 && tierBetter.length === 0) {
+        alert("🎉 選択単元の漢字はすべてクリア済み！最初から順番に出題します。");
       }
 
       const targetCount = currentCount === "all"
@@ -656,10 +658,14 @@
       currentResults = {};
     }
 
-    function generateDailySetAndPrint() {
-      generateDailySet(true);
-      if (currentSet.length > 0) printSinglePage();
+    // ①②とも同じセットを使う。セットが未生成のときだけ新しく作る（単元・問題数を変えると自動でクリアされる）
+    function ensureSet() {
+      if (currentSet.length === 0) generateDailySet(true);
+      return currentSet.length > 0;
     }
+    function rerollSet() { generateDailySet(true); }
+    function printTestSheet()     { if (ensureSet()) renderTestPrint(); }
+    function printPracticeSheet() { if (ensureSet()) renderPracticePrint(); }
 
     /* ---------- 採点リスト：クイズ本体の問題一覧と同じ「タップした瞬間に確定・保存」方式。
        何度でも自由に〇↔✕を切りかえられ、押しなおしても二重にカウントされない ---------- */
@@ -758,16 +764,14 @@
     }
 
     /* =========================================================
-       印刷レンダラー
-       上段：テスト欄 ／ 下段：なぞり＋練習マス目
+       印刷レンダラー（①テスト欄／②なぞり＋練習マス目を別シートに分割）
        行は必ず page-break-inside: avoid で切れない
        ========================================================= */
-    function printSinglePage() {
+    // ① テストプリント（穴埋め・書き取りテストのみ）
+    function renderTestPrint() {
       const todayStr = new Date().toLocaleDateString("ja-JP", { year: "numeric", month: "long", day: "numeric" });
       const unitNames = Array.from(selectedUnits).join("・") || "全単元";
       const n = currentSet.length;
-
-      /* 上段テスト欄（2列） */
       const half = Math.ceil(n / 2);
       const makeTestItem = (it, idx) => `
         <div class="test-item">
@@ -777,7 +781,35 @@
       const leftHtml  = currentSet.slice(0, half).map((it, i) => makeTestItem(it, i)).join("");
       const rightHtml = currentSet.slice(half).map((it, i) => makeTestItem(it, half + i)).join("");
 
-      /* 下段 練習マス目 */
+      document.getElementById("print-region").innerHTML = `
+        <div class="p-head">
+          <div>
+            <div class="p-title">中学受験 社会 漢字テスト（${n}問）</div>
+            <div style="font-size:8pt;color:#555;margin-top:1px;">範囲: ${unitNames}</div>
+          </div>
+          <div class="p-meta">
+            <div>日付: <span class="p-line">${todayStr}</span></div>
+            <div>氏名: <span class="p-line"></span></div>
+            <div>得点: <span class="p-line" style="min-width:38px;"> / ${n}</span></div>
+          </div>
+        </div>
+
+        <div class="test-section">
+          <div class="section-title">ひらがなを正しい漢字で書きましょう</div>
+          <div class="test-grid">
+            <div>${leftHtml}</div>
+            <div>${rightHtml}</div>
+          </div>
+        </div>`;
+
+      window.print();
+    }
+
+    // ② 練習プリント（お手本＋なぞり書き＋4回練習のみ）
+    function renderPracticePrint() {
+      const todayStr = new Date().toLocaleDateString("ja-JP", { year: "numeric", month: "long", day: "numeric" });
+      const unitNames = Array.from(selectedUnits).join("・") || "全単元";
+      const n = currentSet.length;
       const practiceRowsHtml = currentSet.map((it, idx) => `
         <tr class="p-row">
           <td class="p-no-td" style="width:4%;">${idx + 1}</td>
@@ -795,25 +827,16 @@
       document.getElementById("print-region").innerHTML = `
         <div class="p-head">
           <div>
-            <div class="p-title">中学受験 社会 漢字テスト＆練習プリント（${n}問）</div>
+            <div class="p-title">中学受験 社会 漢字練習プリント（${n}問）</div>
             <div style="font-size:8pt;color:#555;margin-top:1px;">範囲: ${unitNames}</div>
           </div>
           <div class="p-meta">
             <div>日付: <span class="p-line">${todayStr}</span></div>
             <div>氏名: <span class="p-line"></span></div>
-            <div>得点: <span class="p-line" style="min-width:38px;"> / ${n}</span></div>
           </div>
         </div>
 
-        <div class="test-section">
-          <div class="section-title">① まずテストしてみよう（ひらがなを正しい漢字で書く）</div>
-          <div class="test-grid">
-            <div>${leftHtml}</div>
-            <div>${rightHtml}</div>
-          </div>
-        </div>
-
-        <div class="section-title" style="margin-top:8px;">② お手本を見て練習しよう（なぞり書き ＋ 4回練習マス）</div>
+        <div class="section-title">お手本を見て練習しよう（なぞり書き ＋ 4回練習マス）</div>
         <table class="practice-table">
           <thead>
             <tr>
