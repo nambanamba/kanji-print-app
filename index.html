@@ -212,20 +212,19 @@
       .test-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 3px 14px; }
       .test-item {
         display: flex;
-        align-items: center;
-        justify-content: space-between;
+        flex-direction: column;
+        gap: 4px;
         border-bottom: 1px dashed #c4c4c4;
-        padding: 2px 0;
+        padding: 6px 0;
         page-break-inside: avoid;
       }
       .test-q-text { font-size: 9.5pt; line-height: 1.2; }
       .test-hint { font-size: 6.5pt; color: #555; }
       .test-ans-box {
-        width: 38mm;
-        height: 10mm;
+        width: 100%;
+        height: 22mm;
         border: 1.5px solid #000;
         border-radius: 2px;
-        flex-shrink: 0;
       }
 
       /* ---- ② 下段：練習マス目テーブル ---- */
@@ -247,7 +246,7 @@
 
       /* ★ 各行は必ず丸ごと1ページに収める（ページ途中で切れない） */
       .p-row {
-        height: 22mm;       /* ← なぞり枠をここで大きくする */
+        height: 30mm;       /* ← なぞり枠をここで大きくする */
         page-break-inside: avoid;
         break-inside: avoid;
       }
@@ -255,7 +254,7 @@
       .p-no-td {
         border: 1px solid #000;
         text-align: center;
-        font-size: 9pt;
+        font-size: 10pt;
         font-weight: bold;
         vertical-align: middle;
       }
@@ -265,10 +264,10 @@
         vertical-align: middle;
       }
       .p-sample-word {
-        font-size: 14pt;
+        font-size: 18pt;
         font-weight: bold;
         letter-spacing: 0.06em;
-        line-height: 1.1;
+        line-height: 1.2;
       }
       .p-kana-sub { font-size: 7pt; color: #555; }
 
@@ -280,7 +279,7 @@
       }
       .p-grid-cell {
         width: 100%;
-        height: 22mm;    /* ← 同じ高さ */
+        height: 30mm;    /* ← 同じ高さ */
         position: relative;
         display: flex;
         align-items: center;
@@ -307,7 +306,7 @@
         border-left: 1px dashed #bbb;
       }
       .p-trace-txt {
-        font-size: 14pt;
+        font-size: 18pt;
         font-weight: bold;
         color: #c8c8c8 !important;
         letter-spacing: 0.06em;
@@ -422,12 +421,51 @@
   <script src="kanji-data.js"></script>
   <script>
     const SETTINGS_KEY = "kanji_app_settings_v2";
-    const MASTERY_KEY  = "kanji_app_mastery_v2";
+    // 姉妹アプリkosukequiz-battleと同じキー名・同じデータ形式（correct/wrong/間隔反復）。
+    // GitHub Pagesの同一オリジン（nambanamba.github.io）内では localStorage が
+    // 自動的に共有されるため、こちらとあちらで同じ進捗が引き継がれる
+    const MASTERY_KEY  = "kq_kanji_stats_v1";
 
     let selectedUnits = new Set();
     let currentCount  = 10;
     let currentSet    = [];
     let currentResults = {};
+
+    // ---- 正誤の判定方法（kosukequiz-battle/kosukequiz-battleのクイズ本体と共通の
+    //      間隔反復アルゴリズム）----
+    const BOX_INTERVAL_DAYS = [1, 2, 4, 8, 16, 32, 64, 120];
+    function isMasteredStat(s){ return !!(s && (s.correct||0) > 0); }
+    function isWeakStat(s){ return !!(s && (s.wrong||0) > 0 && (s.box||0) <= 1); }
+    function isDueStat(s){ if(!s || !s.nextDue) return true; return Date.now() >= s.nextDue; }
+    function scheduleNext(s, correct){
+      s.box = correct ? Math.min((s.box||0) + 1, BOX_INTERVAL_DAYS.length - 1) : 0;
+      s.nextDue = Date.now() + BOX_INTERVAL_DAYS[s.box] * 24 * 60 * 60 * 1000;
+    }
+    // クイズ本体の問題一覧と同じ「上書き」方式：何度でも自由に〇↔✕を切りかえられ、
+    // 押しなおしても二重にカウントされない
+    function setKanjiStatus(id, status){
+      const mastery = getMastery();
+      if(status === "unseen"){
+        delete mastery[id];
+      }else if(status === "mastered"){
+        const s = { correct: 1, wrong: 0, lastAnswered: Date.now(), lastCorrectAt: Date.now() };
+        scheduleNext(s, true);
+        mastery[id] = s;
+      }else if(status === "weak"){
+        const s = { correct: 0, wrong: 1, lastAnswered: Date.now() };
+        scheduleNext(s, false);
+        mastery[id] = s;
+      }
+      saveMastery(mastery);
+    }
+    // 今この語が〇・✕どちらの状態として記録されているか（表示のハイライト用）
+    function currentKanjiStatus(id){
+      const s = getMastery()[id];
+      if(!s) return null;
+      if((s.correct||0) > 0 && !(s.wrong||0)) return "correct";
+      if((s.wrong||0) > 0 && !(s.correct||0)) return "wrong";
+      return null;
+    }
 
     window.addEventListener("DOMContentLoaded", () => {
       // デフォルトで全単元を選択
@@ -551,16 +589,20 @@
     }
 
     /* ---------- 進捗バー ---------- */
+    // 「クリア済み」＝一度も間違えず/苦手でなくなった語（苦手＝直近2回連続正解で解消、クイズ本体と同じ判定）
+    function isClearedItem(id){
+      const s = getMastery()[id];
+      return isMasteredStat(s) && !isWeakStat(s);
+    }
     function updateProgressDisplay() {
       const pool = getPool();
-      const mastery = getMastery();
       const total = pool.length;
       if (total === 0) {
         document.getElementById("progress-text").textContent = "単元を選択してください";
         document.getElementById("progress-fill").style.width = "0%";
         return;
       }
-      const passed = pool.filter(d => mastery[d.id] && mastery[d.id].passed).length;
+      const passed = pool.filter(d => isClearedItem(d.id)).length;
       const pct = Math.round((passed / total) * 100);
       document.getElementById("progress-text").textContent = `${passed} / ${total} 語 クリア (${pct}%)`;
       document.getElementById("progress-fill").style.width = `${pct}%`;
@@ -568,29 +610,41 @@
       document.getElementById("progress-sub-text").textContent =
         remaining === 0
           ? "🎉 全問クリア達成！おめでとうございます！"
-          : `残り ${remaining} 語が未クリアです（次回はこの中から出題されます）。`;
+          : `残り ${remaining} 語が未クリアです（次回はこの中から優先して出題されます）。`;
     }
 
-    /* ---------- 今日の問題を選出 ---------- */
+    /* ---------- 今日の問題を選出：苦手優先（クイズ本体の復習ミックスと同じ考え方）
+       ①正解より失敗が多い語を、正解したのが一番昔のものから
+       ②残り（失敗経験がある語）も同様に、正解したのが一番昔のものから
+       ③一度も失敗していない語（順不同） ---------- */
     function generateDailySet(alertIfEmpty = true) {
       const pool = getPool();
       if (pool.length === 0) { if (alertIfEmpty) alert("単元を1つ以上選択してください。"); return; }
 
       const mastery = getMastery();
-      let unpassed = pool.filter(d => !mastery[d.id] || !mastery[d.id].passed);
+      const lastCorrectOf = d => { const s = mastery[d.id]; return (s && s.lastCorrectAt) ? s.lastCorrectAt : 0; };
+      const tier1 = [], tier2 = [], tier3 = [];
+      pool.forEach(d => {
+        const s = mastery[d.id];
+        const wrong = s ? (s.wrong||0) : 0, correct = s ? (s.correct||0) : 0;
+        if (wrong > correct) tier1.push(d);
+        else if (wrong > 0) tier2.push(d);
+        else tier3.push(d);
+      });
+      tier1.sort((a,b) => lastCorrectOf(a) - lastCorrectOf(b));
+      tier2.sort((a,b) => lastCorrectOf(a) - lastCorrectOf(b));
+      let ordered = tier1.concat(tier2).concat([...tier3].sort(() => Math.random() - 0.5));
 
-      if (unpassed.length === 0) {
+      if (tier1.length === 0 && tier2.length === 0) {
         if (alertIfEmpty) alert("🎉 選択単元の漢字はすべてクリア済み！全問からランダムで出題します。");
-        unpassed = [...pool].sort(() => Math.random() - 0.5);
       }
 
       const targetCount = currentCount === "all"
-        ? unpassed.length
-        : Math.min(parseInt(currentCount, 10) || 10, unpassed.length);
+        ? ordered.length
+        : Math.min(parseInt(currentCount, 10) || 10, ordered.length);
 
-      currentSet = unpassed.slice(0, targetCount);
+      currentSet = ordered.slice(0, targetCount);
       currentResults = {};
-      currentSet.forEach(item => { currentResults[item.id] = "ok"; });
     }
 
     function generateDailySetAndPrint() {
@@ -598,7 +652,8 @@
       if (currentSet.length > 0) printSinglePage();
     }
 
-    /* ---------- 採点リスト ---------- */
+    /* ---------- 採点リスト：クイズ本体の問題一覧と同じ「タップした瞬間に確定・保存」方式。
+       何度でも自由に〇↔✕を切りかえられ、押しなおしても二重にカウントされない ---------- */
     function renderCheckList() {
       const container = document.getElementById("check-list-container");
       if (currentSet.length === 0) generateDailySet(false);
@@ -608,9 +663,9 @@
       }
       container.innerHTML = "";
       currentSet.forEach((item, index) => {
-        const res = currentResults[item.id] || "ok";
+        const res = currentKanjiStatus(item.id); // "correct" | "wrong" | null
         const div = document.createElement("div");
-        div.className = `check-item ${res === "ok" ? "is-correct" : "is-wrong"}`;
+        div.className = `check-item ${res === "correct" ? "is-correct" : res === "wrong" ? "is-wrong" : ""}`;
         div.id = `check-item-${item.id}`;
         div.innerHTML = `
           <div class="check-head"><span>第 ${index + 1} 問</span><span>${item.unitKey}</span></div>
@@ -619,18 +674,17 @@
           <div class="check-ans-box">
             <span style="font-size:0.75rem;color:#64748b;font-weight:bold;">正解: </span>
             <span class="check-ans-word">${item.word}</span>
-            <span style="font-size:0.75rem;color:#dc2626;margin-left:8px;">⚠️ ${item.point}</span>
           </div>
           <div class="toggle-row">
-            <button class="toggle-btn btn-ok ${res === "ok" ? "active" : ""}" onclick="setResult('${item.id}', 'ok')">⭕ できた（クリア）</button>
-            <button class="toggle-btn btn-ng ${res === "ng" ? "active" : ""}" onclick="setResult('${item.id}', 'ng')">❌ できなかった（明日へ）</button>
+            <button class="toggle-btn btn-ok ${res === "correct" ? "active" : ""}" onclick="setResult('${item.id}', 'ok')">⭕ できた</button>
+            <button class="toggle-btn btn-ng ${res === "wrong" ? "active" : ""}" onclick="setResult('${item.id}', 'ng')">❌ できなかった</button>
           </div>`;
         container.appendChild(div);
       });
     }
 
     function setResult(id, val) {
-      currentResults[id] = val;
+      setKanjiStatus(id, val === "ok" ? "mastered" : "weak");
       const el = document.getElementById(`check-item-${id}`);
       if (el) {
         el.classList.toggle("is-correct", val === "ok");
@@ -638,41 +692,36 @@
         el.querySelector(".btn-ok").classList.toggle("active", val === "ok");
         el.querySelector(".btn-ng").classList.toggle("active", val === "ng");
       }
+      updateProgressDisplay();
     }
 
     function markAllCorrect() { currentSet.forEach(item => setResult(item.id, "ok")); }
 
     function saveCheckResults() {
-      const mastery = getMastery();
-      const todayStr = new Date().toISOString().split("T")[0];
-      let okCount = 0, ngCount = 0;
-      currentSet.forEach(item => {
-        const res = currentResults[item.id] || "ok";
-        if (res === "ok") { okCount++; mastery[item.id] = { passed: true, lastDate: todayStr }; }
-        else { ngCount++; mastery[item.id] = { passed: false, lastDate: todayStr }; }
-      });
-      saveMastery(mastery);
-      updateProgressDisplay();
-      alert(`🎉 保存しました！\nできた: ${okCount} 語（次回除外）\nできなかった: ${ngCount} 語（明日も出題）`);
+      // 〇/✕はタップした瞬間にすでに保存ずみ。ここでは入力もれがないかだけ確認する
+      const unanswered = currentSet.filter(item => !currentKanjiStatus(item.id)).length;
+      if (unanswered > 0) {
+        alert(`${unanswered} 語、〇✕が未入力です。入力した分は記録ずみです。`);
+      } else {
+        alert("🎉 全問、記録ずみです。できなかった語は次回優先して出てきます。");
+      }
       switchTab("home");
     }
 
     /* ---------- 進捗一覧 ---------- */
     function renderHistoryList() {
       const pool = getPool();
-      const mastery = getMastery();
       const container = document.getElementById("history-list-container");
       if (pool.length === 0) { container.innerHTML = "<p style='text-align:center;padding:20px;color:#64748b;'>単元を選択してください。</p>"; return; }
       container.innerHTML = "";
       pool.forEach(it => {
-        const isPassed = mastery[it.id] && mastery[it.id].passed === true;
+        const isPassed = isClearedItem(it.id);
         const div = document.createElement("div");
         div.className = "history-row";
         div.innerHTML = `
           <div>
             <div style="font-size:0.8rem;color:#64748b;">${it.kana} (${it.unitKey})</div>
             <div style="font-size:1.1rem;font-weight:bold;">${it.word}</div>
-            <div style="font-size:0.75rem;color:#dc2626;">⚠️ ${it.point}</div>
           </div>
           <span class="${isPassed ? 'status-badge-passed' : 'status-badge-unpassed'}">${isPassed ? '⭕ クリア済み' : '❌ 未クリア'}</span>`;
         container.appendChild(div);
