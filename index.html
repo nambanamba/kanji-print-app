@@ -641,8 +641,11 @@
       tier2.sort((a,b) => lastCorrectOf(a) - lastCorrectOf(b));
       let ordered = tier1.concat(tier2).concat([...tier3].sort(() => Math.random() - 0.5));
 
-      if (tier1.length === 0 && tier2.length === 0) {
-        if (alertIfEmpty) alert("🎉 選択単元の漢字はすべてクリア済み！全問からランダムで出題します。");
+      // 「すべてクリア済み」は本当に全語がクリア済み（クイズ済み）の場合だけ表示する。
+      // まだ一度も解いていない語がtier3に残っているだけの場合（wrong=correct=0）を
+      // 「クリア済み」と誤判定しないよう、pool全体のisClearedItemで判定する。
+      if (alertIfEmpty && pool.every(d => isClearedItem(d.id))) {
+        alert("🎉 選択単元の漢字はすべてクリア済み！全問からランダムで出題します。");
       }
 
       const targetCount = currentCount === "all"
