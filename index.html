@@ -347,7 +347,7 @@
           <span id="progress-text">0 / 0 語 クリア</span>
         </div>
         <div class="progress-bar-bg"><div class="progress-bar-fill" id="progress-fill"></div></div>
-        <div class="progress-sub" id="progress-sub-text">💡 まだやっていない語→間違えた語の順に、前から選ばれます。</div>
+        <div class="progress-sub" id="progress-sub-text">💡 フィルタで絞り込めます。出題順は正解した日が古い語から（未正解は最優先）。</div>
       </div>
 
       <div class="card">
@@ -363,6 +363,14 @@
         <div class="unit-grid" id="unit-grid-container"></div>
 
         <div class="setting-group">
+          <div class="setting-label">出題フィルタ（任意、両方ONなら「どちらか当てはまる」語が対象）</div>
+          <div class="chip-row">
+            <button class="chip" id="filter-unmastered" onclick="toggleFilter('unmastered')">正解ずみを除く</button>
+            <button class="chip" id="filter-weak" onclick="toggleFilter('weak')">苦手な問題だけ</button>
+          </div>
+        </div>
+
+        <div class="setting-group">
           <div class="setting-label">今日の出題語数（自分で決める）</div>
           <div class="count-row">
             <div class="chip-row" id="count-chips">
@@ -370,7 +378,7 @@
               <button class="chip active" data-count="10" onclick="setCount(10)">10語</button>
               <button class="chip" data-count="15" onclick="setCount(15)">15語</button>
               <button class="chip" data-count="20" onclick="setCount(20)">20語</button>
-              <button class="chip" data-count="all" onclick="setCount('all')">未クリア全問</button>
+              <button class="chip" data-count="all" onclick="setCount('all')">全問</button>
             </div>
             <div class="count-custom-box">
               <label for="count-custom-input">自由入力:</label>
@@ -436,6 +444,8 @@
     let currentCount  = 10;
     let currentSet    = [];
     let currentResults = {};
+    let filterUnmastered = false; // 正解ずみを除く（対戦クイズ本体と同じ名前）
+    let filterWeak       = false; // 苦手な問題だけ
 
     // ---- 正誤の判定方法（kosukequiz-battle/kosukequiz-battleのクイズ本体と共通の
     //      間隔反復アルゴリズム）----
@@ -501,6 +511,10 @@
             document.getElementById("count-custom-input").value = currentCount;
           }
         }
+        if (typeof cached.filterUnmastered === "boolean") filterUnmastered = cached.filterUnmastered;
+        if (typeof cached.filterWeak === "boolean") filterWeak = cached.filterWeak;
+        document.getElementById("filter-unmastered").classList.toggle("active", filterUnmastered);
+        document.getElementById("filter-weak").classList.toggle("active", filterWeak);
       } catch (e) {}
     }
 
@@ -508,9 +522,20 @@
       try {
         localStorage.setItem(SETTINGS_KEY, JSON.stringify({
           selectedUnits: Array.from(selectedUnits),
-          count: currentCount
+          count: currentCount,
+          filterUnmastered: filterUnmastered,
+          filterWeak: filterWeak
         }));
       } catch (e) {}
+    }
+
+    function toggleFilter(type) {
+      if (type === "unmastered") filterUnmastered = !filterUnmastered; else filterWeak = !filterWeak;
+      document.getElementById("filter-unmastered").classList.toggle("active", filterUnmastered);
+      document.getElementById("filter-weak").classList.toggle("active", filterWeak);
+      currentSet = [];
+      updateProgressDisplay();
+      saveCachedSettings();
     }
 
     /* ---------- タブ切り替え ---------- */
@@ -624,31 +649,33 @@
           : `残り ${remaining} 語が未クリアです（次回はこの中から優先して出題されます）。`;
     }
 
-    /* ---------- 今日の問題を選出：未実施最優先、各グループ内はデータの並び順のまま
-       （ソート・シャッフルなし。ユーザー指示：2026-09-04）
-       ①未実施（一度も解いていない語）
-       ②苦手（間違い＞正解）
-       ③やや苦手（間違いはあるが正解の方が多い）
-       ④クリア済み（間違いなし） ---------- */
+    /* ---------- 今日の問題を選出：kosukequiz-battle本体の出題モードと同じフィルタ方式
+       （優先順位の自動並べ替えはしない。ユーザー指示：2026-09-04）
+       filterUnmastered=「正解ずみを除く」、filterWeak=「苦手な問題だけ」。両方ONの場合は
+       「未マスター or 苦手」のOR判定（本体のapplyPoolFiltersExceptPriorityと同じロジック）。
+       フィルタ後の並び順は、最後に正解した日が古いもの（未正解は最古扱い）から順。 ---------- */
     function generateDailySet(alertIfEmpty = true) {
       const pool = getPool();
       if (pool.length === 0) { if (alertIfEmpty) alert("単元を1つ以上選択してください。"); return; }
 
       const mastery = getMastery();
-      const tierNever = [], tierWorse = [], tierBetter = [], tierClean = [];
-      pool.forEach(d => {
-        const s = mastery[d.id];
-        if (!s) { tierNever.push(d); return; }
-        const wrong = s.wrong||0, correct = s.correct||0;
-        if (wrong > correct) tierWorse.push(d);
-        else if (wrong > 0) tierBetter.push(d);
-        else tierClean.push(d);
-      });
-      let ordered = tierNever.concat(tierWorse).concat(tierBetter).concat(tierClean);
-
-      if (alertIfEmpty && tierNever.length === 0 && tierWorse.length === 0 && tierBetter.length === 0) {
-        alert("🎉 選択単元の漢字はすべてクリア済み！最初から順番に出題します。");
+      let filtered = pool;
+      if (filterUnmastered && filterWeak) {
+        filtered = pool.filter(d => !isMasteredStat(mastery[d.id]) || isWeakStat(mastery[d.id]));
+      } else if (filterUnmastered) {
+        filtered = pool.filter(d => !isMasteredStat(mastery[d.id]));
+      } else if (filterWeak) {
+        filtered = pool.filter(d => isWeakStat(mastery[d.id]));
       }
+
+      if (alertIfEmpty && filtered.length === 0) {
+        alert("フィルタの条件に合う語がありません。フィルタを見直してください。");
+        currentSet = [];
+        return;
+      }
+
+      const lastCorrectOf = d => { const s = mastery[d.id]; return (s && s.lastCorrectAt) ? s.lastCorrectAt : 0; };
+      const ordered = [...filtered].sort((a, b) => lastCorrectOf(a) - lastCorrectOf(b));
 
       const targetCount = currentCount === "all"
         ? ordered.length
