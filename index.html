@@ -101,6 +101,14 @@
     .unit-badge { font-size: 0.72rem; padding: 2px 6px; border-radius: 10px; background: #e2e8f0; color: #475569; }
     .unit-btn.selected .unit-badge { background: var(--primary); color: #fff; }
 
+    .io-note { font-size: 0.78rem; color: #64748b; line-height: 1.6; margin-bottom: 10px; }
+    .io-row { display: flex; gap: 8px; flex-wrap: wrap; }
+    .io-textarea { width: 100%; min-height: 110px; font-size: 0.72rem; font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+                   padding: 8px; border: 1px solid var(--border); border-radius: 6px; box-sizing: border-box; resize: vertical; }
+    .io-result { margin-top: 10px; padding: 10px 12px; border-radius: 8px; font-size: 0.82rem; line-height: 1.7; }
+    .io-result.ok { background: #f0fdf4; border: 1px solid #86efac; color: #15803d; }
+    .io-result.ng { background: #fef2f2; border: 1px solid #fca5a5; color: #b91c1c; }
+
     .setting-group { margin-top: 14px; padding-top: 14px; border-top: 1px solid #f1f5f9; }
     .setting-label { font-size: 0.88rem; font-weight: 700; margin-bottom: 8px; color: #334155; }
 
@@ -423,6 +431,30 @@
         <div id="history-list-container"></div>
       </div>
       <div class="card">
+        <div class="card-title"><span>記録の持ち出し・取りこみ</span></div>
+        <p class="io-note">〇✕の記録はこの端末のブラウザだけに保存されます。別の端末やブラウザに移すときは、ここで書き出して読みこんでください。</p>
+        <div class="io-row">
+          <button class="btn-sm" onclick="exportStats()">📤 記録を書き出す（ファイル）</button>
+          <button class="btn-sm" onclick="showExportText()">📋 文字でコピー</button>
+        </div>
+        <div class="io-row" style="margin-top:8px;">
+          <label class="btn-sm" style="cursor:pointer; display:inline-block;">
+            📥 ファイルから読みこむ
+            <input type="file" accept=".json,application/json" style="display:none;" onchange="importStatsFromFile(this)">
+          </label>
+          <button class="btn-sm" onclick="toggleImportText()">📝 文字を貼りつけて読みこむ</button>
+        </div>
+        <div id="io-text-area" style="display:none; margin-top:10px;">
+          <textarea id="io-textarea" class="io-textarea" placeholder="書き出した文字をここに貼りつけてください"></textarea>
+          <div class="io-row" style="margin-top:6px;">
+            <button class="btn-sm" onclick="copyExportText()">コピーする</button>
+            <button class="btn-sm" onclick="importStatsFromText()">この内容を読みこむ</button>
+            <button class="btn-sm" onclick="hideIoText()">閉じる</button>
+          </div>
+        </div>
+        <div id="io-result" class="io-result" style="display:none;"></div>
+      </div>
+      <div class="card">
         <div class="card-title"><span>データ管理</span></div>
         <button class="btn-sm" style="color: var(--danger); border-color: #fca5a5;" onclick="clearHistoryData()">🗑️ クリア履歴をリセット</button>
       </div>
@@ -671,6 +703,120 @@
         });
         if (moved > 0) saveMastery(mastery);
       } catch(e) {}
+    }
+
+    /* ---------- 記録の持ち出し・取りこみ ---------- */
+    const EXPORT_TYPE = "kanji-stats";
+
+    // 書き出すデータ。idだけでなく語(word)も入れておくことで、
+    // 取りこむ側でidが振り直されていても語で突き合わせられる
+    function buildExportData() {
+      const mastery = getMastery(), words = {};
+      KANJI_DATA.forEach(d => { if (mastery[d.id]) words[d.id] = d.word; });
+      let saved = {};
+      try { saved = JSON.parse(localStorage.getItem(MASTERY_WORDS_KEY)) || {}; } catch(e) {}
+      Object.keys(mastery).forEach(id => { if (!words[id] && saved[id]) words[id] = saved[id]; });
+      return {
+        app: "kanji-print-app", type: EXPORT_TYPE, version: 1,
+        exportedAt: new Date().toISOString(),
+        count: Object.keys(mastery).length,
+        stats: mastery, words: words
+      };
+    }
+    function exportFileName() {
+      const d = new Date(), z = n => String(n).padStart(2, "0");
+      // ファイル名は半角のみにする。日本語名だとブラウザが download 属性を無視し、
+      // "download"（拡張子なし）で保存されてしまうことがあるため
+      return `kanji-stats_${d.getFullYear()}${z(d.getMonth()+1)}${z(d.getDate())}_${z(d.getHours())}${z(d.getMinutes())}.json`;
+    }
+    function exportStats() {
+      const data = buildExportData();
+      if (data.count === 0) { showIoResult(false, "書き出せる記録がまだありません。"); return; }
+      try {
+        const blob = new Blob([JSON.stringify(data, null, 2)], { type: "application/json" });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement("a");
+        a.href = url; a.download = exportFileName();
+        document.body.appendChild(a); a.click(); document.body.removeChild(a);
+        setTimeout(() => URL.revokeObjectURL(url), 1000);
+        showIoResult(true, `${data.count}語ぶんの記録を書き出しました。`);
+      } catch(e) {
+        showIoResult(false, "ファイルの書き出しに失敗しました。「📋 文字でコピー」をお使いください。");
+      }
+    }
+    // iPadなどファイルの受けわたしがしにくい端末むけの文字での持ち出し
+    function showExportText() {
+      const data = buildExportData();
+      if (data.count === 0) { showIoResult(false, "書き出せる記録がまだありません。"); return; }
+      document.getElementById("io-text-area").style.display = "block";
+      document.getElementById("io-textarea").value = JSON.stringify(data);
+      showIoResult(true, `${data.count}語ぶんの記録です。「コピーする」を押して、別の端末で貼りつけてください。`);
+    }
+    function toggleImportText() {
+      const el = document.getElementById("io-text-area");
+      el.style.display = "block";
+      document.getElementById("io-textarea").value = "";
+      document.getElementById("io-textarea").focus();
+    }
+    function hideIoText() { document.getElementById("io-text-area").style.display = "none"; }
+    function copyExportText() {
+      const ta = document.getElementById("io-textarea");
+      ta.select(); ta.setSelectionRange(0, 999999);
+      let ok = false;
+      try { ok = document.execCommand("copy"); } catch(e) {}
+      if (!ok && navigator.clipboard) { navigator.clipboard.writeText(ta.value).then(
+        () => showIoResult(true, "コピーしました。"), () => showIoResult(false, "コピーできませんでした。手で選んでコピーしてください。")); return; }
+      showIoResult(ok, ok ? "コピーしました。" : "コピーできませんでした。手で選んでコピーしてください。");
+    }
+    function importStatsFromFile(input) {
+      const file = input.files && input.files[0];
+      if (!file) return;
+      const reader = new FileReader();
+      reader.onload = () => { applyImport(reader.result); input.value = ""; };
+      reader.onerror = () => { showIoResult(false, "ファイルを読めませんでした。"); input.value = ""; };
+      reader.readAsText(file);
+    }
+    function importStatsFromText() {
+      const text = document.getElementById("io-textarea").value.trim();
+      if (!text) { showIoResult(false, "読みこむ内容が空です。"); return; }
+      applyImport(text);
+    }
+    // 取りこみ本体。既存の記録とつき合わせ、日付が新しい方を残す
+    function applyImport(text) {
+      let data;
+      try { data = JSON.parse(text); } catch(e) { showIoResult(false, "内容を読み取れませんでした。書き出したファイル・文字をそのまま使ってください。"); return; }
+      if (!data || data.type !== EXPORT_TYPE || !data.stats || typeof data.stats !== "object") {
+        showIoResult(false, "このアプリで書き出したデータではないようです。"); return;
+      }
+      const incoming = data.stats, words = data.words || {};
+      const toId = wordToIdMap(), known = knownIdMap(), mastery = getMastery();
+      let added = 0, updated = 0, kept = 0, skipped = 0;
+      Object.keys(incoming).forEach(oldId => {
+        const rec = incoming[oldId];
+        if (!rec || typeof rec !== "object") { skipped++; return; }
+        const word = words[oldId];
+        const id = (word && toId[word]) || (known[oldId] ? oldId : null);
+        if (!id) { skipped++; return; }               // 今のデータに無い語は取りこめない
+        const cur = mastery[id];
+        if (!cur) { mastery[id] = rec; added++; return; }
+        // 同じ語に両方記録がある場合は、最後に答えた日が新しい方を採用する
+        if ((rec.lastAnswered || 0) > (cur.lastAnswered || 0)) { mastery[id] = rec; updated++; }
+        else kept++;
+      });
+      if (added + updated === 0 && skipped === 0 && kept === 0) { showIoResult(false, "取りこめる記録がありませんでした。"); return; }
+      saveMastery(mastery);
+      updateProgressDisplay();
+      renderHistoryList();
+      const parts = [`新しく追加 ${added}語`, `上書き ${updated}語`];
+      if (kept > 0) parts.push(`こちらの方が新しいので残した ${kept}語`);
+      if (skipped > 0) parts.push(`今のデータに無く取りこめなかった ${skipped}語`);
+      showIoResult(true, "読みこみました。" + parts.join(" / "));
+    }
+    function showIoResult(ok, msg) {
+      const el = document.getElementById("io-result");
+      el.style.display = "block";
+      el.className = "io-result " + (ok ? "ok" : "ng");
+      el.textContent = msg;
     }
 
     /* ---------- 単元グリッド ---------- */
