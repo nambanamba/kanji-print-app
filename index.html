@@ -524,6 +524,9 @@
       KANJI_UNITS.forEach(u => selectedUnits.add(u.key));
       migrateLegacyMastery();   // 旧バージョンの記録を引き継ぐ
       rescueOrphanedRecords();  // idが変わっていたら語をたよりに付け替える
+      // すでにある記録の語も毎回控えておく。〇✕を押すまで控えが作られないと、
+      // その前にidが振り直された場合に復元できなくなるため
+      saveWordIndex(getMastery());
       loadCachedSettings();
       renderUnitGrid();
       updateProgressDisplay();
