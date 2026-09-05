@@ -439,6 +439,42 @@
     // GitHub Pagesの同一オリジン（nambanamba.github.io）内では localStorage が
     // 自動的に共有されるため、こちらとあちらで同じ進捗が引き継がれる
     const MASTERY_KEY  = "kq_kanji_stats_v1";
+    // ⚠️ MASTERY_KEY は今後絶対に改名しないこと。
+    //    過去に4回キー名を変えたため、そのたびに旧キーの記録が読まれなくなり
+    //    「バージョンアップすると記録が消える」状態になっていた。
+    //    保存形式を変える必要が出た場合もキー名は据え置き、下の移行処理に変換を足すこと。
+
+    // 記録中のidがどの語だったかの控え。将来データ側でidが振り直されても、
+    // 語をたよりに記録を付け替えられるようにするための副次インデックス。
+    // 共有キー(kq_kanji_stats_v1)自体には手を触れないので、kosukequiz-battle側との互換は保たれる
+    const MASTERY_WORDS_KEY = "kq_kanji_stats_words_v1";
+    const MIGRATED_FLAG_KEY = "kq_kanji_stats_migrated_v1";
+
+    // 過去バージョンの記録キー（古い順）。形式はいずれも { <旧id>: {passed, lastDate} }
+    const LEGACY_MASTERY_KEYS = [
+      "kanji_app_settings_mastery_v1",
+      "kanji_app_mastery_status_v1",
+      "kanji_app_mastery_simple_v1",
+      "kanji_app_mastery_v2"
+    ];
+    // 旧id体系(g1_01…)→語。id体系がg→kに変わった際に連番もずれた（30語中28語）ため、
+    // idの単純な読み替えでは復元できず、語で突き合わせる必要がある
+    const LEGACY_ID_WORDS = {
+      "g1_01":"岩宿遺跡", "g1_02":"相沢忠洋", "g1_03":"野尻湖",
+      "g1_04":"大森貝塚", "g1_05":"三内丸山遺跡", "g1_06":"竪穴住居",
+      "g1_07":"土偶", "g1_08":"高床倉庫", "g1_09":"石包丁",
+      "g1_10":"登呂遺跡", "g1_11":"環濠集落", "g1_12":"吉野ヶ里遺跡",
+      "g1_13":"銅鐸", "g1_14":"銅鏡", "g1_15":"銅矛 / 銅剣",
+      "g1_16":"漢委奴国王", "g1_17":"志賀島", "g1_18":"邪馬台国",
+      "g1_19":"卑弥呼", "g1_20":"板付遺跡", "g2_01":"前方後円墳",
+      "g2_02":"大仙古墳", "g2_03":"埴輪", "g2_04":"渡来人",
+      "g2_05":"須恵器", "g2_06":"百済", "g2_07":"高句麗",
+      "g2_08":"新羅", "g2_09":"聖徳太子", "g2_10":"推古天皇",
+      "g2_11":"蘇我馬子", "g2_12":"蘇我入鹿", "g2_13":"冠位十二階",
+      "g2_14":"十七条の憲法", "g2_15":"小野妹子", "g2_16":"遣隋使",
+      "g2_17":"法隆寺", "g2_18":"飛鳥寺", "g2_19":"大化の改新",
+      "g2_20":"白村江の戦い"
+    };
 
     let selectedUnits = new Set();
     let currentCount  = 10;
@@ -486,6 +522,8 @@
     window.addEventListener("DOMContentLoaded", () => {
       // デフォルトで全単元を選択
       KANJI_UNITS.forEach(u => selectedUnits.add(u.key));
+      migrateLegacyMastery();   // 旧バージョンの記録を引き継ぐ
+      rescueOrphanedRecords();  // idが変わっていたら語をたよりに付け替える
       loadCachedSettings();
       renderUnitGrid();
       updateProgressDisplay();
@@ -556,6 +594,80 @@
     }
     function saveMastery(data) {
       try { localStorage.setItem(MASTERY_KEY, JSON.stringify(data)); } catch(e) {}
+      saveWordIndex(data);
+    }
+
+    /* ---------- 記録の引き継ぎ（バージョンアップで記録が消えないようにする） ---------- */
+    // 記録があるidについて「どの語だったか」を控える
+    function saveWordIndex(data) {
+      try {
+        const index = JSON.parse(localStorage.getItem(MASTERY_WORDS_KEY)) || {};
+        KANJI_DATA.forEach(d => { if (data[d.id]) index[d.id] = d.word; });
+        localStorage.setItem(MASTERY_WORDS_KEY, JSON.stringify(index));
+      } catch(e) {}
+    }
+    function wordToIdMap() {
+      const m = {};
+      KANJI_DATA.forEach(d => { m[d.word] = d.id; });
+      return m;
+    }
+    function knownIdMap() {
+      const m = {};
+      KANJI_DATA.forEach(d => { m[d.id] = true; });
+      return m;
+    }
+    // 旧形式 {passed, lastDate} を現行の間隔反復形式に変換する
+    function convertLegacyStat(rec) {
+      const t = (rec && rec.lastDate && Date.parse(rec.lastDate + "T00:00:00")) || Date.now();
+      const ok = !!(rec && rec.passed === true);
+      const s = ok ? { correct: 1, wrong: 0, lastAnswered: t, lastCorrectAt: t }
+                   : { correct: 0, wrong: 1, lastAnswered: t };
+      scheduleNext(s, ok);
+      return s;
+    }
+    // 旧キーに残っている記録を現行キーへ取り込む（初回だけ・非破壊）。
+    // 旧キーは削除しないので、取り込み結果に問題があっても元データは残る
+    function migrateLegacyMastery() {
+      try {
+        if (localStorage.getItem(MIGRATED_FLAG_KEY)) return;
+        const toId = wordToIdMap(), known = knownIdMap(), merged = {};
+        LEGACY_MASTERY_KEYS.forEach(key => {   // 古い順に読むので、新しい記録が勝つ
+          let old = null;
+          try { old = JSON.parse(localStorage.getItem(key)); } catch(e) { return; }
+          if (!old || typeof old !== "object") return;
+          Object.keys(old).forEach(oldId => {
+            const word = LEGACY_ID_WORDS[oldId];
+            const id = (word && toId[word]) || (known[oldId] ? oldId : null);
+            if (id) merged[id] = convertLegacyStat(old[oldId]);   // 今のデータに無い語は復元できない
+          });
+        });
+        const mastery = getMastery();
+        let moved = 0;
+        Object.keys(merged).forEach(id => {
+          if (mastery[id]) return;             // 今ついている記録の方を優先し、上書きしない
+          mastery[id] = merged[id];
+          moved++;
+        });
+        if (moved > 0) saveMastery(mastery);
+        localStorage.setItem(MIGRATED_FLAG_KEY, "1");
+      } catch(e) {}
+    }
+    // データ側でidが振り直された場合に、語の控えをたよりに記録を現行idへ付け替える
+    function rescueOrphanedRecords() {
+      try {
+        const index = JSON.parse(localStorage.getItem(MASTERY_WORDS_KEY)) || {};
+        const mastery = getMastery(), toId = wordToIdMap(), known = knownIdMap();
+        let moved = 0;
+        Object.keys(mastery).forEach(id => {
+          if (known[id]) return;               // 現行データにあるidはそのまま
+          const newId = toId[index[id]];       // 控えた語から今のidを引く
+          if (!newId || mastery[newId]) return;
+          mastery[newId] = mastery[id];
+          delete mastery[id];
+          moved++;
+        });
+        if (moved > 0) saveMastery(mastery);
+      } catch(e) {}
     }
 
     /* ---------- 単元グリッド ---------- */
@@ -784,6 +896,8 @@
     function clearHistoryData() {
       if (confirm("クリア履歴をすべてリセットしますか？")) {
         localStorage.removeItem(MASTERY_KEY);
+        localStorage.removeItem(MASTERY_WORDS_KEY);
+        localStorage.setItem(MIGRATED_FLAG_KEY, "1");  // リセット後に旧キーから復活させない
         alert("リセットしました。");
         updateProgressDisplay();
         renderHistoryList();
