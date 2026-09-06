@@ -101,6 +101,21 @@
     .unit-badge { font-size: 0.72rem; padding: 2px 6px; border-radius: 10px; background: #e2e8f0; color: #475569; }
     .unit-btn.selected .unit-badge { background: var(--primary); color: #fff; }
 
+    .pv-wrap { margin-bottom: 14px; border: 1px solid var(--border); border-radius: 10px; overflow: hidden; }
+    .pv-head { display: flex; justify-content: space-between; align-items: center; gap: 8px;
+               padding: 8px 12px; background: #faf5ff; border-bottom: 1px solid var(--border);
+               font-size: 0.82rem; font-weight: 700; color: #6b21a8; }
+    .pv-list { max-height: 60vh; overflow-y: auto; }
+    .pv-item { display: flex; align-items: center; gap: 10px; padding: 10px 12px; border-bottom: 1px solid #f1f5f9; }
+    .pv-item:last-child { border-bottom: none; }
+    .pv-no { font-size: 0.75rem; font-weight: 700; color: #94a3b8; min-width: 1.6em; text-align: right; }
+    .pv-body { flex: 1; min-width: 0; }
+    .pv-word { font-size: 1.5rem; font-weight: 700; letter-spacing: 0.04em; line-height: 1.25; }
+    .pv-word.is-hidden { color: transparent; background: #e2e8f0; border-radius: 4px; }
+    .pv-kana { font-size: 0.78rem; color: #475569; margin-top: 2px; }
+    .pv-mean { font-size: 0.76rem; color: #64748b; margin-top: 3px; line-height: 1.5; }
+    .pv-mark { font-size: 1.1rem; min-width: 1.4em; text-align: center; }
+
     .io-note { font-size: 0.78rem; color: #64748b; line-height: 1.6; margin-bottom: 10px; }
     .io-row { display: flex; gap: 8px; flex-wrap: wrap; }
     .io-textarea { width: 100%; min-height: 110px; font-size: 0.72rem; font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
@@ -241,88 +256,62 @@
       }
 
       /* ---- ② 下段：練習マス目テーブル ---- */
-      .practice-table {
-        width: 100%;
-        border-collapse: collapse;
-        table-layout: fixed;
-      }
-      .practice-table thead tr {
-        page-break-after: avoid;
-      }
-      .practice-table th {
-        background: #f8fafc !important;
+      /* 1語ぶんのまとまり。ページ途中で切れないようにする */
+      .p-item {
         border: 1px solid #000;
-        font-size: 7.5pt;
-        padding: 2px;
-        text-align: center;
-      }
-
-      /* ★ 各行は必ず丸ごと1ページに収める（ページ途中で切れない） */
-      .p-row {
-        height: 44mm;       /* ← 練習枠の大きさはここと .p-practice-grid で決まる */
+        margin-bottom: 4mm;
         page-break-inside: avoid;
         break-inside: avoid;
       }
-
-      .p-no-td {
-        border: 1px solid #000;
-        text-align: center;
+      /* お手本も横長。全幅を使って1行で見せる */
+      .p-item-head {
+        display: flex;
+        align-items: baseline;
+        gap: 5mm;
+        padding: 2mm 3mm;
+        border-bottom: 1px solid #000;
+        background: #f8fafc !important;
+      }
+      .p-item-no {
         font-size: 10pt;
         font-weight: bold;
-        vertical-align: middle;
-      }
-      .p-word-td {
-        border: 1px solid #000;
-        padding: 2px 6px;
-        vertical-align: middle;
+        min-width: 7mm;
       }
       .p-sample-word {
-        font-size: 26pt;
         font-weight: bold;
-        letter-spacing: 0.06em;
-        line-height: 1.2;
+        letter-spacing: 0.08em;
+        line-height: 1.1;
+        white-space: nowrap;   /* 折り返さない。大きさはJS側で字数に応じて決める */
       }
-      .p-kana-sub { font-size: 8pt; color: #555; }
+      .p-kana-sub { font-size: 9pt; color: #555; white-space: nowrap; }
 
-      .p-box-td {
-        border: 1px solid #000;
-        padding: 0;
-        vertical-align: top;
-      }
-      /* 練習枠は横長。語は横書きなので、縦長のマスだと長い語が折り返して潰れる */
-      .p-practice-grid {
-        display: grid;
-        grid-template-columns: 1fr 1fr;
-        grid-template-rows: 1fr 1fr;
-        height: 44mm;
-      }
-      .p-grid-cell {
+      /* 練習マス。全幅の横長 */
+      .p-write-line {
         position: relative;
+        height: 18mm;
         display: flex;
         align-items: center;
         justify-content: center;
         overflow: hidden;
-        background: #fff;
-        border-right: 1px solid #000;
         border-bottom: 1px solid #000;
+        background: #fff;
       }
-      .p-grid-cell:nth-child(2n) { border-right: none; }
-      .p-grid-cell:nth-child(n+3) { border-bottom: none; }
+      .p-write-line:last-child { border-bottom: none; }
       /* 中心線（横一本）。1文字用の十字ではなく、語を書くための目安 */
-      .p-grid-cell::before {
+      .p-write-line::before {
         content: "";
         position: absolute;
         top: 50%;
-        left: 3%;
-        width: 94%;
+        left: 2%;
+        width: 96%;
         height: 1px;
         border-top: 1px dashed #ccc;
       }
-      .p-cell-no {
+      .p-write-no {
         position: absolute;
-        top: 1mm;
-        left: 1.5mm;
-        font-size: 6.5pt;
+        top: 1.5mm;
+        left: 2mm;
+        font-size: 7pt;
         color: #94a3b8 !important;
         z-index: 3;
         line-height: 1;
@@ -330,11 +319,11 @@
       .p-trace-txt {
         font-weight: bold;
         color: #c8c8c8 !important;
-        letter-spacing: 0.06em;
+        letter-spacing: 0.08em;
         position: relative;
         z-index: 2;
         line-height: 1;
-        white-space: nowrap;   /* 折り返さない。大きさはJS側で字数に応じて決める */
+        white-space: nowrap;
       }
     }
   </style>
@@ -405,6 +394,8 @@
           </div>
         </div>
 
+        <button class="btn-main" style="background:#7c3aed; box-shadow:0 4px 10px rgba(124,58,237,0.3); margin-bottom:10px;" onclick="togglePreview()">👀 今日の漢字を見る（プレビュー）</button>
+        <div id="preview-area" style="display:none;"></div>
         <button class="btn-main" onclick="printTestSheet()">🖨️ ① テストプリントを印刷（A4）</button>
         <button class="btn-main" style="background:#0891b2; box-shadow:0 4px 10px rgba(8,145,178,0.3); margin-top:10px;" onclick="printPracticeSheet()">🖨️ ② 練習プリントを印刷（A4）</button>
         <p style="font-size:0.76rem; color:var(--text-muted); margin-top:10px; text-align:center;">①②は同じ問題セットで印刷されます。<a href="#" onclick="rerollSet(); return false;" style="color:var(--primary);">🔄 別の問題に出題し直す</a></p>
@@ -445,6 +436,11 @@
         <div class="io-row">
           <button class="btn-sm" onclick="exportStats()">📤 記録を書き出す（ファイル）</button>
           <button class="btn-sm" onclick="showExportText()">📋 文字でコピー</button>
+        </div>
+        <p class="io-note" style="margin:12px 0 6px;">できた／できなかったの一覧を、Excelなどで開ける形（CSV）でも書き出せます。</p>
+        <div class="io-row">
+          <button class="btn-sm" onclick="exportResultsCsv('all')">📊 全問の結果をCSVで書き出す</button>
+          <button class="btn-sm" onclick="exportResultsCsv('done')">📊 記録がある分だけCSV</button>
         </div>
         <div class="io-row" style="margin-top:8px;">
           <label class="btn-sm" style="cursor:pointer; display:inline-block;">
@@ -821,6 +817,49 @@
       if (skipped > 0) parts.push(`今のデータに無く取りこめなかった ${skipped}語`);
       showIoResult(true, "読みこみました。" + parts.join(" / "));
     }
+    /* ---------- できた／できなかったの一覧をCSVで書き出す ---------- */
+    function csvCell(v) {
+      const t = String(v == null ? "" : v);
+      return /[",\n]/.test(t) ? '"' + t.replace(/"/g, '""') + '"' : t;
+    }
+    function ymd(ms) {
+      if (!ms) return "";
+      const d = new Date(ms), z = n => String(n).padStart(2, "0");
+      return `${d.getFullYear()}-${z(d.getMonth()+1)}-${z(d.getDate())}`;
+    }
+    // scope: "all" = 全問（未実施も含む） / "done" = 〇✕がついている分だけ
+    function exportResultsCsv(scope) {
+      const mastery = getMastery();
+      const header = ["No", "単元", "漢字", "読み", "ヒント", "結果", "正解数", "まちがい数", "最後に答えた日"];
+      const rows = [];
+      KANJI_DATA.forEach(d => {
+        const st = mastery[d.id];
+        if (scope === "done" && !st) return;
+        const result = !st ? "未実施"
+          : ((st.correct||0) > 0 && !(st.wrong||0)) ? "できた"
+          : ((st.wrong||0) > 0 && !(st.correct||0)) ? "できなかった" : "やりなおし中";
+        rows.push([rows.length + 1, d.unit, d.word, d.kana, d.mean, result,
+                   st ? (st.correct||0) : 0, st ? (st.wrong||0) : 0, st ? ymd(st.lastAnswered) : ""]);
+      });
+      if (rows.length === 0) { showIoResult(false, "書き出せる記録がまだありません。"); return; }
+      // ExcelでそのままひらけるようBOMを付ける
+      const csv = "\uFEFF" + [header, ...rows].map(r => r.map(csvCell).join(",")).join("\r\n");
+      const d = new Date(), z = n => String(n).padStart(2, "0");
+      const name = `kanji-results_${d.getFullYear()}${z(d.getMonth()+1)}${z(d.getDate())}_${z(d.getHours())}${z(d.getMinutes())}.csv`;
+      try {
+        const blob = new Blob([csv], { type: "text/csv;charset=utf-8" });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement("a");
+        a.href = url; a.download = name;
+        document.body.appendChild(a); a.click(); document.body.removeChild(a);
+        setTimeout(() => URL.revokeObjectURL(url), 1000);
+        const done = rows.filter(r => r[5] !== "未実施").length;
+        showIoResult(true, `${rows.length}語ぶんを書き出しました（うち記録あり ${done}語）。Excelなどで開けます。`);
+      } catch(e) {
+        showIoResult(false, "CSVの書き出しに失敗しました。");
+      }
+    }
+
     function showIoResult(ok, msg) {
       const el = document.getElementById("io-result");
       el.style.display = "block";
@@ -953,6 +992,8 @@
 
       currentSet = ordered.slice(0, targetCount);
       currentResults = {};
+      const pv = document.getElementById("preview-area");
+      if (pv && pv.style.display !== "none") renderPreview();   // 開いていれば内容を追随させる
     }
 
     // ①②とも同じセットを使う。セットが未生成のときだけ新しく作る（単元・問題数を変えると自動でクリアされる）
@@ -1105,6 +1146,52 @@
     }
 
     // ② 練習プリント（お手本＋なぞり書き＋4回練習のみ）
+    /* ---------- 今日の漢字のプレビュー（印刷しないで画面で確認する） ---------- */
+    let previewHideAnswer = false;
+
+    function togglePreview() {
+      const area = document.getElementById("preview-area");
+      if (area.style.display === "none") { renderPreview(); area.style.display = "block"; }
+      else { area.style.display = "none"; }
+    }
+    function togglePreviewAnswer() { previewHideAnswer = !previewHideAnswer; renderPreview(); }
+
+    function renderPreview() {
+      const area = document.getElementById("preview-area");
+      if (currentSet.length === 0) generateDailySet(false);
+      if (currentSet.length === 0) {
+        area.innerHTML = `<div class="pv-wrap"><div class="pv-head"><span>今日の漢字</span></div>
+          <div style="padding:16px;text-align:center;color:#64748b;font-size:0.85rem;">
+          単元を選んで「🔄 出題し直す」を押すと、ここに今日の問題が出ます。</div></div>`;
+        return;
+      }
+      const rows = currentSet.map((it, i) => {
+        const st = currentKanjiStatus(it.id);
+        const mark = st === "correct" ? "⭕" : st === "wrong" ? "❌" : "・";
+        return `
+          <div class="pv-item">
+            <div class="pv-no">${i + 1}</div>
+            <div class="pv-body">
+              <div class="pv-word ${previewHideAnswer ? "is-hidden" : ""}">${it.word}</div>
+              <div class="pv-kana">${it.kana}（${it.unitKey}）</div>
+              <div class="pv-mean">💡 ${it.mean}</div>
+            </div>
+            <div class="pv-mark" title="今の記録">${mark}</div>
+          </div>`;
+      }).join("");
+      area.innerHTML = `
+        <div class="pv-wrap">
+          <div class="pv-head">
+            <span>今日の漢字（${currentSet.length}問）</span>
+            <span style="display:flex;gap:6px;">
+              <button class="btn-sm" onclick="togglePreviewAnswer()">${previewHideAnswer ? "漢字を出す" : "漢字をかくす"}</button>
+              <button class="btn-sm" onclick="togglePreview()">閉じる</button>
+            </span>
+          </div>
+          <div class="pv-list">${rows}</div>
+        </div>`;
+    }
+
     /* 練習枠・お手本の文字サイズ。語の字数に応じて、必ず1行に収まる大きさを返す。
        枠は横長（内寸およそ55mm）なので、字数で割った幅を上限にする */
     function fitFontPt(word, availableMm, maxMm) {
@@ -1112,29 +1199,29 @@
       const mm = Math.min(maxMm, availableMm / len);
       return +(mm * 2.8346).toFixed(1);   // mm → pt
     }
-    function traceFontPt(word)  { return fitFontPt(word, 54, 9.5); }
-    function sampleFontPt(word) { return fitFontPt(word, 64, 9.2); }  // お手本は2行まで
+    function traceFontPt(word)  { return fitFontPt(word, 150, 12); }   // 練習マスは全幅
+    function sampleFontPt(word) { return fitFontPt(word, 105, 11); }   // お手本は読み仮名のぶんを残す
 
     function renderPracticePrint() {
       const todayStr = new Date().toLocaleDateString("ja-JP", { year: "numeric", month: "long", day: "numeric" });
       const unitNames = Array.from(selectedUnits).join("・") || "全単元";
       const n = currentSet.length;
-      const practiceRowsHtml = currentSet.map((it, idx) => `
-        <tr class="p-row">
-          <td class="p-no-td" style="width:5%;">${idx + 1}</td>
-          <td class="p-word-td" style="width:23%;">
-            <div class="p-sample-word" style="font-size:${sampleFontPt(it.word)}pt;">${it.word}</div>
-            <div class="p-kana-sub">${it.kana}</div>
-          </td>
-          <td class="p-box-td" style="width:72%;">
-            <div class="p-practice-grid">
-              <div class="p-grid-cell"><span class="p-cell-no">① なぞり</span><span class="p-trace-txt" style="font-size:${traceFontPt(it.word)}pt;">${it.word}</span></div>
-              <div class="p-grid-cell"><span class="p-cell-no">② 練習</span></div>
-              <div class="p-grid-cell"><span class="p-cell-no">③ 練習</span></div>
-              <div class="p-grid-cell"><span class="p-cell-no">④ 練習</span></div>
-            </div>
-          </td>
-        </tr>`).join("");
+      const practiceItemsHtml = currentSet.map((it, idx) => {
+        const lines = ["① なぞり", "② 練習", "③ 練習", "④ 練習", "⑤ 練習"].map((label, i) => `
+          <div class="p-write-line">
+            <span class="p-write-no">${label}</span>
+            ${i === 0 ? `<span class="p-trace-txt" style="font-size:${traceFontPt(it.word)}pt;">${it.word}</span>` : ""}
+          </div>`).join("");
+        return `
+        <div class="p-item">
+          <div class="p-item-head">
+            <span class="p-item-no">${idx + 1}</span>
+            <span class="p-sample-word" style="font-size:${sampleFontPt(it.word)}pt;">${it.word}</span>
+            <span class="p-kana-sub">${it.kana}</span>
+          </div>
+          ${lines}
+        </div>`;
+      }).join("");
 
       document.getElementById("print-region").innerHTML = `
         <div class="p-head">
@@ -1148,17 +1235,8 @@
           </div>
         </div>
 
-        <div class="section-title">お手本を見て練習しよう（なぞり書き ＋ 3回練習）</div>
-        <table class="practice-table">
-          <thead>
-            <tr>
-              <th style="width:5%;">No</th>
-              <th style="width:23%;">お手本</th>
-              <th style="width:72%;">なぞり書き → 練習（横長のマスに1回ずつ）</th>
-            </tr>
-          </thead>
-          <tbody>${practiceRowsHtml}</tbody>
-        </table>`;
+        <div class="section-title">お手本を見て練習しよう（なぞり書き ＋ 4回練習）</div>
+${practiceItemsHtml}`;
 
       window.print();
     }
