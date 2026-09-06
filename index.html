@@ -837,7 +837,10 @@
       const mastery = getMastery();
       const header = ["No", "単元", "漢字", "読み", "ヒント", "結果", "正解数", "まちがい数", "最後に答えた日"];
       const rows = [];
+      const seenWord = new Set();
       KANJI_DATA.forEach(d => {
+        if (seenWord.has(d.word)) return;   // 複数の単元に入っている語は1行だけにする
+        seenWord.add(d.word);
         const st = mastery[d.id];
         if (scope === "done" && !st) return;
         const result = !st ? "未実施"
@@ -934,8 +937,18 @@
     }
 
     /* ---------- プール取得 ---------- */
+    // 選んだ単元の出題プール。復習編どうしなど、同じ語が複数の単元に入っていることが
+    // あるため、語（word）が重なるものは先に出てくる方だけを残す。
+    // 出題・進捗バー・進捗一覧はすべてここを通るので、1か所で除けば表示も数も揃う
     function getPool() {
-      return selectedUnits.size === 0 ? [] : KANJI_DATA.filter(d => selectedUnits.has(d.unitKey));
+      if (selectedUnits.size === 0) return [];
+      const seen = new Set();
+      return KANJI_DATA.filter(d => {
+        if (!selectedUnits.has(d.unitKey)) return false;
+        if (seen.has(d.word)) return false;
+        seen.add(d.word);
+        return true;
+      });
     }
 
     /* ---------- 進捗バー ---------- */
