@@ -285,7 +285,11 @@
       }
       .p-kana-sub { font-size: 9pt; color: #555; white-space: nowrap; }
 
-      /* 練習マス。全幅の横長 */
+      /* 練習マス。横に2つ並べた横長のマスを3段（なぞり1＋練習5） */
+      .p-write-grid {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+      }
       .p-write-line {
         position: relative;
         height: 18mm;
@@ -296,7 +300,8 @@
         border-bottom: 1px solid #000;
         background: #fff;
       }
-      .p-write-line:last-child { border-bottom: none; }
+      .p-write-line:nth-child(odd)   { border-right: 1px solid #000; }  /* 左列と右列の仕切り */
+      .p-write-line:nth-child(n+5)   { border-bottom: none; }           /* 最下段は下線なし */
       /* 中心線（横一本）。1文字用の十字ではなく、語を書くための目安 */
       .p-write-line::before {
         content: "";
@@ -1199,7 +1204,7 @@
       const mm = Math.min(maxMm, availableMm / len);
       return +(mm * 2.8346).toFixed(1);   // mm → pt
     }
-    function traceFontPt(word)  { return fitFontPt(word, 150, 12); }   // 練習マスは全幅
+    function traceFontPt(word)  { return fitFontPt(word, 76, 11); }    // 練習マスは全幅の半分（2列）
     function sampleFontPt(word) { return fitFontPt(word, 105, 11); }   // お手本は読み仮名のぶんを残す
 
     function renderPracticePrint() {
@@ -1207,11 +1212,12 @@
       const unitNames = Array.from(selectedUnits).join("・") || "全単元";
       const n = currentSet.length;
       const practiceItemsHtml = currentSet.map((it, idx) => {
-        const lines = ["① なぞり", "② 練習", "③ 練習", "④ 練習", "⑤ 練習"].map((label, i) => `
+        const labels = ["① なぞり", "② 練習", "③ 練習", "④ 練習", "⑤ 練習", "⑥ 練習"];
+        const lines = `<div class="p-write-grid">` + labels.map((label, i) => `
           <div class="p-write-line">
             <span class="p-write-no">${label}</span>
             ${i === 0 ? `<span class="p-trace-txt" style="font-size:${traceFontPt(it.word)}pt;">${it.word}</span>` : ""}
-          </div>`).join("");
+          </div>`).join("") + `</div>`;
         return `
         <div class="p-item">
           <div class="p-item-head">
@@ -1235,7 +1241,7 @@
           </div>
         </div>
 
-        <div class="section-title">お手本を見て練習しよう（なぞり書き ＋ 4回練習）</div>
+        <div class="section-title">お手本を見て練習しよう（なぞり書き ＋ 5回練習）</div>
 ${practiceItemsHtml}`;
 
       window.print();
