@@ -647,7 +647,10 @@
     function saveWordIndex(data) {
       try {
         const index = JSON.parse(localStorage.getItem(MASTERY_WORDS_KEY)) || {};
-        KANJI_DATA.forEach(d => { if (data[d.id]) index[d.id] = d.word; });
+        KANJI_DATA.forEach(d => {
+          if (data[d.id]) index[d.id] = d.word;
+          else delete index[d.id];   // 記録が無いidの控えは消す。残すと次の付け替え判定を誤らせる
+        });
         localStorage.setItem(MASTERY_WORDS_KEY, JSON.stringify(index));
       } catch(e) {}
     }
@@ -697,21 +700,32 @@
         localStorage.setItem(MIGRATED_FLAG_KEY, "1");
       } catch(e) {}
     }
-    // データ側でidが振り直された場合に、語の控えをたよりに記録を現行idへ付け替える
+    // データ側で語のidが変わった場合に、語の控えをたよりに記録を正しいidへ付け替える。
+    // ・idごと消えた（語が削除・単元移動）
+    // ・idはあるが中身が別の語に入れかわった（語を途中に足して以降が繰り上がった）
+    // の両方を見る。後者は記録が黙って別の語のものになるため、特に危ない
     function rescueOrphanedRecords() {
       try {
         const index = JSON.parse(localStorage.getItem(MASTERY_WORDS_KEY)) || {};
-        const mastery = getMastery(), toId = wordToIdMap(), known = knownIdMap();
+        const mastery = getMastery(), toId = wordToIdMap();
+        const wordOf = {};
+        KANJI_DATA.forEach(d => { wordOf[d.id] = d.word; });
+        const next = {};
         let moved = 0;
+        // 同じ語に記録が2つ集まったときは、最後に答えた日が新しい方を残す
+        const put = (id, rec) => {
+          if (!next[id] || (rec.lastAnswered || 0) > (next[id].lastAnswered || 0)) next[id] = rec;
+        };
         Object.keys(mastery).forEach(id => {
-          if (known[id]) return;               // 現行データにあるidはそのまま
-          const newId = toId[index[id]];       // 控えた語から今のidを引く
-          if (!newId || mastery[newId]) return;
-          mastery[newId] = mastery[id];
-          delete mastery[id];
-          moved++;
+          const rec = mastery[id];
+          const recorded = index[id];          // この記録をつけたときの語
+          const current = wordOf[id];          // 今そのidに入っている語
+          if (!recorded || recorded === current) { put(id, rec); return; }  // 控えが無い（姉妹アプリ由来など）／変わっていない
+          const target = toId[recorded];       // 語から今のidを引き直す
+          if (!target) { put(id, rec); return; }   // 今のデータに無い語 → 消さずそのまま残す
+          put(target, rec); moved++;
         });
-        if (moved > 0) saveMastery(mastery);
+        if (moved > 0) saveMastery(next);
       } catch(e) {}
     }
 
