@@ -956,13 +956,17 @@
     // 出題・進捗バー・進捗一覧はすべてここを通るので、1か所で除けば表示も数も揃う
     function getPool() {
       if (selectedUnits.size === 0) return [];
-      const seen = new Set();
-      return KANJI_DATA.filter(d => {
-        if (!selectedUnits.has(d.unitKey)) return false;
-        if (seen.has(d.word)) return false;
-        seen.add(d.word);
-        return true;
+      const pool = KANJI_DATA.filter(d => selectedUnits.has(d.unitKey));
+      const mastery = getMastery();
+      // 語ごとに1件だけ採用する。すでに〇✕がついている方を優先し、無ければ先に出てくる方。
+      // 記録つきを優先するのは、データに単元を足して並び順が変わったときに、
+      // 採用されるidが入れかわって進捗が消えたように見えるのを防ぐため
+      const pick = new Map();
+      pool.forEach(d => {
+        const prev = pick.get(d.word);
+        if (!prev || (!mastery[prev.id] && mastery[d.id])) pick.set(d.word, d);
       });
+      return pool.filter(d => pick.get(d.word) === d);
     }
 
     /* ---------- 進捗バー ---------- */
