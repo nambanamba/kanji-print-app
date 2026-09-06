@@ -259,7 +259,7 @@
 
       /* ★ 各行は必ず丸ごと1ページに収める（ページ途中で切れない） */
       .p-row {
-        height: 42mm;       /* ← なぞり枠をここで大きくする */
+        height: 44mm;       /* ← 練習枠の大きさはここと .p-practice-grid で決まる */
         page-break-inside: avoid;
         break-inside: avoid;
       }
@@ -287,45 +287,54 @@
       .p-box-td {
         border: 1px solid #000;
         padding: 0;
-        vertical-align: middle;
-        text-align: center;
+        vertical-align: top;
+      }
+      /* 練習枠は横長。語は横書きなので、縦長のマスだと長い語が折り返して潰れる */
+      .p-practice-grid {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        grid-template-rows: 1fr 1fr;
+        height: 44mm;
       }
       .p-grid-cell {
-        width: 100%;
-        height: 42mm;    /* ← 同じ高さ */
         position: relative;
         display: flex;
         align-items: center;
         justify-content: center;
+        overflow: hidden;
         background: #fff;
+        border-right: 1px solid #000;
+        border-bottom: 1px solid #000;
       }
-      /* 十字点線リーダー */
+      .p-grid-cell:nth-child(2n) { border-right: none; }
+      .p-grid-cell:nth-child(n+3) { border-bottom: none; }
+      /* 中心線（横一本）。1文字用の十字ではなく、語を書くための目安 */
       .p-grid-cell::before {
         content: "";
         position: absolute;
         top: 50%;
-        left: 0;
-        width: 100%;
+        left: 3%;
+        width: 94%;
         height: 1px;
-        border-top: 1px dashed #bbb;
+        border-top: 1px dashed #ccc;
       }
-      .p-grid-cell::after {
-        content: "";
+      .p-cell-no {
         position: absolute;
-        top: 0;
-        left: 50%;
-        width: 1px;
-        height: 100%;
-        border-left: 1px dashed #bbb;
+        top: 1mm;
+        left: 1.5mm;
+        font-size: 6.5pt;
+        color: #94a3b8 !important;
+        z-index: 3;
+        line-height: 1;
       }
       .p-trace-txt {
-        font-size: 26pt;
         font-weight: bold;
         color: #c8c8c8 !important;
         letter-spacing: 0.06em;
         position: relative;
         z-index: 2;
         line-height: 1;
+        white-space: nowrap;   /* 折り返さない。大きさはJS側で字数に応じて決める */
       }
     }
   </style>
@@ -1096,22 +1105,35 @@
     }
 
     // ② 練習プリント（お手本＋なぞり書き＋4回練習のみ）
+    /* 練習枠・お手本の文字サイズ。語の字数に応じて、必ず1行に収まる大きさを返す。
+       枠は横長（内寸およそ55mm）なので、字数で割った幅を上限にする */
+    function fitFontPt(word, availableMm, maxMm) {
+      const len = Math.max(1, (word || "").length);
+      const mm = Math.min(maxMm, availableMm / len);
+      return +(mm * 2.8346).toFixed(1);   // mm → pt
+    }
+    function traceFontPt(word)  { return fitFontPt(word, 54, 9.5); }
+    function sampleFontPt(word) { return fitFontPt(word, 64, 9.2); }  // お手本は2行まで
+
     function renderPracticePrint() {
       const todayStr = new Date().toLocaleDateString("ja-JP", { year: "numeric", month: "long", day: "numeric" });
       const unitNames = Array.from(selectedUnits).join("・") || "全単元";
       const n = currentSet.length;
       const practiceRowsHtml = currentSet.map((it, idx) => `
         <tr class="p-row">
-          <td class="p-no-td" style="width:4%;">${idx + 1}</td>
-          <td class="p-word-td" style="width:22%;">
-            <div class="p-sample-word">${it.word}</div>
+          <td class="p-no-td" style="width:5%;">${idx + 1}</td>
+          <td class="p-word-td" style="width:23%;">
+            <div class="p-sample-word" style="font-size:${sampleFontPt(it.word)}pt;">${it.word}</div>
             <div class="p-kana-sub">${it.kana}</div>
           </td>
-          <td class="p-box-td" style="width:15%;"><div class="p-grid-cell"><span class="p-trace-txt">${it.word}</span></div></td>
-          <td class="p-box-td" style="width:15%;"><div class="p-grid-cell"></div></td>
-          <td class="p-box-td" style="width:15%;"><div class="p-grid-cell"></div></td>
-          <td class="p-box-td" style="width:15%;"><div class="p-grid-cell"></div></td>
-          <td class="p-box-td" style="width:14%;"><div class="p-grid-cell"></div></td>
+          <td class="p-box-td" style="width:72%;">
+            <div class="p-practice-grid">
+              <div class="p-grid-cell"><span class="p-cell-no">① なぞり</span><span class="p-trace-txt" style="font-size:${traceFontPt(it.word)}pt;">${it.word}</span></div>
+              <div class="p-grid-cell"><span class="p-cell-no">② 練習</span></div>
+              <div class="p-grid-cell"><span class="p-cell-no">③ 練習</span></div>
+              <div class="p-grid-cell"><span class="p-cell-no">④ 練習</span></div>
+            </div>
+          </td>
         </tr>`).join("");
 
       document.getElementById("print-region").innerHTML = `
@@ -1126,17 +1148,13 @@
           </div>
         </div>
 
-        <div class="section-title">お手本を見て練習しよう（なぞり書き ＋ 4回練習マス）</div>
+        <div class="section-title">お手本を見て練習しよう（なぞり書き ＋ 3回練習）</div>
         <table class="practice-table">
           <thead>
             <tr>
-              <th style="width:4%;">No</th>
-              <th style="width:22%;">お手本</th>
-              <th style="width:15%;">① なぞり</th>
-              <th style="width:15%;">② 練習</th>
-              <th style="width:15%;">③ 練習</th>
-              <th style="width:15%;">④ 練習</th>
-              <th style="width:14%;">⑤ 練習</th>
+              <th style="width:5%;">No</th>
+              <th style="width:23%;">お手本</th>
+              <th style="width:72%;">なぞり書き → 練習（横長のマスに1回ずつ）</th>
             </tr>
           </thead>
           <tbody>${practiceRowsHtml}</tbody>
