@@ -191,6 +191,14 @@
     .status-badge-unpassed { font-size: 0.72rem; font-weight: 700; padding: 3px 8px; border-radius: 10px; background: #fee2e2; color: #dc2626; }
     .history-row { display: flex; justify-content: space-between; align-items: center; padding: 10px 12px; border-bottom: 1px solid #f1f5f9; gap: 8px; }
     .history-row-actions { display: flex; align-items: center; gap: 6px; flex-shrink: 0; }
+    .hist-note { padding: 10px 12px; background: #f8fafc; border-bottom: 1px solid #e2e8f0;
+                 font-size: 0.78rem; color: #475569; display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+    .history-row.is-excluded { background: #fafafa; opacity: 0.62; }
+    .status-badge-excluded { font-size: 0.72rem; font-weight: 700; color: #78716c; background: #e7e5e4;
+                             border-radius: 10px; padding: 3px 8px; }
+    .hist-ex-btn { padding: 6px 8px; font-size: 0.75rem; font-weight: 700; border-radius: 6px;
+                   border: 1px solid var(--border); background: #fff; color: #78716c; cursor: pointer; white-space: nowrap; }
+    .hist-ex-btn.is-on { background: #fef3c7; border-color: #fcd34d; color: #92400e; }
     .hist-toggle-btn { padding: 6px 10px; font-size: 0.85rem; font-weight: 700; border-radius: 6px; border: 2px solid var(--border); background: #fff; cursor: pointer; }
     .hist-toggle-btn.hist-ok.active { background: var(--success); color: #fff; border-color: var(--success); }
     .hist-toggle-btn.hist-ng.active { background: var(--danger); color: #fff; border-color: var(--danger); }
@@ -490,6 +498,10 @@
     // 語をたよりに記録を付け替えられるようにするための副次インデックス。
     // 共有キー(kq_kanji_stats_v1)自体には手を触れないので、kosukequiz-battle側との互換は保たれる
     const MASTERY_WORDS_KEY = "kq_kanji_stats_words_v1";
+    // 「この語は出さない」と自分で決めた語。単元＋語で覚えるので、
+    // データが更新されて id が変わっても設定は失われない。
+    // ⚠️ このキー名も改名しないこと（改名すると設定が読めなくなる）
+    const EXCLUDED_KEY = "kanji_app_excluded_v1";
     const MIGRATED_FLAG_KEY = "kq_kanji_stats_migrated_v1";
 
     // 過去バージョンの記録キー（古い順）。形式はいずれも { <旧id>: {passed, lastDate} }
@@ -642,6 +654,37 @@
       saveWordIndex(data);
     }
 
+    /* ---------- 出題しない語（自分で選ぶ） ---------- */
+    // 単元をまたいで同じ語があることがあるため（例：福岡県は第1回と復習編3の両方）、
+    // 単元ごとに分けて覚える
+    function excludeKeyOf(item) { return item.unitKey + "\u0000" + item.word; }
+    function getExcluded() {
+      try { return new Set(JSON.parse(localStorage.getItem(EXCLUDED_KEY)) || []); } catch(e) { return new Set(); }
+    }
+    function saveExcluded(set) {
+      try { localStorage.setItem(EXCLUDED_KEY, JSON.stringify([...set])); } catch(e) {}
+    }
+    function isExcluded(item, set) { return (set || getExcluded()).has(excludeKeyOf(item)); }
+    function toggleExcluded(id) {
+      const item = KANJI_DATA.find(d => d.id === id);
+      if (!item) return;
+      const set = getExcluded(), key = excludeKeyOf(item);
+      if (set.has(key)) set.delete(key); else set.add(key);
+      saveExcluded(set);
+      currentSet = [];              // 出題セットを作り直す
+      generateDailySet(false);
+      updateProgressDisplay();
+      renderHistoryList();
+    }
+    function restoreAllExcluded() {
+      if (!confirm("出題しないことにした語を、すべて元に戻しますか？")) return;
+      saveExcluded(new Set());
+      currentSet = [];
+      generateDailySet(false);
+      updateProgressDisplay();
+      renderHistoryList();
+    }
+
     /* ---------- 記録の引き継ぎ（バージョンアップで記録が消えないようにする） ---------- */
     // 記録があるidについて「どの語だったか」を控える
     function saveWordIndex(data) {
@@ -744,7 +787,8 @@
         app: "kanji-print-app", type: EXPORT_TYPE, version: 1,
         exportedAt: new Date().toISOString(),
         count: Object.keys(mastery).length,
-        stats: mastery, words: words
+        stats: mastery, words: words,
+        excluded: [...getExcluded()]      // 「出さない」にした語も一緒に持ち出す
       };
     }
     function exportFileName() {
@@ -829,11 +873,20 @@
       });
       if (added + updated === 0 && skipped === 0 && kept === 0) { showIoResult(false, "取りこめる記録がありませんでした。"); return; }
       saveMastery(mastery);
+      let exAdded = 0;
+      if (Array.isArray(data.excluded)) {          // 「出さない」の設定も引きつぐ（足すだけ・消さない）
+        const ex = getExcluded();
+        data.excluded.forEach(k => { if (typeof k === "string" && !ex.has(k)) { ex.add(k); exAdded++; } });
+        if (exAdded > 0) saveExcluded(ex);
+      }
+      currentSet = [];
+      generateDailySet(false);
       updateProgressDisplay();
       renderHistoryList();
       const parts = [`新しく追加 ${added}語`, `上書き ${updated}語`];
       if (kept > 0) parts.push(`こちらの方が新しいので残した ${kept}語`);
       if (skipped > 0) parts.push(`今のデータに無く取りこめなかった ${skipped}語`);
+      if (exAdded > 0) parts.push(`「出さない」の設定 ${exAdded}語`);
       showIoResult(true, "読みこみました。" + parts.join(" / "));
     }
     /* ---------- できた／できなかったの一覧をCSVで書き出す ---------- */
@@ -849,7 +902,8 @@
     // scope: "all" = 全問（未実施も含む） / "done" = 〇✕がついている分だけ
     function exportResultsCsv(scope) {
       const mastery = getMastery();
-      const header = ["No", "単元", "漢字", "読み", "ヒント", "結果", "正解数", "まちがい数", "最後に答えた日"];
+      const header = ["No", "単元", "漢字", "読み", "ヒント", "出題", "結果", "正解数", "まちがい数", "最後に答えた日"];
+      const ex = getExcluded();
       const rows = [];
       const seenWord = new Set();
       KANJI_DATA.forEach(d => {
@@ -860,7 +914,8 @@
         const result = !st ? "未実施"
           : ((st.correct||0) > 0 && !(st.wrong||0)) ? "できた"
           : ((st.wrong||0) > 0 && !(st.correct||0)) ? "できなかった" : "やりなおし中";
-        rows.push([rows.length + 1, d.unit, d.word, d.kana, d.mean, result,
+        rows.push([rows.length + 1, d.unit, d.word, d.kana, d.mean,
+                   isExcluded(d, ex) ? "出さない" : "する", result,
                    st ? (st.correct||0) : 0, st ? (st.wrong||0) : 0, st ? ymd(st.lastAnswered) : ""]);
       });
       if (rows.length === 0) { showIoResult(false, "書き出せる記録がまだありません。"); return; }
@@ -875,7 +930,7 @@
         a.href = url; a.download = name;
         document.body.appendChild(a); a.click(); document.body.removeChild(a);
         setTimeout(() => URL.revokeObjectURL(url), 1000);
-        const done = rows.filter(r => r[5] !== "未実施").length;
+        const done = rows.filter(r => r[6] !== "未実施").length;
         showIoResult(true, `${rows.length}語ぶんを書き出しました（うち記録あり ${done}語）。Excelなどで開けます。`);
       } catch(e) {
         showIoResult(false, "CSVの書き出しに失敗しました。");
@@ -954,19 +1009,26 @@
     // 選んだ単元の出題プール。復習編どうしなど、同じ語が複数の単元に入っていることが
     // あるため、語（word）が重なるものは先に出てくる方だけを残す。
     // 出題・進捗バー・進捗一覧はすべてここを通るので、1か所で除けば表示も数も揃う
-    function getPool() {
+    // 選んだ単元の語。重複する語は1件にしぼる。
+    // 優先順位は ①出題する（除外していない）もの ②すでに〇✕がついているもの ③先に出てくるもの。
+    // ②は、データに単元を足して並び順が変わったときに採用されるidが入れかわり、
+    // 進捗が消えたように見えるのを防ぐため
+    function getSelectedItems() {
       if (selectedUnits.size === 0) return [];
-      const pool = KANJI_DATA.filter(d => selectedUnits.has(d.unitKey));
-      const mastery = getMastery();
-      // 語ごとに1件だけ採用する。すでに〇✕がついている方を優先し、無ければ先に出てくる方。
-      // 記録つきを優先するのは、データに単元を足して並び順が変わったときに、
-      // 採用されるidが入れかわって進捗が消えたように見えるのを防ぐため
+      const list = KANJI_DATA.filter(d => selectedUnits.has(d.unitKey));
+      const mastery = getMastery(), ex = getExcluded();
+      const score = d => (isExcluded(d, ex) ? 0 : 2) + (mastery[d.id] ? 1 : 0);
       const pick = new Map();
-      pool.forEach(d => {
+      list.forEach(d => {
         const prev = pick.get(d.word);
-        if (!prev || (!mastery[prev.id] && mastery[d.id])) pick.set(d.word, d);
+        if (!prev || score(d) > score(prev)) pick.set(d.word, d);
       });
-      return pool.filter(d => pick.get(d.word) === d);
+      return list.filter(d => pick.get(d.word) === d);
+    }
+    // 出題・印刷・進捗バーが使う。自分で「出さない」と決めた語を抜いたもの
+    function getPool() {
+      const ex = getExcluded();
+      return getSelectedItems().filter(d => !isExcluded(d, ex));
     }
 
     /* ---------- 進捗バー ---------- */
@@ -1099,24 +1161,33 @@
 
     /* ---------- 進捗一覧 ---------- */
     function renderHistoryList() {
-      const pool = getPool();
+      const items = getSelectedItems();          // 除外した語も出す（戻せるように）
+      const ex = getExcluded();
       const container = document.getElementById("history-list-container");
-      if (pool.length === 0) { container.innerHTML = "<p style='text-align:center;padding:20px;color:#64748b;'>単元を選択してください。</p>"; return; }
-      container.innerHTML = "";
-      pool.forEach(it => {
+      if (items.length === 0) { container.innerHTML = "<p style='text-align:center;padding:20px;color:#64748b;'>単元を選択してください。</p>"; return; }
+      const exCount = items.filter(d => isExcluded(d, ex)).length;
+      container.innerHTML = exCount > 0
+        ? `<div class="hist-note">この単元で <b>${exCount}語</b> を「出さない」にしています。
+             <button class="btn-sm" onclick="restoreAllExcluded()">すべて元に戻す</button></div>`
+        : `<div class="hist-note">いらない語は「出さない」を押すと、印刷にも出題にも出なくなります。</div>`;
+      items.forEach(it => {
+        const off = isExcluded(it, ex);
         const isPassed = isClearedItem(it.id);
         const res = currentKanjiStatus(it.id); // "correct" | "wrong" | null
         const div = document.createElement("div");
-        div.className = "history-row";
+        div.className = "history-row" + (off ? " is-excluded" : "");
         div.innerHTML = `
           <div>
             <div style="font-size:0.8rem;color:#64748b;">${it.kana} (${it.unitKey})</div>
             <div style="font-size:1.1rem;font-weight:bold;">${it.word}</div>
           </div>
           <div class="history-row-actions">
-            <span class="${isPassed ? 'status-badge-passed' : 'status-badge-unpassed'}">${isPassed ? '⭕ クリア済み' : '❌ 未クリア'}</span>
-            <button class="hist-toggle-btn hist-ok ${res === 'correct' ? 'active' : ''}" onclick="setHistoryResult('${it.id}','ok')">⭕</button>
-            <button class="hist-toggle-btn hist-ng ${res === 'wrong' ? 'active' : ''}" onclick="setHistoryResult('${it.id}','ng')">❌</button>
+            ${off
+              ? `<span class="status-badge-excluded">出さない</span>`
+              : `<span class="${isPassed ? 'status-badge-passed' : 'status-badge-unpassed'}">${isPassed ? '⭕ クリア済み' : '❌ 未クリア'}</span>
+                 <button class="hist-toggle-btn hist-ok ${res === 'correct' ? 'active' : ''}" onclick="setHistoryResult('${it.id}','ok')">⭕</button>
+                 <button class="hist-toggle-btn hist-ng ${res === 'wrong' ? 'active' : ''}" onclick="setHistoryResult('${it.id}','ng')">❌</button>`}
+            <button class="hist-ex-btn ${off ? 'is-on' : ''}" onclick="toggleExcluded('${it.id}')" title="${off ? 'また出題する' : 'この語は出題しない'}">${off ? '↩︎ 戻す' : '🚫 出さない'}</button>
           </div>`;
         container.appendChild(div);
       });
