@@ -685,6 +685,69 @@
       renderHistoryList();
     }
 
+    /* ---------- 「出さない」にした語を GitHub に報告する ----------
+       kosukequiz-battle の「文章を直す → GitHubに報告する」と同じやり方。
+       公開ページにトークンは置けないので、GitHub自身の「新規Issue」フォームを
+       内容を入れた状態で開くだけ。送信するのはログイン済みの本人 */
+    const REPO_URL = "https://github.com/nambanamba/kanji-print-app";
+
+    // その語がどの元データJSONから来たか。直す人がファイルを探せるように
+    function sourceFileOf(item) {
+      const m = /^第(\d+)回$/.exec(item.unitKey);
+      if (m) return `quiz_csv / 第${m[1]}回_漢字.json`;
+      const k = /^夏期講習復習編(\d+)$/.exec(item.unitKey);
+      if (k) return `quiz_csv_夏期講習 / 夏期講習_復習編${k[1]}_漢字.json`;
+      return "（不明）";
+    }
+    // 全単元から「出さない」にした語を集める（今選んでいる単元だけではない）
+    function allExcludedItems() {
+      const ex = getExcluded();
+      return KANJI_DATA.filter(d => isExcluded(d, ex));
+    }
+    function buildRemovalIssue(items) {
+      const title = `[漢字データ削除] ${items.length}語（${[...new Set(items.map(d => d.unitKey))].join("・")}）`;
+      const byFile = new Map();
+      items.forEach(d => {
+        const f = sourceFileOf(d);
+        if (!byFile.has(f)) byFile.set(f, []);
+        byFile.get(f).push(d);
+      });
+      const body = [
+        "漢字プリントアプリの「🚫 出さない」で選んだ、練習として不要な語です。",
+        "データから消してください。", "",
+        `対象：**${items.length}語**`, "",
+        "## 消す語", ""
+      ];
+      byFile.forEach((list, file) => {
+        body.push(`### ${file}`, "", "| id | 漢字 | 読み | ヒント |", "|---|---|---|---|");
+        list.forEach(d => body.push(`| \`${d.id}\` | ${d.word} | ${d.kana} | ${d.mean} |`));
+        body.push("");
+      });
+      body.push(
+        "## 反映するところ", "",
+        "- 元データ（Googleドライブ）… 上の表のファイル",
+        "- `kanji-data.js` の `KANJI_DATA` と `KANJI_UNITS` の `count`",
+        "- kosukequiz-battle 側の `data.js` の `KANJI_DATA`（漢字ファイルを共有しているため）", "",
+        "※ 対戦クイズ本体の問題ファイル（`第N回_単元名.json`）は別ファイルなので、そちらは変更不要です。", "",
+        "---", "漢字プリントアプリの「GitHubに報告」から作成"
+      );
+      return { title, body: body.join("\n") };
+    }
+    function reportRemovalToGitHub() {
+      const items = allExcludedItems();
+      if (items.length === 0) { showIoResult(false, "「🚫 出さない」にした語がまだありません。"); return; }
+      const { title, body } = buildRemovalIssue(items);
+      const url = REPO_URL + "/issues/new?title=" + encodeURIComponent(title) + "&body=" + encodeURIComponent(body);
+      if (url.length > 7000) {   // URLが長すぎるとブラウザやGitHubに弾かれるので、貼りつけ用に出す
+        document.getElementById("io-text-area").style.display = "block";
+        document.getElementById("io-textarea").value = title + "\n\n" + body;
+        showIoResult(false, `${items.length}語は多すぎてURLで渡せません。上の文をコピーして、GitHubで新しいIssueを作って貼りつけてください。`);
+        return;
+      }
+      window.open(url, "_blank", "noopener");
+      showIoResult(true, `${items.length}語ぶんの内容を入れたIssue作成画面を開きました。GitHubで「Create」を押すと報告されます。`);
+    }
+
     /* ---------- 記録の引き継ぎ（バージョンアップで記録が消えないようにする） ---------- */
     // 記録があるidについて「どの語だったか」を控える
     function saveWordIndex(data) {
@@ -1166,10 +1229,14 @@
       const container = document.getElementById("history-list-container");
       if (items.length === 0) { container.innerHTML = "<p style='text-align:center;padding:20px;color:#64748b;'>単元を選択してください。</p>"; return; }
       const exCount = items.filter(d => isExcluded(d, ex)).length;
-      container.innerHTML = exCount > 0
-        ? `<div class="hist-note">この単元で <b>${exCount}語</b> を「出さない」にしています。
-             <button class="btn-sm" onclick="restoreAllExcluded()">すべて元に戻す</button></div>`
-        : `<div class="hist-note">いらない語は「出さない」を押すと、印刷にも出題にも出なくなります。</div>`;
+      const exTotal = ex.size;
+      container.innerHTML = exCount > 0 || exTotal > 0
+        ? `<div class="hist-note">
+             <span>この単元で <b>${exCount}語</b>、全体で <b>${exTotal}語</b> を「出さない」にしています。</span>
+             <button class="btn-sm" onclick="reportRemovalToGitHub()">🐙 GitHubに報告して消してもらう</button>
+             <button class="btn-sm" onclick="restoreAllExcluded()">すべて元に戻す</button>
+           </div>`
+        : `<div class="hist-note">いらない語は「🚫 出さない」を押すと、印刷にも出題にも出なくなります。まとめてGitHubに報告して、データから消してもらうこともできます。</div>`;
       items.forEach(it => {
         const off = isExcluded(it, ex);
         const isPassed = isClearedItem(it.id);
