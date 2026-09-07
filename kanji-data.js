@@ -8,17 +8,6 @@ const KANJI_DATA = [
   // 第1回：旧石器時代・縄文時代・弥生時代 (40語)
   // ========================================
   {
-    id: "k1_01",
-    unit: "第1回.旧石器時代・縄文時代・弥生時代",
-    unitKey: "第1回",
-    word: "岩宿遺跡",
-    kana: "いわじゅくいせき",
-    mean: "旧石器時代の存在を明らかにした遺跡（群馬県）",
-    kai: 1,
-    priority: "高",
-    level: "基礎"
-  },
-  {
     id: "k1_02",
     unit: "第1回.旧石器時代・縄文時代・弥生時代",
     unitKey: "第1回",
@@ -228,17 +217,6 @@ const KANJI_DATA = [
     level: "基礎"
   },
   {
-    id: "k1_21",
-    unit: "第1回.旧石器時代・縄文時代・弥生時代",
-    unitKey: "第1回",
-    word: "縄文土器",
-    kana: "じょうもんどき",
-    mean: "縄目の文様がついた、縄文時代の土器",
-    kai: 1,
-    priority: "高",
-    level: "基礎"
-  },
-  {
     id: "k1_22",
     unit: "第1回.旧石器時代・縄文時代・弥生時代",
     unitKey: "第1回",
@@ -261,17 +239,6 @@ const KANJI_DATA = [
     level: "基礎"
   },
   {
-    id: "k1_24",
-    unit: "第1回.旧石器時代・縄文時代・弥生時代",
-    unitKey: "第1回",
-    word: "卑弥呼",
-    kana: "ひみこ",
-    mean: "邪馬台国の女王",
-    kai: 1,
-    priority: "高",
-    level: "標準"
-  },
-  {
     id: "k1_25",
     unit: "第1回.旧石器時代・縄文時代・弥生時代",
     unitKey: "第1回",
@@ -283,67 +250,12 @@ const KANJI_DATA = [
     level: "標準"
   },
   {
-    id: "k1_26",
-    unit: "第1回.旧石器時代・縄文時代・弥生時代",
-    unitKey: "第1回",
-    word: "群馬県",
-    kana: "ぐんまけん",
-    mean: "岩宿遺跡がある県",
-    kai: 1,
-    priority: "高",
-    level: "発展"
-  },
-  {
-    id: "k1_27",
-    unit: "第1回.旧石器時代・縄文時代・弥生時代",
-    unitKey: "第1回",
-    word: "青森県",
-    kana: "あおもりけん",
-    mean: "三内丸山遺跡がある県",
-    kai: 1,
-    priority: "高",
-    level: "発展"
-  },
-  {
     id: "k1_28",
     unit: "第1回.旧石器時代・縄文時代・弥生時代",
     unitKey: "第1回",
     word: "野尻湖",
     kana: "のじりこ",
     mean: "ナウマンゾウの化石が出土した湖（長野県）",
-    kai: 1,
-    priority: "中",
-    level: "基礎"
-  },
-  {
-    id: "k1_29",
-    unit: "第1回.旧石器時代・縄文時代・弥生時代",
-    unitKey: "第1回",
-    word: "貧富",
-    kana: "ひんぷ",
-    mean: "米づくりが広まり、たくわえの差から生まれた差",
-    kai: 1,
-    priority: "中",
-    level: "基礎"
-  },
-  {
-    id: "k1_30",
-    unit: "第1回.旧石器時代・縄文時代・弥生時代",
-    unitKey: "第1回",
-    word: "金属器",
-    kana: "きんぞくき",
-    mean: "稲作とともに伝わった、鉄器や青銅器の総称",
-    kai: 1,
-    priority: "中",
-    level: "基礎"
-  },
-  {
-    id: "k1_31",
-    unit: "第1回.旧石器時代・縄文時代・弥生時代",
-    unitKey: "第1回",
-    word: "沖縄",
-    kana: "おきなわ",
-    mean: "稲作が広まったころ、北海道とともにまだ稲作が行われなかった地域",
     kai: 1,
     priority: "中",
     level: "基礎"
@@ -382,39 +294,6 @@ const KANJI_DATA = [
     level: "標準"
   },
   {
-    id: "k1_35",
-    unit: "第1回.旧石器時代・縄文時代・弥生時代",
-    unitKey: "第1回",
-    word: "福岡県",
-    kana: "ふくおかけん",
-    mean: "漢委奴国王の金印が発見された志賀島がある県",
-    kai: 1,
-    priority: "中",
-    level: "標準"
-  },
-  {
-    id: "k1_36",
-    unit: "第1回.旧石器時代・縄文時代・弥生時代",
-    unitKey: "第1回",
-    word: "身分",
-    kana: "みぶん",
-    mean: "貧富の差とともに生まれた、人々の上下関係",
-    kai: 1,
-    priority: "中",
-    level: "標準"
-  },
-  {
-    id: "k1_37",
-    unit: "第1回.旧石器時代・縄文時代・弥生時代",
-    unitKey: "第1回",
-    word: "祭器",
-    kana: "さいき",
-    mean: "祭りの道具として使われた青銅器の総称",
-    kai: 1,
-    priority: "中",
-    level: "標準"
-  },
-  {
     id: "k1_38",
     unit: "第1回.旧石器時代・縄文時代・弥生時代",
     unitKey: "第1回",
@@ -424,28 +303,6 @@ const KANJI_DATA = [
     kai: 1,
     priority: "中",
     level: "発展"
-  },
-  {
-    id: "k1_39",
-    unit: "第1回.旧石器時代・縄文時代・弥生時代",
-    unitKey: "第1回",
-    word: "臼と杵",
-    kana: "うすときね",
-    mean: "収穫した稲を脱穀するのに使った道具",
-    kai: 1,
-    priority: "中",
-    level: "発展"
-  },
-  {
-    id: "k1_40",
-    unit: "第1回.旧石器時代・縄文時代・弥生時代",
-    unitKey: "第1回",
-    word: "交易",
-    kana: "こうえき",
-    mean: "縄文時代、足りないものを物々交換でおぎなう活動",
-    kai: 1,
-    priority: "低",
-    level: "基礎"
   },
   // ========================================
   // 第2回：古墳時代・飛鳥時代 (43語)
@@ -517,17 +374,6 @@ const KANJI_DATA = [
     level: "基礎"
   },
   {
-    id: "k2_07",
-    unit: "第2回.古墳時代・飛鳥時代",
-    unitKey: "第2回",
-    word: "小野妹子",
-    kana: "おののいもこ",
-    mean: "607年に遣隋使として派遣された人物",
-    kai: 2,
-    priority: "高",
-    level: "基礎"
-  },
-  {
     id: "k2_08",
     unit: "第2回.古墳時代・飛鳥時代",
     unitKey: "第2回",
@@ -561,45 +407,12 @@ const KANJI_DATA = [
     level: "基礎"
   },
   {
-    id: "k2_11",
-    unit: "第2回.古墳時代・飛鳥時代",
-    unitKey: "第2回",
-    word: "儒教",
-    kana: "じゅきょう",
-    mean: "5世紀に百済から伝えられた、孔子の教え",
-    kai: 2,
-    priority: "高",
-    level: "基礎"
-  },
-  {
-    id: "k2_12",
-    unit: "第2回.古墳時代・飛鳥時代",
-    unitKey: "第2回",
-    word: "仏教",
-    kana: "ぶっきょう",
-    mean: "6世紀に百済から公に伝えられた、インドのシャカの教え",
-    kai: 2,
-    priority: "高",
-    level: "基礎"
-  },
-  {
     id: "k2_13",
     unit: "第2回.古墳時代・飛鳥時代",
     unitKey: "第2回",
     word: "百済",
     kana: "くだら",
     mean: "儒教・仏教を公に日本に伝えた国",
-    kai: 2,
-    priority: "高",
-    level: "基礎"
-  },
-  {
-    id: "k2_14",
-    unit: "第2回.古墳時代・飛鳥時代",
-    unitKey: "第2回",
-    word: "蘇我",
-    kana: "そが",
-    mean: "6世紀に勢力を強め、聖徳太子の死後は天皇をしのぐほどになった氏族",
     kai: 2,
     priority: "高",
     level: "基礎"
@@ -671,45 +484,12 @@ const KANJI_DATA = [
     level: "基礎"
   },
   {
-    id: "k2_21",
-    unit: "第2回.古墳時代・飛鳥時代",
-    unitKey: "第2回",
-    word: "中大兄皇子",
-    kana: "なかのおおえのおうじ",
-    mean: "中臣鎌足とともに蘇我氏を倒した人物（後の天智天皇）",
-    kai: 2,
-    priority: "高",
-    level: "基礎"
-  },
-  {
-    id: "k2_22",
-    unit: "第2回.古墳時代・飛鳥時代",
-    unitKey: "第2回",
-    word: "中臣鎌足",
-    kana: "なかとみのかまたり",
-    mean: "中大兄皇子とともに蘇我氏を倒した人物",
-    kai: 2,
-    priority: "高",
-    level: "基礎"
-  },
-  {
     id: "k2_23",
     unit: "第2回.古墳時代・飛鳥時代",
     unitKey: "第2回",
     word: "壬申の乱",
     kana: "じんしんのらん",
     mean: "天智天皇の後つぎをめぐり672年に起こった戦い",
-    kai: 2,
-    priority: "高",
-    level: "基礎"
-  },
-  {
-    id: "k2_24",
-    unit: "第2回.古墳時代・飛鳥時代",
-    unitKey: "第2回",
-    word: "持統天皇",
-    kana: "じとうてんのう",
-    mean: "694年に藤原京をきずいた天皇",
     kai: 2,
     priority: "高",
     level: "基礎"
@@ -737,28 +517,6 @@ const KANJI_DATA = [
     level: "基礎"
   },
   {
-    id: "k2_27",
-    unit: "第2回.古墳時代・飛鳥時代",
-    unitKey: "第2回",
-    word: "藤原京",
-    kana: "ふじわらきょう",
-    mean: "持統天皇が奈良盆地にきずいた本格的な都",
-    kai: 2,
-    priority: "高",
-    level: "基礎"
-  },
-  {
-    id: "k2_28",
-    unit: "第2回.古墳時代・飛鳥時代",
-    unitKey: "第2回",
-    word: "厩戸皇子",
-    kana: "うまやどのおうじ",
-    mean: "聖徳太子のもう一つの名",
-    kai: 2,
-    priority: "高",
-    level: "標準"
-  },
-  {
     id: "k2_29",
     unit: "第2回.古墳時代・飛鳥時代",
     unitKey: "第2回",
@@ -768,17 +526,6 @@ const KANJI_DATA = [
     kai: 2,
     priority: "高",
     level: "発展"
-  },
-  {
-    id: "k2_30",
-    unit: "第2回.古墳時代・飛鳥時代",
-    unitKey: "第2回",
-    word: "ワカタケル大王",
-    kana: "わかたけるだいおう",
-    mean: "江田船山古墳・稲荷山古墳の鉄刀・鉄剣に名が刻まれた大王",
-    kai: 2,
-    priority: "中",
-    level: "基礎"
   },
   {
     id: "k2_31",
@@ -814,56 +561,12 @@ const KANJI_DATA = [
     level: "基礎"
   },
   {
-    id: "k2_34",
-    unit: "第2回.古墳時代・飛鳥時代",
-    unitKey: "第2回",
-    word: "大王",
-    kana: "だいおう",
-    mean: "ヤマト政権を中心となってまとめた、後の天皇にあたる存在",
-    kai: 2,
-    priority: "中",
-    level: "基礎"
-  },
-  {
     id: "k2_35",
     unit: "第2回.古墳時代・飛鳥時代",
     unitKey: "第2回",
     word: "豪族",
     kana: "ごうぞく",
     mean: "ヤマト政権のもとで、それぞれ氏をつくっていた有力者",
-    kai: 2,
-    priority: "中",
-    level: "基礎"
-  },
-  {
-    id: "k2_36",
-    unit: "第2回.古墳時代・飛鳥時代",
-    unitKey: "第2回",
-    word: "江田船山古墳",
-    kana: "えたふなやまこふん",
-    mean: "ワカタケル大王の名が刻まれた鉄刀が出土した古墳（熊本県）",
-    kai: 2,
-    priority: "中",
-    level: "基礎"
-  },
-  {
-    id: "k2_37",
-    unit: "第2回.古墳時代・飛鳥時代",
-    unitKey: "第2回",
-    word: "稲荷山古墳",
-    kana: "いなりやまこふん",
-    mean: "ワカタケル大王の名が刻まれた鉄剣が出土した古墳（埼玉県）",
-    kai: 2,
-    priority: "中",
-    level: "基礎"
-  },
-  {
-    id: "k2_38",
-    unit: "第2回.古墳時代・飛鳥時代",
-    unitKey: "第2回",
-    word: "氏姓制度",
-    kana: "しせいせいど",
-    mean: "豪族が氏をつくり、家柄に応じて姓をあたえられたヤマト政権のしくみ",
     kai: 2,
     priority: "中",
     level: "基礎"
@@ -886,17 +589,6 @@ const KANJI_DATA = [
     word: "新羅",
     kana: "しらぎ",
     mean: "唐と結んで百済を滅ぼした国",
-    kai: 2,
-    priority: "中",
-    level: "基礎"
-  },
-  {
-    id: "k2_41",
-    unit: "第2回.古墳時代・飛鳥時代",
-    unitKey: "第2回",
-    word: "大津",
-    kana: "おおつ",
-    mean: "白村江の戦いのあと中大兄皇子が都を移した地",
     kai: 2,
     priority: "中",
     level: "基礎"
@@ -1026,28 +718,6 @@ const KANJI_DATA = [
     level: "基礎"
   },
   {
-    id: "k3_10",
-    unit: "第3回.奈良時代",
-    unitKey: "第3回",
-    word: "郡司",
-    kana: "ぐんじ",
-    mean: "郡におかれ、その地方の豪族が任命された役人",
-    kai: 3,
-    priority: "高",
-    level: "基礎"
-  },
-  {
-    id: "k3_11",
-    unit: "第3回.奈良時代",
-    unitKey: "第3回",
-    word: "戸籍",
-    kana: "こせき",
-    mean: "朝廷が6年ごとにつくった、人々を登録する台帳",
-    kai: 3,
-    priority: "高",
-    level: "基礎"
-  },
-  {
     id: "k3_12",
     unit: "第3回.奈良時代",
     unitKey: "第3回",
@@ -1065,72 +735,6 @@ const KANJI_DATA = [
     word: "租",
     kana: "そ",
     mean: "口分田にかけられ、収穫の約3％の稲を納める税",
-    kai: 3,
-    priority: "高",
-    level: "基礎"
-  },
-  {
-    id: "k3_14",
-    unit: "第3回.奈良時代",
-    unitKey: "第3回",
-    word: "長安",
-    kana: "ちょうあん",
-    mean: "平城京がならってつくられた、唐の都",
-    kai: 3,
-    priority: "高",
-    level: "基礎"
-  },
-  {
-    id: "k3_15",
-    unit: "第3回.奈良時代",
-    unitKey: "第3回",
-    word: "仏教",
-    kana: "ぶっきょう",
-    mean: "聖武天皇が、その力で社会の不安をしずめようとした教え",
-    kai: 3,
-    priority: "高",
-    level: "基礎"
-  },
-  {
-    id: "k3_16",
-    unit: "第3回.奈良時代",
-    unitKey: "第3回",
-    word: "国分寺",
-    kana: "こくぶんじ",
-    mean: "741年、聖武天皇が国ごとに建てるよう命じた、男性の僧のための寺",
-    kai: 3,
-    priority: "高",
-    level: "基礎"
-  },
-  {
-    id: "k3_17",
-    unit: "第3回.奈良時代",
-    unitKey: "第3回",
-    word: "東大寺",
-    kana: "とうだいじ",
-    mean: "聖武天皇の命令で大仏がつくられた、奈良県の寺",
-    kai: 3,
-    priority: "高",
-    level: "基礎"
-  },
-  {
-    id: "k3_18",
-    unit: "第3回.奈良時代",
-    unitKey: "第3回",
-    word: "大仏",
-    kana: "だいぶつ",
-    mean: "聖武天皇の命令で東大寺につくられた、752年完成の仏像",
-    kai: 3,
-    priority: "高",
-    level: "基礎"
-  },
-  {
-    id: "k3_19",
-    unit: "第3回.奈良時代",
-    unitKey: "第3回",
-    word: "行基",
-    kana: "ぎょうき",
-    mean: "各地で仏の教えを説き、大仏づくりにも協力した僧",
     kai: 3,
     priority: "高",
     level: "基礎"
@@ -6020,9 +5624,9 @@ const KANJI_DATA = [
 
 // 単元一覧（ホーム画面の単元選択チップ用）
 const KANJI_UNITS = [
-  { key: "第1回", name: "第1回.旧石器時代・縄文時代・弥生時代", count: 40 },
-  { key: "第2回", name: "第2回.古墳時代・飛鳥時代", count: 43 },
-  { key: "第3回", name: "第3回.奈良時代", count: 40 },
+  { key: "第1回", name: "第1回.旧石器時代・縄文時代・弥生時代", count: 27 },
+  { key: "第2回", name: "第2回.古墳時代・飛鳥時代", count: 28 },
+  { key: "第3回", name: "第3回.奈良時代", count: 32 },
   { key: "第4回", name: "第4回.平安時代", count: 46 },
   { key: "夏期講習復習編2", name: "夏期講習 復習編2.工業・資源・輸送機関", count: 30 },
   { key: "夏期講習復習編3", name: "夏期講習 復習編3.九州地方", count: 52 },
