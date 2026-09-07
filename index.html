@@ -191,6 +191,10 @@
     .status-badge-unpassed { font-size: 0.72rem; font-weight: 700; padding: 3px 8px; border-radius: 10px; background: #fee2e2; color: #dc2626; }
     .history-row { display: flex; justify-content: space-between; align-items: center; padding: 10px 12px; border-bottom: 1px solid #f1f5f9; gap: 8px; }
     .history-row-actions { display: flex; align-items: center; gap: 6px; flex-shrink: 0; }
+    .hist-note-actions { display: flex; gap: 8px; flex-wrap: wrap; }
+    .hist-note-sub { flex-basis: 100%; font-size: 0.72rem; color: #64748b; line-height: 1.5; }
+    a.hist-report { display: inline-block; text-decoration: none; }
+    .hist-report { background: #ecfdf5 !important; border-color: #6ee7b7 !important; color: #047857 !important; font-weight: 700; }
     .hist-note { padding: 10px 12px; background: #f8fafc; border-bottom: 1px solid #e2e8f0;
                  font-size: 0.78rem; color: #475569; display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
     .history-row.is-excluded { background: #fafafa; opacity: 0.62; }
@@ -733,19 +737,21 @@
       );
       return { title, body: body.join("\n") };
     }
-    function reportRemovalToGitHub() {
-      const items = allExcludedItems();
-      if (items.length === 0) { showIoResult(false, "「🚫 出さない」にした語がまだありません。"); return; }
+    function removalIssueUrl(items) {
       const { title, body } = buildRemovalIssue(items);
-      const url = REPO_URL + "/issues/new?title=" + encodeURIComponent(title) + "&body=" + encodeURIComponent(body);
-      if (url.length > 7000) {   // URLが長すぎるとブラウザやGitHubに弾かれるので、貼りつけ用に出す
-        document.getElementById("io-text-area").style.display = "block";
-        document.getElementById("io-textarea").value = title + "\n\n" + body;
-        showIoResult(false, `${items.length}語は多すぎてURLで渡せません。上の文をコピーして、GitHubで新しいIssueを作って貼りつけてください。`);
-        return;
-      }
-      window.open(url, "_blank", "noopener");
-      showIoResult(true, `${items.length}語ぶんの内容を入れたIssue作成画面を開きました。GitHubで「Create」を押すと報告されます。`);
+      return REPO_URL + "/issues/new?title=" + encodeURIComponent(title) + "&body=" + encodeURIComponent(body);
+    }
+    function escapeAttr(v) { return String(v).replace(/&/g, "&amp;").replace(/"/g, "&quot;"); }
+    // 語が多くてURLに載らないときの逃げ道。貼りつけ用の文を出す
+    function showRemovalText() {
+      const items = allExcludedItems();
+      if (items.length === 0) return;
+      const { title, body } = buildRemovalIssue(items);
+      const area = document.getElementById("io-text-area");
+      area.style.display = "block";
+      document.getElementById("io-textarea").value = title + "\n\n" + body;
+      showIoResult(false, `${items.length}語は多すぎてボタンで渡せません。上の文をコピーして、GitHubで新しいIssueを作って貼りつけてください。`);
+      area.scrollIntoView({ behavior: "smooth", block: "center" });
     }
 
     /* ---------- 記録の引き継ぎ（バージョンアップで記録が消えないようにする） ---------- */
@@ -1230,11 +1236,20 @@
       if (items.length === 0) { container.innerHTML = "<p style='text-align:center;padding:20px;color:#64748b;'>単元を選択してください。</p>"; return; }
       const exCount = items.filter(d => isExcluded(d, ex)).length;
       const exTotal = ex.size;
-      container.innerHTML = exCount > 0 || exTotal > 0
+      let report = "";
+      if (exTotal > 0) {
+        // ボタン（window.open）だとスマホでブロックされることがあるので、ふつうのリンクにする
+        const url = removalIssueUrl(allExcludedItems());
+        report = url.length <= 7000
+          ? `<a class="btn-sm hist-report" href="${escapeAttr(url)}" target="_blank" rel="noopener">🐙 GitHubに報告して消してもらう</a>`
+          : `<button class="btn-sm hist-report" onclick="showRemovalText()">🐙 報告する文を出す（語が多いため）</button>`;
+      }
+      container.innerHTML = exTotal > 0
         ? `<div class="hist-note">
              <span>この単元で <b>${exCount}語</b>、全体で <b>${exTotal}語</b> を「出さない」にしています。</span>
-             <button class="btn-sm" onclick="reportRemovalToGitHub()">🐙 GitHubに報告して消してもらう</button>
-             <button class="btn-sm" onclick="restoreAllExcluded()">すべて元に戻す</button>
+             <span class="hist-note-actions">${report}
+               <button class="btn-sm" onclick="restoreAllExcluded()">すべて元に戻す</button></span>
+             <span class="hist-note-sub">↑を押すとGitHubのIssue作成画面が開きます。そこで「Create」を押すと報告され、しばらくするとプルリクが自動で作られます。</span>
            </div>`
         : `<div class="hist-note">いらない語は「🚫 出さない」を押すと、印刷にも出題にも出なくなります。まとめてGitHubに報告して、データから消してもらうこともできます。</div>`;
       items.forEach(it => {
