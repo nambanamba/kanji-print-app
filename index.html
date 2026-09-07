@@ -716,24 +716,19 @@
         if (!byFile.has(f)) byFile.set(f, []);
         byFile.get(f).push(d);
       });
-      const body = [
-        "漢字プリントアプリの「🚫 出さない」で選んだ、練習として不要な語です。",
-        "データから消してください。", "",
-        `対象：**${items.length}語**`, "",
-        "## 消す語", ""
-      ];
+      // URLに載せて渡すため、本文は短くする。日本語1文字はURL上で9文字分
+      // （%E7%BE%A4）になるので、読み・ヒントまで入れるとすぐ長さの上限に当たる。
+      // 自動処理に要るのは id と漢字だけ（漢字は取りちがえ防止の照合に使う）
+      const body = [`練習として不要な語 **${items.length}語** です。データから消してください。`, ""];
       byFile.forEach((list, file) => {
-        body.push(`### ${file}`, "", "| id | 漢字 | 読み | ヒント |", "|---|---|---|---|");
-        list.forEach(d => body.push(`| \`${d.id}\` | ${d.word} | ${d.kana} | ${d.mean} |`));
+        body.push(`### ${file}`, "", "| id | 漢字 |", "|---|---|");
+        list.forEach(d => body.push(`| \`${d.id}\` | ${d.word} |`));
         body.push("");
       });
       body.push(
-        "## 反映するところ", "",
-        "- 元データ（Googleドライブ）… 上の表のファイル",
-        "- `kanji-data.js` の `KANJI_DATA` と `KANJI_UNITS` の `count`",
-        "- kosukequiz-battle 側の `data.js` の `KANJI_DATA`（漢字ファイルを共有しているため）", "",
-        "※ 対戦クイズ本体の問題ファイル（`第N回_単元名.json`）は別ファイルなので、そちらは変更不要です。", "",
-        "---", "漢字プリントアプリの「GitHubに報告」から作成"
+        "元データJSON（上の見出しのファイル）と kosukequiz-battle 側の `data.js` も要修正。",
+        "対戦クイズ本体の問題ファイルは別なので変更不要。", "",
+        "---", "漢字プリントアプリから作成"
       );
       return { title, body: body.join("\n") };
     }
@@ -1240,7 +1235,7 @@
       if (exTotal > 0) {
         // ボタン（window.open）だとスマホでブロックされることがあるので、ふつうのリンクにする
         const url = removalIssueUrl(allExcludedItems());
-        report = url.length <= 7000
+        report = url.length <= 8000
           ? `<a class="btn-sm hist-report" href="${escapeAttr(url)}" target="_blank" rel="noopener">🐙 GitHubに報告して消してもらう</a>`
           : `<button class="btn-sm hist-report" onclick="showRemovalText()">🐙 報告する文を出す（語が多いため）</button>`;
       }

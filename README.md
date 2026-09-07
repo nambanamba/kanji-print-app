@@ -105,6 +105,8 @@ quiz_csv 側（Googleドライブ）には、回ごとに**2種類**のJSONが�
                               GitHub Pages に反映
 ```
 
+Issue本文は **id と漢字だけ**の短い表にしています。日本語1文字はURL上で9文字分（`%E7%BE%A4`）になるため、読みやヒントまで入れると30語ほどでURLの長さの上限に当たり、ボタンで渡せなくなるからです。この形なら**80語までボタン1つ**で報告でき、それを超えると貼りつけ用の文に切り替わります。
+
 - `.github/workflows/apply-kanji-removal.yml` … Issueを見てプルリクを作る
 - `.github/scripts/apply-kanji-removal.js` … `kanji-data.js` から語を消し、`KANJI_UNITS` の `count` も合わせる
 
