@@ -124,6 +124,7 @@
     .io-result.ok { background: #f0fdf4; border: 1px solid #86efac; color: #15803d; }
     .io-result.ng { background: #fef2f2; border: 1px solid #fca5a5; color: #b91c1c; }
 
+    .prio-note { margin-top: 6px; font-size: 0.75rem; color: #64748b; line-height: 1.5; }
     .setting-group { margin-top: 14px; padding-top: 14px; border-top: 1px solid #f1f5f9; }
     .setting-label { font-size: 0.88rem; font-weight: 700; margin-bottom: 8px; color: #334155; }
 
@@ -386,6 +387,16 @@
         <div class="unit-grid" id="unit-grid-container"></div>
 
         <div class="setting-group">
+          <div class="setting-label">どこまで練習する？（重要度でしぼる）</div>
+          <div class="chip-row">
+            <button class="chip" id="prio-high" onclick="setPriorityFilter('high')">高だけ</button>
+            <button class="chip" id="prio-highmid" onclick="setPriorityFilter('highmid')">高＋中</button>
+            <button class="chip active" id="prio-all" onclick="setPriorityFilter('all')">すべて</button>
+          </div>
+          <div class="prio-note" id="prio-note"></div>
+        </div>
+
+        <div class="setting-group">
           <div class="setting-label">出題フィルタ（任意、両方ONなら「どちらか当てはまる」語が対象）</div>
           <div class="chip-row">
             <button class="chip" id="filter-unmastered" onclick="toggleFilter('unmastered')">正解ずみを除く</button>
@@ -540,6 +551,9 @@
     let currentResults = {};
     let filterUnmastered = false; // 正解ずみを除く（対戦クイズ本体と同じ名前）
     let filterWeak       = false; // 苦手な問題だけ
+    // 重要度でしぼる。"all" | "highmid" | "high"。データは消さず、出題する範囲だけ変える
+    let priorityFilter = "all";
+    const PRIORITY_KEEP = { all: ["高", "中", "低"], highmid: ["高", "中"], high: ["高"] };
 
     // ---- 正誤の判定方法（kosukequiz-battle/kosukequiz-battleのクイズ本体と共通の
     //      間隔反復アルゴリズム）----
@@ -590,6 +604,7 @@
       updateProgressDisplay();
       updateSelectedCountLabel();
       generateDailySet(false);
+      updatePriorityNote();
     });
 
     /* ---------- 設定の保存・読込 ---------- */
@@ -610,6 +625,11 @@
             document.getElementById("count-custom-input").value = currentCount;
           }
         }
+        if (PRIORITY_KEEP[cached.priorityFilter]) {
+          priorityFilter = cached.priorityFilter;
+          ["all", "highmid", "high"].forEach(k =>
+            document.getElementById("prio-" + k).classList.toggle("active", k === priorityFilter));
+        }
         if (typeof cached.filterUnmastered === "boolean") filterUnmastered = cached.filterUnmastered;
         if (typeof cached.filterWeak === "boolean") filterWeak = cached.filterWeak;
         document.getElementById("filter-unmastered").classList.toggle("active", filterUnmastered);
@@ -623,9 +643,30 @@
           selectedUnits: Array.from(selectedUnits),
           count: currentCount,
           filterUnmastered: filterUnmastered,
-          filterWeak: filterWeak
+          filterWeak: filterWeak,
+          priorityFilter: priorityFilter
         }));
       } catch (e) {}
+    }
+
+    function setPriorityFilter(v) {
+      priorityFilter = v;
+      ["all", "highmid", "high"].forEach(k =>
+        document.getElementById("prio-" + k).classList.toggle("active", k === v));
+      currentSet = [];
+      generateDailySet(false);
+      updateProgressDisplay();
+      renderHistoryList();
+      updatePriorityNote();
+      saveCachedSettings();
+    }
+    function updatePriorityNote() {
+      const el = document.getElementById("prio-note");
+      if (!el) return;
+      const all = getPoolIgnoringPriority().length, now = getPool().length;
+      el.textContent = priorityFilter === "all"
+        ? `選んだ単元の ${all}語 すべてが対象です。`
+        : `${all}語のうち ${now}語 にしぼっています（${all - now}語は今回出しません）。`;
     }
 
     function toggleFilter(type) {
@@ -1090,9 +1131,14 @@
       return list.filter(d => pick.get(d.word) === d);
     }
     // 出題・印刷・進捗バーが使う。自分で「出さない」と決めた語を抜いたもの
-    function getPool() {
+    function getPoolIgnoringPriority() {
       const ex = getExcluded();
       return getSelectedItems().filter(d => !isExcluded(d, ex));
+    }
+    // 出題・印刷・進捗バーが使う。「出さない」にした語と、重要度でしぼった分を抜いたもの
+    function getPool() {
+      const keep = PRIORITY_KEEP[priorityFilter] || PRIORITY_KEEP.all;
+      return getPoolIgnoringPriority().filter(d => keep.includes(d.priority));
     }
 
     /* ---------- 進捗バー ---------- */
@@ -1156,6 +1202,7 @@
       currentResults = {};
       const pv = document.getElementById("preview-area");
       if (pv && pv.style.display !== "none") renderPreview();   // 開いていれば内容を追随させる
+      updatePriorityNote();
     }
 
     // ①②とも同じセットを使う。セットが未生成のときだけ新しく作る（単元・問題数を変えると自動でクリアされる）
