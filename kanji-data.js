@@ -553,28 +553,6 @@ const KANJI_DATA = [
     level: "基礎"
   },
   {
-    id: "k3_02",
-    unit: "第3回.奈良時代",
-    unitKey: "第3回",
-    word: "調",
-    kana: "ちょう",
-    mean: "地方の特産物を納める税",
-    kai: 3,
-    priority: "高",
-    level: "基礎"
-  },
-  {
-    id: "k3_03",
-    unit: "第3回.奈良時代",
-    unitKey: "第3回",
-    word: "庸",
-    kana: "よう",
-    mean: "都で10日間働く代わりに布を納める税",
-    kai: 3,
-    priority: "高",
-    level: "基礎"
-  },
-  {
     id: "k3_04",
     unit: "第3回.奈良時代",
     unitKey: "第3回",
@@ -608,116 +586,6 @@ const KANJI_DATA = [
     level: "基礎"
   },
   {
-    id: "k3_08",
-    unit: "第3回.奈良時代",
-    unitKey: "第3回",
-    word: "鑑真",
-    kana: "がんじん",
-    mean: "苦難をのりこえて唐から来日し、日本の僧の制度を整えた人物",
-    kai: 3,
-    priority: "高",
-    level: "基礎"
-  },
-  {
-    id: "k3_12",
-    unit: "第3回.奈良時代",
-    unitKey: "第3回",
-    word: "班田収授",
-    kana: "はんでんしゅうじゅ",
-    mean: "戸籍にもとづいて口分田をあたえるしくみ",
-    kai: 3,
-    priority: "高",
-    level: "基礎"
-  },
-  {
-    id: "k3_13",
-    unit: "第3回.奈良時代",
-    unitKey: "第3回",
-    word: "租",
-    kana: "そ",
-    mean: "口分田にかけられ、収穫の約3％の稲を納める税",
-    kai: 3,
-    priority: "高",
-    level: "基礎"
-  },
-  {
-    id: "k3_20",
-    unit: "第3回.奈良時代",
-    unitKey: "第3回",
-    word: "三世一身の法",
-    kana: "さんぜいっしんのほう",
-    mean: "723年、新しく開墾した土地を3代まで私有してよいと定めた法律",
-    kai: 3,
-    priority: "高",
-    level: "基礎"
-  },
-  {
-    id: "k3_21",
-    unit: "第3回.奈良時代",
-    unitKey: "第3回",
-    word: "荘園",
-    kana: "しょうえん",
-    mean: "貴族や寺社が開墾して増やした私有地",
-    kai: 3,
-    priority: "高",
-    level: "基礎"
-  },
-  {
-    id: "k3_22",
-    unit: "第3回.奈良時代",
-    unitKey: "第3回",
-    word: "遣唐使",
-    kana: "けんとうし",
-    mean: "唐のすすんだ制度や文化を取り入れるために送られた使節",
-    kai: 3,
-    priority: "高",
-    level: "基礎"
-  },
-  {
-    id: "k3_23",
-    unit: "第3回.奈良時代",
-    unitKey: "第3回",
-    word: "唐招提寺",
-    kana: "とうしょうだいじ",
-    mean: "鑑真が奈良県に開いた寺",
-    kai: 3,
-    priority: "高",
-    level: "基礎"
-  },
-  {
-    id: "k3_24",
-    unit: "第3回.奈良時代",
-    unitKey: "第3回",
-    word: "古事記",
-    kana: "こじき",
-    mean: "712年に完成した歴史書",
-    kai: 3,
-    priority: "高",
-    level: "基礎"
-  },
-  {
-    id: "k3_25",
-    unit: "第3回.奈良時代",
-    unitKey: "第3回",
-    word: "日本書紀",
-    kana: "にほんしょき",
-    mean: "720年に完成した歴史書",
-    kai: 3,
-    priority: "高",
-    level: "基礎"
-  },
-  {
-    id: "k3_26",
-    unit: "第3回.奈良時代",
-    unitKey: "第3回",
-    word: "万葉集",
-    kana: "まんようしゅう",
-    mean: "農民から天皇までの歌が収められた、現存する最古の和歌集",
-    kai: 3,
-    priority: "高",
-    level: "基礎"
-  },
-  {
     id: "k3_27",
     unit: "第3回.奈良時代",
     unitKey: "第3回",
@@ -737,17 +605,6 @@ const KANJI_DATA = [
     mean: "正倉院がつくられている、三角柱の木材を組む建築様式",
     kai: 3,
     priority: "高",
-    level: "基礎"
-  },
-  {
-    id: "k3_37",
-    unit: "第3回.奈良時代",
-    unitKey: "第3回",
-    word: "貧窮問答歌",
-    kana: "ひんきゅうもんどうか",
-    mean: "農民の苦しいくらしをよんだ、山上憶良の歌",
-    kai: 3,
-    priority: "中",
     level: "基礎"
   },
   {
@@ -5417,7 +5274,7 @@ const KANJI_DATA = [
 const KANJI_UNITS = [
   { key: "第1回", name: "第1回.旧石器時代・縄文時代・弥生時代", count: 27 },
   { key: "第2回", name: "第2回.古墳時代・飛鳥時代", count: 21 },
-  { key: "第3回", name: "第3回.奈良時代", count: 20 },
+  { key: "第3回", name: "第3回.奈良時代", count: 7 },
   { key: "第4回", name: "第4回.平安時代", count: 46 },
   { key: "夏期講習復習編2", name: "夏期講習 復習編2.工業・資源・輸送機関", count: 30 },
   { key: "夏期講習復習編3", name: "夏期講習 復習編3.九州地方", count: 52 },
