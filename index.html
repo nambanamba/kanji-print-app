@@ -208,6 +208,39 @@
     .hist-toggle-btn.hist-ok.active { background: var(--success); color: #fff; border-color: var(--success); }
     .hist-toggle-btn.hist-ng.active { background: var(--danger); color: #fff; border-color: var(--danger); }
 
+    /* ---- 語の一覧（回ごとに見て、プリントに出す語をチェックする） ---- */
+    .list-head { display: flex; align-items: center; gap: 10px; flex-wrap: wrap;
+                 padding: 10px 12px; background: #f8fafc; border-bottom: 1px solid #e2e8f0; }
+    .list-head select { padding: 7px 10px; font-size: 0.9rem; font-weight: 700; border-radius: 8px;
+                        border: 1px solid var(--border); background: #fff; max-width: 100%; }
+    .list-count { font-size: 0.8rem; font-weight: 700; color: #475569; }
+    .list-count b { color: var(--primary); }
+    .word-row { display: flex; align-items: flex-start; gap: 10px; padding: 10px 12px;
+                border-bottom: 1px solid #f1f5f9; }
+    .word-row.is-picked { background: #f5f3ff; }
+    .word-row.is-excluded { background: #fafafa; opacity: 0.62; }
+    .word-pick { width: 22px; height: 22px; flex-shrink: 0; margin-top: 4px; cursor: pointer; accent-color: var(--primary); }
+    .word-body { flex: 1; min-width: 0; }
+    .word-kana { font-size: 0.78rem; color: #64748b; }
+    .word-main { font-size: 1.12rem; font-weight: bold; }
+    .word-mean { font-size: 0.78rem; color: #475569; line-height: 1.5; margin-top: 2px; }
+    .word-ops { display: flex; align-items: center; gap: 6px; flex-wrap: wrap; margin-top: 6px; }
+    .word-date { padding: 5px 7px; font-size: 0.82rem; border-radius: 6px; border: 1px solid var(--border); }
+    .word-ok-btn { padding: 6px 10px; font-size: 0.8rem; font-weight: 700; border-radius: 6px;
+                   border: 2px solid var(--success); background: #fff; color: #16a34a; cursor: pointer; white-space: nowrap; }
+    .word-done { font-size: 0.78rem; font-weight: 700; color: #16a34a; background: #dcfce7;
+                 border-radius: 10px; padding: 3px 8px; white-space: nowrap; }
+    .word-undo { padding: 5px 8px; font-size: 0.72rem; border-radius: 6px; border: 1px solid var(--border);
+                 background: #fff; color: #78716c; cursor: pointer; white-space: nowrap; }
+    .pick-mode-box { background: #f5f3ff; border: 1px solid #ddd6fe; border-radius: 10px;
+                     padding: 10px 12px; margin-bottom: 12px; }
+    .pick-mode-box .setting-label { margin-bottom: 6px; }
+    .pick-mode-note { font-size: 0.76rem; color: #5b21b6; margin-top: 6px; line-height: 1.5; }
+    /* 「選んだ語だけ」の間は、自動でえらぶための設定は効かないので薄くする（押すことはできる） */
+    #auto-settings-card.is-idle .setting-group,
+    #auto-settings-card.is-idle .unit-grid,
+    #auto-settings-card.is-idle .unit-controls { opacity: 0.45; }
+
     /* =========================================================
        印刷専用スタイル
        ページは問題数に応じて自動で枚数が増える。
@@ -359,7 +392,7 @@
     <div class="nav-tabs">
       <button class="nav-tab active" id="tab-home" onclick="switchTab('home')">① 印刷・問題設定</button>
       <button class="nav-tab" id="tab-check" onclick="switchTab('check')">② できた / できなかった</button>
-      <button class="nav-tab" id="tab-history" onclick="switchTab('history')">進捗一覧</button>
+      <button class="nav-tab" id="tab-history" onclick="switchTab('history')">③ 語の一覧・出す語を選ぶ</button>
     </div>
 
     <!-- ① ホーム画面 -->
@@ -374,7 +407,16 @@
         <div class="progress-sub" id="progress-sub-text">💡 フィルタで絞り込めます。出題順は正解した日が古い語から（未正解は最優先）。</div>
       </div>
 
-      <div class="card">
+      <div class="pick-mode-box">
+        <div class="setting-label">プリントに出す語</div>
+        <div class="chip-row">
+          <button class="chip" id="mode-picked" onclick="setPickMode(true)">✅ 選んだ語だけ</button>
+          <button class="chip active" id="mode-auto" onclick="setPickMode(false)">いままでどおり自動でえらぶ</button>
+        </div>
+        <div class="pick-mode-note" id="pick-mode-note"></div>
+      </div>
+
+      <div class="card" id="auto-settings-card">
         <div class="card-title">
           <span>単元を選ぶ</span>
           <span id="selected-units-count" style="font-size:0.82rem; color:var(--text-muted); font-weight:600;"></span>
@@ -397,10 +439,9 @@
         </div>
 
         <div class="setting-group">
-          <div class="setting-label">出題フィルタ（任意、両方ONなら「どちらか当てはまる」語が対象）</div>
+          <div class="setting-label">出題フィルタ（任意）</div>
           <div class="chip-row">
             <button class="chip" id="filter-unmastered" onclick="toggleFilter('unmastered')">正解ずみを除く</button>
-            <button class="chip" id="filter-weak" onclick="toggleFilter('weak')">苦手な問題だけ</button>
           </div>
         </div>
 
@@ -439,8 +480,8 @@
           <button class="btn-sm" style="background:#dcfce7; color:#16a34a; border-color:#86efac;" onclick="markAllCorrect()">✨ すべてできた</button>
         </div>
         <p style="font-size: 0.83rem; color: var(--text-muted); margin-bottom: 14px;">
-          書けた問題は「⭕ できた」、書けなかった問題は「❌ できなかった」にしてください。<br>
-          <b>「⭕ できた」にした問題は次回以降出題されなくなります。</b>
+          書けた問題だけ「⭕ できた」を押してください。<b>書けなかった問題は、何も押さずにそのままで大丈夫です。</b><br>
+          あとから日付を直したいときは「③ 語の一覧」で入れなおせます。
         </p>
         <div id="check-list-container"></div>
         <button class="btn-main" style="background: var(--success);" onclick="saveCheckResults()">
@@ -453,8 +494,17 @@
     <div id="screen-history" style="display: none;">
       <div class="card">
         <div class="card-title">
-          <span>全問題のクリア状況</span>
+          <span>語の一覧（チェックした語がプリントに出ます）</span>
           <button class="btn-sm" onclick="renderHistoryList()">🔄 更新</button>
+        </div>
+        <div class="list-head">
+          <select id="list-unit-select" onchange="setListUnit(this.value)"></select>
+          <span class="list-count" id="list-count-text"></span>
+        </div>
+        <div class="list-head" style="border-bottom:1px solid #e2e8f0;">
+          <button class="btn-sm" onclick="pickAllInListUnit(true)">この回を全部つける</button>
+          <button class="btn-sm" onclick="pickAllInListUnit(false)">この回を全部はずす</button>
+          <button class="btn-sm" id="list-picked-only-btn" onclick="toggleShowPickedOnly()">選んだ語だけ表示</button>
         </div>
         <div id="history-list-container"></div>
       </div>
@@ -517,6 +567,10 @@
     // データが更新されて id が変わっても設定は失われない。
     // ⚠️ このキー名も改名しないこと（改名すると設定が読めなくなる）
     const EXCLUDED_KEY = "kanji_app_excluded_v1";
+    // 「この語をプリントに出す」と親が選んだ語（週の最重要10語など）。
+    // 「出さない」と同じく単元＋語で覚えるので、データが更新されて id が変わっても選択は失われない。
+    // ⚠️ このキー名も改名しないこと
+    const PICKED_KEY = "kanji_app_picked_v1";
     const MIGRATED_FLAG_KEY = "kq_kanji_stats_migrated_v1";
 
     // 過去バージョンの記録キー（古い順）。形式はいずれも { <旧id>: {passed, lastDate} }
@@ -550,7 +604,13 @@
     let currentSet    = [];
     let currentResults = {};
     let filterUnmastered = false; // 正解ずみを除く（対戦クイズ本体と同じ名前）
-    let filterWeak       = false; // 苦手な問題だけ
+    // 「苦手な問題だけ」は画面から外した（2026-09-20・ユーザー判断）。まちがいを記録しなくなったため
+    // この絞り込みは育たない。⚠️ 記録そのものは消していないので、戻したくなったら画面に出すだけでよい
+    let filterWeak       = false;
+    // 出す語を親が選ぶモード。true なら一覧でチェックした語だけを印刷する
+    let usePicked        = false;
+    let listUnitKey      = null;  // 一覧タブでいま見ている回
+    let showPickedOnly   = false; // 一覧タブで「選んだ語だけ表示」
     // 重要度でしぼる。"all" | "highmid" | "high"。データは消さず、出題する範囲だけ変える
     let priorityFilter = "all";
     const PRIORITY_KEEP = { all: ["高", "中", "低"], highmid: ["高", "中"], high: ["高"] };
@@ -582,6 +642,44 @@
       }
       saveMastery(mastery);
     }
+    /* ---- 「この語は、この日に正解した」だけを記録する（2026-09-20・ユーザー依頼）----
+       まちがいは記録しない。保存先は今までどおり kq_kanji_stats_v1（キー名は変えない）で、
+       形も今までと同じ（correct/wrong/box/nextDue/lastCorrectAt）。日付だけ親が決められる。 */
+    function ymdOf(ms){
+      const d = new Date(ms), p = n => String(n).padStart(2, "0");
+      return `${d.getFullYear()}-${p(d.getMonth() + 1)}-${p(d.getDate())}`;
+    }
+    function todayYmd(){ return ymdOf(Date.now()); }
+    // 日付は正午として扱う。0時にすると時差や夏時間で前日にずれることがあるため
+    function ymdToMs(ymd){
+      const m = /^(\d{4})-(\d{2})-(\d{2})$/.exec(String(ymd || ""));
+      if (!m) return null;
+      const t = new Date(Number(m[1]), Number(m[2]) - 1, Number(m[3]), 12, 0, 0).getTime();
+      return isNaN(t) ? null : t;
+    }
+    // 正解した日を入れる。次にいつ出すかも「今日」ではなく「その日」から数える
+    function setCorrectOn(id, ymd){
+      const ts = ymdToMs(ymd);
+      if (ts === null) { alert("日付を選んでください。"); return; }
+      const mastery = getMastery();
+      const s = { correct: 1, wrong: 0, lastAnswered: ts, lastCorrectAt: ts, box: 1 };
+      s.nextDue = ts + BOX_INTERVAL_DAYS[1] * 24 * 60 * 60 * 1000;
+      mastery[id] = s;
+      saveMastery(mastery);
+      updateProgressDisplay();
+      renderHistoryList();
+    }
+    // 押し間違いを戻す。その語の記録だけを消す（ほかの語の記録には触らない）
+    function clearCorrect(id){
+      setKanjiStatus(id, "unseen");
+      updateProgressDisplay();
+      renderHistoryList();
+    }
+    function lastCorrectYmd(id){
+      const s = getMastery()[id];
+      return (s && s.lastCorrectAt) ? ymdOf(s.lastCorrectAt) : null;
+    }
+
     // 今この語が〇・✕どちらの状態として記録されているか（表示のハイライト用）
     function currentKanjiStatus(id){
       const s = getMastery()[id];
@@ -605,6 +703,7 @@
       updateSelectedCountLabel();
       generateDailySet(false);
       updatePriorityNote();
+      updatePickModeNote();
     });
 
     /* ---------- 設定の保存・読込 ---------- */
@@ -631,9 +730,13 @@
             document.getElementById("prio-" + k).classList.toggle("active", k === priorityFilter));
         }
         if (typeof cached.filterUnmastered === "boolean") filterUnmastered = cached.filterUnmastered;
-        if (typeof cached.filterWeak === "boolean") filterWeak = cached.filterWeak;
+        // filterWeak は画面から外したので、保存されていても読み込まない（常に false）
         document.getElementById("filter-unmastered").classList.toggle("active", filterUnmastered);
-        document.getElementById("filter-weak").classList.toggle("active", filterWeak);
+        if (typeof cached.usePicked === "boolean") {
+          usePicked = cached.usePicked;
+          document.getElementById("mode-picked").classList.toggle("active", usePicked);
+          document.getElementById("mode-auto").classList.toggle("active", !usePicked);
+        }
       } catch (e) {}
     }
 
@@ -644,7 +747,8 @@
           count: currentCount,
           filterUnmastered: filterUnmastered,
           filterWeak: filterWeak,
-          priorityFilter: priorityFilter
+          priorityFilter: priorityFilter,
+          usePicked: usePicked
         }));
       } catch (e) {}
     }
@@ -663,6 +767,10 @@
     function updatePriorityNote() {
       const el = document.getElementById("prio-note");
       if (!el) return;
+      if (usePicked) {
+        el.textContent = "「選んだ語だけ」の間は、この設定は使いません。";
+        return;
+      }
       const all = getPoolIgnoringPriority().length, now = getPool().length;
       el.textContent = priorityFilter === "all"
         ? `選んだ単元の ${all}語 すべてが対象です。`
@@ -672,7 +780,6 @@
     function toggleFilter(type) {
       if (type === "unmastered") filterUnmastered = !filterUnmastered; else filterWeak = !filterWeak;
       document.getElementById("filter-unmastered").classList.toggle("active", filterUnmastered);
-      document.getElementById("filter-weak").classList.toggle("active", filterWeak);
       currentSet = [];
       updateProgressDisplay();
       saveCachedSettings();
@@ -728,6 +835,88 @@
       generateDailySet(false);
       updateProgressDisplay();
       renderHistoryList();
+    }
+
+    /* ---------- プリントに出す語を親が選ぶ ---------- */
+    function getPicked() {
+      try { return new Set(JSON.parse(localStorage.getItem(PICKED_KEY)) || []); } catch(e) { return new Set(); }
+    }
+    function savePicked(set) {
+      try { localStorage.setItem(PICKED_KEY, JSON.stringify([...set])); } catch(e) {}
+    }
+    function isPicked(item, set) { return (set || getPicked()).has(excludeKeyOf(item)); }
+    function pickedCount() { return getPicked().size; }
+    function togglePicked(id) {
+      const item = KANJI_DATA.find(d => d.id === id);
+      if (!item) return;
+      const set = getPicked(), key = excludeKeyOf(item);
+      if (set.has(key)) set.delete(key); else set.add(key);
+      savePicked(set);
+      currentSet = [];              // 出題セットを作り直す
+      generateDailySet(false);
+      updateProgressDisplay();
+      updatePickModeNote();
+      renderHistoryList();
+    }
+    // いま一覧で見ている回の語を、まとめてつける／はずす
+    function pickAllInListUnit(on) {
+      const set = getPicked();
+      listUnitItems().forEach(it => {
+        const key = excludeKeyOf(it);
+        if (on) set.add(key); else set.delete(key);
+      });
+      savePicked(set);
+      currentSet = [];
+      generateDailySet(false);
+      updateProgressDisplay();
+      updatePickModeNote();
+      renderHistoryList();
+    }
+    function setPickMode(on) {
+      usePicked = !!on;
+      document.getElementById("mode-picked").classList.toggle("active", usePicked);
+      document.getElementById("mode-auto").classList.toggle("active", !usePicked);
+      currentSet = [];
+      generateDailySet(false);
+      updateProgressDisplay();
+      updatePriorityNote();
+      updatePickModeNote();
+      saveCachedSettings();
+    }
+    function updatePickModeNote() {
+      const el = document.getElementById("pick-mode-note");
+      if (!el) return;
+      const n = pickedCount();
+      const card = document.getElementById("auto-settings-card");
+      if (card) card.classList.toggle("is-idle", usePicked);
+      el.textContent = usePicked
+        ? (n === 0
+            ? "⚠️ まだ1語も選んでいません。「③ 語の一覧」でチェックを付けてください。"
+            : `チェックした ${n}語 だけを印刷します（単元・重要度・語数の設定は使いません）。`)
+        : `単元と重要度・語数の設定から自動でえらびます。（選んである語は ${n}語）`;
+    }
+    function toggleShowPickedOnly() {
+      showPickedOnly = !showPickedOnly;
+      document.getElementById("list-picked-only-btn").classList.toggle("is-on", showPickedOnly);
+      renderHistoryList();
+    }
+    function setListUnit(key) {
+      listUnitKey = key;
+      renderHistoryList();
+    }
+    // 一覧でいま見ている回の語（「出さない」にした語も出す。戻せるように）
+    function listUnitItems() {
+      if (!listUnitKey) return [];
+      const list = KANJI_DATA.filter(d => d.unitKey === listUnitKey);
+      const picked = getPicked(), mastery = getMastery(), ex = getExcluded();
+      // 同じ回に同じ語が重複して入っていた場合に備えて1つにまとめる（選択・記録がある方を残す）
+      const score = d => (isExcluded(d, ex) ? 0 : 4) + (isPicked(d, picked) ? 2 : 0) + (mastery[d.id] ? 1 : 0);
+      const pick = new Map();
+      list.forEach(d => {
+        const prev = pick.get(d.word);
+        if (!prev || score(d) > score(prev)) pick.set(d.word, d);
+      });
+      return list.filter(d => pick.get(d.word) === d);
     }
 
     /* ---------- 「出さない」にした語を GitHub に報告する ----------
@@ -1135,10 +1324,23 @@
       const ex = getExcluded();
       return getSelectedItems().filter(d => !isExcluded(d, ex));
     }
-    // 出題・印刷・進捗バーが使う。「出さない」にした語と、重要度でしぼった分を抜いたもの
+    // 出題・印刷・進捗バーが使う。「出さない」にした語と、重要度でしぼった分を抜いたもの。
+    // 「選んだ語だけ」モードのときは、親がチェックした語がそのまま対象（単元・重要度は使わない）
     function getPool() {
+      if (usePicked) return pickedPool();
       const keep = PRIORITY_KEEP[priorityFilter] || PRIORITY_KEEP.all;
       return getPoolIgnoringPriority().filter(d => keep.includes(d.priority));
+    }
+    // チェックした語。並びはデータの順（回・番号順）なので、プリントも教材と同じ並びになる
+    function pickedPool() {
+      const picked = getPicked(), ex = getExcluded();
+      const seen = new Set();
+      return KANJI_DATA.filter(d => {
+        if (!picked.has(excludeKeyOf(d)) || isExcluded(d, ex)) return false;
+        if (seen.has(excludeKeyOf(d))) return false;   // 同じ語が二重に出ないように
+        seen.add(excludeKeyOf(d));
+        return true;
+      });
     }
 
     /* ---------- 進捗バー ---------- */
@@ -1173,6 +1375,20 @@
        フィルタ後の並び順は、最後に正解した日が古いもの（未正解は最古扱い）から順。 ---------- */
     function generateDailySet(alertIfEmpty = true) {
       const pool = getPool();
+      // 「選んだ語だけ」モードでは、チェックした語をそのまま全部出す（語数も並べ替えもしない）
+      if (usePicked) {
+        if (pool.length === 0) {
+          if (alertIfEmpty) alert("プリントに出す語が選ばれていません。「③ 語の一覧」でチェックを付けてください。");
+          currentSet = [];
+          return;
+        }
+        currentSet = pool;
+        currentResults = {};
+        const pv0 = document.getElementById("preview-area");
+        if (pv0 && pv0.style.display !== "none") renderPreview();
+        updatePriorityNote();
+        return;
+      }
       if (pool.length === 0) { if (alertIfEmpty) alert("単元を1つ以上選択してください。"); return; }
 
       const mastery = getMastery();
@@ -1239,21 +1455,17 @@
           </div>
           <div class="toggle-row">
             <button class="toggle-btn btn-ok ${res === "correct" ? "active" : ""}" onclick="setResult('${item.id}', 'ok')">⭕ できた</button>
-            <button class="toggle-btn btn-ng ${res === "wrong" ? "active" : ""}" onclick="setResult('${item.id}', 'ng')">❌ できなかった</button>
+            ${res === "correct" ? `<button class="toggle-btn" onclick="setResult('${item.id}', 'undo')">取り消す</button>` : ``}
           </div>`;
         container.appendChild(div);
       });
     }
 
+    // ⭕（できた）だけを記録する。できなかった語は、何も入れずにそのままにしておく
+    // （2026-09-20・ユーザー判断。まちがいの記録は使わない）
     function setResult(id, val) {
-      setKanjiStatus(id, val === "ok" ? "mastered" : "weak");
-      const el = document.getElementById(`check-item-${id}`);
-      if (el) {
-        el.classList.toggle("is-correct", val === "ok");
-        el.classList.toggle("is-wrong", val === "ng");
-        el.querySelector(".btn-ok").classList.toggle("active", val === "ok");
-        el.querySelector(".btn-ng").classList.toggle("active", val === "ng");
-      }
+      setKanjiStatus(id, val === "ok" ? "mastered" : "unseen");
+      renderCheckList();
       updateProgressDisplay();
     }
 
@@ -1261,22 +1473,44 @@
 
     function saveCheckResults() {
       // 〇/✕はタップした瞬間にすでに保存ずみ。ここでは入力もれがないかだけ確認する
-      const unanswered = currentSet.filter(item => !currentKanjiStatus(item.id)).length;
-      if (unanswered > 0) {
-        alert(`${unanswered} 語、〇✕が未入力です。入力した分は記録ずみです。`);
-      } else {
-        alert("🎉 全問、記録ずみです。できなかった語は次回優先して出てきます。");
-      }
+      const done = currentSet.filter(item => currentKanjiStatus(item.id) === "correct").length;
+      alert(`${done} / ${currentSet.length} 語を「できた」で記録しました。できなかった語は記録していません。`);
       switchTab("home");
     }
 
     /* ---------- 進捗一覧 ---------- */
+    /* ---------- 語の一覧（回ごと）。ここでプリントに出す語を選び、正解した日を入れる ----------
+       2026-09-20 改。まちがいは記録しない（⭕と日付だけ）。過去の記録は消していない。 */
+    function renderListUnitSelect() {
+      const sel = document.getElementById("list-unit-select");
+      if (!sel) return;
+      if (!listUnitKey || !KANJI_UNITS.some(u => u.key === listUnitKey)) {
+        // 最初に開いたときは、ホームで選んでいる回のうち最後のもの（＝いちばん新しい回）を出す
+        const inHome = KANJI_UNITS.filter(u => selectedUnits.has(u.key));
+        listUnitKey = (inHome.length ? inHome[inHome.length - 1] : KANJI_UNITS[KANJI_UNITS.length - 1]).key;
+      }
+      const picked = getPicked();
+      sel.innerHTML = KANJI_UNITS.map(u => {
+        const n = KANJI_DATA.filter(d => d.unitKey === u.key && isPicked(d, picked)).length;
+        const label = `${u.name}（${u.count}語${n ? `・選択${n}` : ""}）`;
+        return `<option value="${escapeAttr(u.key)}"${u.key === listUnitKey ? " selected" : ""}>${label}</option>`;
+      }).join("");
+    }
+
     function renderHistoryList() {
-      const items = getSelectedItems();          // 除外した語も出す（戻せるように）
-      const ex = getExcluded();
+      renderListUnitSelect();
       const container = document.getElementById("history-list-container");
-      if (items.length === 0) { container.innerHTML = "<p style='text-align:center;padding:20px;color:#64748b;'>単元を選択してください。</p>"; return; }
-      const exCount = items.filter(d => isExcluded(d, ex)).length;
+      const ex = getExcluded(), picked = getPicked();
+      let items = listUnitItems();
+      const pickedHere = items.filter(it => isPicked(it, picked)).length;
+
+      const countEl = document.getElementById("list-count-text");
+      if (countEl) countEl.innerHTML = `この回 ${items.length}語 / チェック <b>${pickedHere}語</b>（全体で ${picked.size}語）`;
+      const onlyBtn = document.getElementById("list-picked-only-btn");
+      if (onlyBtn) onlyBtn.classList.toggle("is-on", showPickedOnly);
+
+      if (showPickedOnly) items = items.filter(it => isPicked(it, picked));
+
       const exTotal = ex.size;
       let report = "";
       if (exTotal > 0) {
@@ -1286,41 +1520,47 @@
           ? `<a class="btn-sm hist-report" href="${escapeAttr(url)}" target="_blank" rel="noopener">🐙 GitHubに報告して消してもらう</a>`
           : `<button class="btn-sm hist-report" onclick="showRemovalText()">🐙 報告する文を出す（語が多いため）</button>`;
       }
-      container.innerHTML = exTotal > 0
+      const note = exTotal > 0
         ? `<div class="hist-note">
-             <span>この単元で <b>${exCount}語</b>、全体で <b>${exTotal}語</b> を「出さない」にしています。</span>
+             <span>チェックした語がプリントに出ます（「① 印刷」で「✅ 選んだ語だけ」にしてください）。
+                   ／ 全体で <b>${exTotal}語</b> を「出さない」にしています。</span>
              <span class="hist-note-actions">${report}
                <button class="btn-sm" onclick="restoreAllExcluded()">すべて元に戻す</button></span>
-             <span class="hist-note-sub">↑を押すとGitHubのIssue作成画面が開きます。そこで「Create」を押すと報告され、しばらくするとプルリクが自動で作られます。</span>
            </div>`
-        : `<div class="hist-note">いらない語は「🚫 出さない」を押すと、印刷にも出題にも出なくなります。まとめてGitHubに報告して、データから消してもらうこともできます。</div>`;
+        : `<div class="hist-note">チェックした語がプリントに出ます（「① 印刷」で「✅ 選んだ語だけ」にしてください）。できた語は日付を入れて「⭕ 正解にする」。</div>`;
+
+      container.innerHTML = note;
+      if (items.length === 0) {
+        container.insertAdjacentHTML("beforeend",
+          `<p style='text-align:center;padding:20px;color:#64748b;'>${showPickedOnly ? "この回でチェックした語はありません。" : "この回に語がありません。"}</p>`);
+        return;
+      }
+
+      const today = todayYmd();
       items.forEach(it => {
-        const off = isExcluded(it, ex);
-        const isPassed = isClearedItem(it.id);
-        const res = currentKanjiStatus(it.id); // "correct" | "wrong" | null
+        const isOff = isExcluded(it, ex);
+        const on = isPicked(it, picked);
+        const done = lastCorrectYmd(it.id);
         const div = document.createElement("div");
-        div.className = "history-row" + (off ? " is-excluded" : "");
+        div.className = "word-row" + (isOff ? " is-excluded" : (on ? " is-picked" : ""));
         div.innerHTML = `
-          <div>
-            <div style="font-size:0.8rem;color:#64748b;">${it.kana} (${it.unitKey})</div>
-            <div style="font-size:1.1rem;font-weight:bold;">${it.word}</div>
-          </div>
-          <div class="history-row-actions">
-            ${off
-              ? `<span class="status-badge-excluded">出さない</span>`
-              : `<span class="${isPassed ? 'status-badge-passed' : 'status-badge-unpassed'}">${isPassed ? '⭕ クリア済み' : '❌ 未クリア'}</span>
-                 <button class="hist-toggle-btn hist-ok ${res === 'correct' ? 'active' : ''}" onclick="setHistoryResult('${it.id}','ok')">⭕</button>
-                 <button class="hist-toggle-btn hist-ng ${res === 'wrong' ? 'active' : ''}" onclick="setHistoryResult('${it.id}','ng')">❌</button>`}
-            <button class="hist-ex-btn ${off ? 'is-on' : ''}" onclick="toggleExcluded('${it.id}')" title="${off ? 'また出題する' : 'この語は出題しない'}">${off ? '↩︎ 戻す' : '🚫 出さない'}</button>
+          <input type="checkbox" class="word-pick" ${on ? "checked" : ""} ${isOff ? "disabled" : ""}
+                 onchange="togglePicked('${it.id}')" title="プリントに出す">
+          <div class="word-body">
+            <div class="word-kana">${it.kana}</div>
+            <div class="word-main">${it.word}</div>
+            <div class="word-mean">💡 ${it.mean}</div>
+            <div class="word-ops">
+              ${done ? `<span class="word-done">⭕ ${done} に正解</span>` : ``}
+              <input type="date" class="word-date" id="date-${it.id}" value="${done || today}" max="${today}">
+              <button class="word-ok-btn" onclick="setCorrectOn('${it.id}', document.getElementById('date-${it.id}').value)">⭕ 正解にする</button>
+              ${done ? `<button class="word-undo" onclick="clearCorrect('${it.id}')">取り消す</button>` : ``}
+              <button class="hist-ex-btn ${isOff ? 'is-on' : ''}" onclick="toggleExcluded('${it.id}')"
+                      title="${isOff ? 'また出題する' : 'この語は出題しない'}">${isOff ? '↩︎ 戻す' : '🚫 出さない'}</button>
+            </div>
           </div>`;
         container.appendChild(div);
       });
-    }
-
-    function setHistoryResult(id, val) {
-      setKanjiStatus(id, val === "ok" ? "mastered" : "weak");
-      updateProgressDisplay();
-      renderHistoryList();
     }
 
     function clearHistoryData() {
@@ -1339,9 +1579,17 @@
        行は必ず page-break-inside: avoid で切れない
        ========================================================= */
     // ① テストプリント（穴埋め・書き取りテストのみ）
+    // プリントの見出しに出す「範囲」。「選んだ語だけ」のときは、実際に出る語の回だけを書く
+    // （単元の選択をそのまま書くと、出ていない回まで範囲に並んでしまう）
+    function printedUnitNames() {
+      const src = (usePicked ? currentSet.map(d => d.unitKey) : Array.from(selectedUnits));
+      const uniq = [...new Set(src)];
+      return uniq.join("・") || "全単元";
+    }
+
     function renderTestPrint() {
       const todayStr = new Date().toLocaleDateString("ja-JP", { year: "numeric", month: "long", day: "numeric" });
-      const unitNames = Array.from(selectedUnits).join("・") || "全単元";
+      const unitNames = printedUnitNames();
       const n = currentSet.length;
       const half = Math.ceil(n / 2);
       const makeTestItem = (it, idx) => `
@@ -1435,7 +1683,7 @@
 
     function renderPracticePrint() {
       const todayStr = new Date().toLocaleDateString("ja-JP", { year: "numeric", month: "long", day: "numeric" });
-      const unitNames = Array.from(selectedUnits).join("・") || "全単元";
+      const unitNames = printedUnitNames();
       const n = currentSet.length;
       const practiceItemsHtml = currentSet.map((it, idx) => {
         const labels = ["① なぞり", "② 練習", "③ 練習", "④ 練習", "⑤ 練習", "⑥ 練習"];

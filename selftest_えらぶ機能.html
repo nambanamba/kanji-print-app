@@ -1,0 +1,63 @@
+<!doctype html><meta charset="utf-8"><body>
+<iframe id="f" src="index.html" style="width:820px;height:1150px;border:0"></iframe>
+<pre id="out">running</pre>
+<script>
+const log=[]; let ng=0;
+function ok(c,m){ log.push((c?"PASS ":"FAIL ")+m); if(!c) ng++; }
+document.getElementById("f").onload = () => {
+  setTimeout(() => {
+   try{
+    const w = document.getElementById("f").contentWindow, d = w.document;
+    // 既存の記録（まちがいを含む古い形）を先に入れておく：消えないことを確かめるため
+    const keep = "k1_01", old = {correct:0, wrong:2, box:0, nextDue:1, lastAnswered:111};
+    const m0 = JSON.parse(w.localStorage.getItem("kq_kanji_stats_v1")||"{}");
+    m0[keep]=old; w.localStorage.setItem("kq_kanji_stats_v1", JSON.stringify(m0));
+
+    const Q = expr => w.eval(expr);   // const/let はwindowに載らないので、iframeの中で評価する
+    const a = Q("KANJI_DATA.find(x=>x.id==='k4_01')"), b = Q("KANJI_DATA.find(x=>x.id==='k4_03')");
+    w.togglePicked(a.id); w.togglePicked(b.id);
+    ok(w.getPicked().size===2, "2語をチェックできた");
+    w.setPickMode(true);
+    const ids = Q("currentSet.map(x=>x.id)");
+    ok(ids.length===2 && ids.includes("k4_01") && ids.includes("k4_03"), "選んだ語だけが出題セットになる: "+ids.join(","));
+    w.setCount(10); w.ensureSet(); // 語数の設定は無視されること（setCountはセットを作り直させるだけ）
+    ok(Q("currentSet.length")===2, "語数の設定に引きずられない: "+Q("currentSet.length"));
+
+    w.setCorrectOn("k4_01","2026-09-14");
+    const m = JSON.parse(w.localStorage.getItem("kq_kanji_stats_v1"));
+    ok(w.ymdOf(m["k4_01"].lastCorrectAt)==="2026-09-14", "指定した日で記録された: "+w.ymdOf(m["k4_01"].lastCorrectAt));
+    ok(m["k4_01"].wrong===0 && m["k4_01"].correct===1, "まちがいは記録しない");
+    ok(JSON.stringify(m[keep])===JSON.stringify(old), "前からあった記録（まちがい込み）が残っている");
+    ok(w.lastCorrectYmd("k4_01")==="2026-09-14", "一覧に出す日付が取れる");
+    w.clearCorrect("k4_01");
+    ok(!JSON.parse(w.localStorage.getItem("kq_kanji_stats_v1"))["k4_01"], "取り消しでその語だけ消える");
+    ok(JSON.parse(w.localStorage.getItem("kq_kanji_stats_v1"))[keep], "取り消しても他の語の記録は残る");
+
+    // 一覧の描画
+    w.switchTab("history"); w.setListUnit("第4回");
+    const rows = d.querySelectorAll("#history-list-container .word-row");
+    const checked = d.querySelectorAll("#history-list-container .word-pick:checked");
+    ok(rows.length===46, "第4回の一覧が46語出る: "+rows.length);
+    ok(checked.length===2, "チェックが2語ついている: "+checked.length);
+    ok(d.querySelectorAll("#history-list-container .word-mean").length===46, "意味（ヒント）が出ている");
+    ok(d.querySelectorAll("#history-list-container .word-date").length===46, "日付の欄が出ている");
+    ok(!d.querySelector("#filter-weak"), "「苦手な問題だけ」は画面から消えている");
+    ok(!d.body.innerHTML.includes("❌ できなかった"), "「できなかった」ボタンが無い");
+
+    // 印刷の組み立て
+    w.ensureSet(); w.renderTestPrint();
+    const pr = d.getElementById("print-region").textContent;
+    ok(pr.includes(a.kana) && pr.includes(b.kana), "プリントに選んだ2語が入る");
+    ok(!pr.includes(Q("KANJI_DATA.find(x=>x.id==='k4_05')").kana), "選んでいない語は入らない");
+
+    // 自動モードに戻せること
+    w.setPickMode(false); w.setCount(10); w.ensureSet();
+    ok(Q("currentSet.length")===10, "自動モードは今までどおり10語: "+Q("currentSet.length"));
+    // 設定が保存されること
+    ok(JSON.parse(w.localStorage.getItem("kanji_app_settings_v2")).usePicked===false, "モードが保存される");
+    ok(JSON.parse(w.localStorage.getItem("kanji_app_picked_v1")).length===2, "選んだ語が保存される");
+   }catch(e){ ng++; log.push("ERROR "+e.message+"\n"+e.stack); }
+   document.getElementById("out").textContent = log.join("\n")+"\n=== "+(ng? ng+" FAILED":"ALL PASS")+" ===";
+  }, 600);
+};
+</script></body>
