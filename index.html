@@ -293,7 +293,7 @@
         page-break-inside: avoid;
       }
       .test-q-text { font-size: 9.5pt; line-height: 1.2; }
-      .test-hint { font-size: 6.5pt; color: #555; }
+      /* .test-hint は廃止（2026-09-23）。テストに意味を出すと、同じ紙の別問題の答えが漏れる */
       .test-ans-box {
         width: 100%;
         height: 22mm;
@@ -330,6 +330,8 @@
         white-space: nowrap;   /* 折り返さない。大きさはJS側で字数に応じて決める */
       }
       .p-kana-sub { font-size: 9pt; color: #555; white-space: nowrap; }
+      /* 意味は練習プリントだけに出す（テストには出さない。renderTestPrint の注記を参照） */
+      .p-mean-sub { font-size: 7.5pt; color: #666; }
 
       /* 練習マス。横に2つ並べた横長のマスを3段（なぞり1＋練習5） */
       .p-write-grid {
@@ -1592,9 +1594,14 @@
       const unitNames = printedUnitNames();
       const n = currentSet.length;
       const half = Math.ceil(n / 2);
+      /* ★テストには読み（ひらがな）だけを出す。意味（mean）は出さない。
+         理由: 意味の文に、同じ紙の別の問題の答えがそのまま印刷されていた
+         （2026-09-23 実測: 紙41枚のうち25枚・のべ57語。例: 5番の意味に「太政大臣」＝6番の答え）。
+         ヒントは練習プリント（②）に出す。あちらはお手本＝答えが載っているので漏れない。
+         ⚠️ ここに mean を戻すと、同じ露出が再発します。 */
       const makeTestItem = (it, idx) => `
         <div class="test-item">
-          <div class="test-q-text"><b>${idx + 1}.</b> ${it.kana} <span class="test-hint">(${it.mean})</span></div>
+          <div class="test-q-text"><b>${idx + 1}.</b> ${it.kana}</div>
           <div class="test-ans-box"></div>
         </div>`;
       const leftHtml  = currentSet.slice(0, half).map((it, i) => makeTestItem(it, i)).join("");
@@ -1698,6 +1705,7 @@
             <span class="p-item-no">${idx + 1}</span>
             <span class="p-sample-word" style="font-size:${sampleFontPt(it.word)}pt;">${it.word}</span>
             <span class="p-kana-sub">${it.kana}</span>
+            <span class="p-mean-sub">${it.mean}</span>
           </div>
           ${lines}
         </div>`;
