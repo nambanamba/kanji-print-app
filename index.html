@@ -94,6 +94,7 @@
 
     .unit-controls { display: flex; gap: 8px; margin-bottom: 10px; }
     .btn-sm { padding: 5px 12px; font-size: 0.8rem; font-weight: 600; border-radius: 6px; border: 1px solid var(--border); background: #fff; cursor: pointer; }
+    .btn-sm.is-on { background: #ede9fe; border-color: #a78bfa; color: #5b21b6; }
 
     .unit-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 8px; }
     .unit-btn { display: flex; align-items: center; justify-content: space-between; padding: 10px 12px; border-radius: 8px; border: 2px solid var(--border); background: #fff; cursor: pointer; font-size: 0.9rem; font-weight: 600; text-align: left; }
@@ -220,6 +221,18 @@
     .word-row.is-picked { background: #f5f3ff; }
     .word-row.is-excluded { background: #fafafa; opacity: 0.62; }
     .word-pick { width: 22px; height: 22px; flex-shrink: 0; margin-top: 4px; cursor: pointer; accent-color: var(--primary); }
+    /* ★最優先。親が「必ず出す」と決めた語（2026-09-24） */
+    .word-star { flex-shrink: 0; margin-top: 2px; width: 30px; height: 30px; padding: 0; line-height: 1;
+                 font-size: 1.05rem; border-radius: 8px; border: 1px solid var(--border);
+                 background: #fff; color: #94a3b8; cursor: pointer; }
+    .word-star.is-on { background: #fef3c7; border-color: #f59e0b; color: #b45309; }
+    .word-star:disabled { opacity: 0.35; cursor: not-allowed; }
+    .word-row.is-star { background: #fffbeb; }
+    .word-row.is-star.is-picked { background: #fef6e7; }
+    .word-rec { display: inline-block; font-size: 0.68rem; font-weight: 700; margin-left: 6px;
+                padding: 1px 6px; border-radius: 999px; background: #e0f2fe; color: #0369a1;
+                border: 1px solid #bae6fd; vertical-align: 2px; }
+    .star-note { margin-top: 6px; font-size: 0.75rem; color: #92400e; line-height: 1.5; font-weight: 600; }
     .word-body { flex: 1; min-width: 0; }
     .word-kana { font-size: 0.78rem; color: #64748b; }
     .word-main { font-size: 1.12rem; font-weight: bold; }
@@ -465,6 +478,9 @@
               <span style="font-size:0.82rem; color:#475569;">語</span>
             </div>
           </div>
+          <!-- ★最優先が何語あるか。★が0件のときは空にして display:none にする
+               （＝★を足す前とまったく同じ画面にする。2026-09-24 依頼の受け入れ条件②） -->
+          <div class="star-note" id="star-note" style="display:none;"></div>
         </div>
 
         <button class="btn-main" style="background:#7c3aed; box-shadow:0 4px 10px rgba(124,58,237,0.3); margin-bottom:10px;" onclick="togglePreview()">👀 今日の漢字を見る（プレビュー）</button>
@@ -509,6 +525,14 @@
           <button class="btn-sm" onclick="pickAllInListUnit(true)">この回を全部つける</button>
           <button class="btn-sm" onclick="pickAllInListUnit(false)">この回を全部はずす</button>
           <button class="btn-sm" id="list-picked-only-btn" onclick="toggleShowPickedOnly()">選んだ語だけ表示</button>
+        </div>
+        <!-- ★最優先（2026-09-24）。「必ず出す語」を親がここで指す -->
+        <div class="list-head" style="border-bottom:1px solid #e2e8f0;">
+          <button class="btn-sm" id="list-star-only-btn" onclick="toggleShowStarOnly()">★だけ表示</button>
+          <button class="btn-sm" onclick="starAllShown(true)">表示中を全部★</button>
+          <button class="btn-sm" onclick="starAllShown(false)">表示中の★を外す</button>
+          <button class="btn-sm" onclick="starAllRecommended()">おすすめを全部★にする</button>
+          <button class="btn-sm" onclick="clearAllStars()">★をすべて外す</button>
         </div>
         <div id="history-list-container"></div>
       </div>
@@ -575,7 +599,63 @@
     // 「出さない」と同じく単元＋語で覚えるので、データが更新されて id が変わっても選択は失われない。
     // ⚠️ このキー名も改名しないこと
     const PICKED_KEY = "kanji_app_picked_v1";
+    // 「この語は必ず出す」と親が決めた語（★最優先・2026-09-24）。
+    // チェック(PICKED_KEY)・出さない(EXCLUDED_KEY)とは別の箱にする。混ぜると、
+    // 片方を触ったときにもう片方が巻きぞえで消える
+    // ⚠️ このキー名も改名しないこと（改名すると★が読めなくなる）
+    const STAR_KEY = "kanji_app_star_v1";
     const MIGRATED_FLAG_KEY = "kq_kanji_stats_migrated_v1";
+
+    /* ---------- 「おすすめ」印の110語 ----------
+       出典: 5年下\quiz_csv\漢字_厳選の候補_2026-09-23.md
+             （社会クイズ作成担当・2026-09-23版「## 全体の並び（110語）」の表）
+       語＋回で kanji-data.js の id に当てて 110/110 一致を確認ずみ
+       （tools\おすすめ110語を当てる.js・2026-09-24）。内訳 第1回27/第2回20/第3回20/第4回43。
+
+       ⚠️ これは★の初期値ではありません。あくまで参考の印で、★を付けるのは親です
+          （司令塔が 2026-09-24 にユーザーへ確認ずみ）。
+       ⚠️ 紙には出しません。画面（③一覧）の中だけで使います。
+       キーの形は excludeKeyOf() と同じ「単元キー + NUL + 語」。id は取り込みで振り直る前例が
+       あるため使いません（作業メモ 2026-09-05） */
+    const RECOMMENDED_KEYS = new Set([
+      "第1回\u0000弥生土器", "第1回\u0000邪馬台国", "第4回\u0000菅原道真",
+      "第1回\u0000吉野ヶ里遺跡", "第2回\u0000遣隋使", "第3回\u0000遣唐使",
+      "第4回\u0000藤原純友の乱", "第2回\u0000摂政", "第4回\u0000紀貫之",
+      "第4回\u0000金剛峯寺", "第1回\u0000漢委奴国王", "第3回\u0000防人",
+      "第1回\u0000倭", "第2回\u0000渡来人", "第2回\u0000百済",
+      "第2回\u0000隋", "第2回\u0000唐", "第3回\u0000大宝律令",
+      "第3回\u0000墾田永年私財法", "第4回\u0000桓武天皇", "第4回\u0000藤原道長",
+      "第4回\u0000源義家", "第4回\u0000源義朝", "第1回\u0000奴国",
+      "第2回\u0000埴輪", "第3回\u0000唐招提寺", "第4回\u0000摂関政治",
+      "第4回\u0000蝦夷", "第1回\u0000銅鐸", "第2回\u0000天智天皇",
+      "第4回\u0000平将門の乱", "第4回\u0000征夷大将軍", "第1回\u0000竪穴住居",
+      "第1回\u0000銅剣", "第1回\u0000三内丸山遺跡", "第1回\u0000土偶",
+      "第3回\u0000租", "第2回\u0000推古天皇", "第2回\u0000飛鳥文化",
+      "第1回\u0000登呂遺跡", "第4回\u0000平等院鳳凰堂", "第4回\u0000源氏物語",
+      "第3回\u0000庸", "第4回\u0000厳島神社", "第4回\u0000太政大臣",
+      "第2回\u0000飛鳥", "第4回\u0000源氏", "第3回\u0000校倉造",
+      "第4回\u0000浄土教", "第4回\u0000日宋貿易", "第2回\u0000冠位十二階",
+      "第2回\u0000壬申の乱", "第3回\u0000鑑真", "第3回\u0000荘園",
+      "第3回\u0000正倉院", "第1回\u0000環濠集落", "第2回\u0000大仙古墳",
+      "第3回\u0000日本書紀", "第4回\u0000院政", "第1回\u0000稲作",
+      "第1回\u0000豪族", "第2回\u0000法隆寺", "第4回\u0000紫式部",
+      "第4回\u0000最澄", "第1回\u0000磨製石器", "第2回\u0000憲法十七条",
+      "第1回\u0000打製石器", "第1回\u0000高床倉庫", "第2回\u0000前方後円墳",
+      "第2回\u0000古墳", "第4回\u0000枕草子", "第4回\u0000延暦寺",
+      "第1回\u0000『魏志』倭人伝", "第4回\u0000寝殿造", "第1回\u0000貝塚",
+      "第1回\u0000野尻湖", "第4回\u0000大輪田泊", "第4回\u0000絵巻物",
+      "第4回\u0000平清盛", "第1回\u0000大森貝塚", "第4回\u0000大和絵",
+      "第2回\u0000聖徳太子", "第3回\u0000古事記", "第4回\u0000天台宗",
+      "第4回\u0000真言宗", "第1回\u0000『後漢書』東夷伝", "第3回\u0000貧窮問答歌",
+      "第4回\u0000中尊寺金色堂", "第4回\u0000僧兵", "第4回\u0000平泉",
+      "第4回\u0000保元", "第3回\u0000班田収授", "第4回\u0000不輸の権",
+      "第4回\u0000不入の権", "第2回\u0000大化の改新", "第3回\u0000平城京",
+      "第1回\u0000『漢書』地理志", "第3回\u0000三世一身の法", "第4回\u0000関白",
+      "第4回\u0000平治", "第1回\u0000縄文時代", "第1回\u0000石包丁",
+      "第1回\u0000金印", "第4回\u0000平氏", "第3回\u0000調",
+      "第3回\u0000万葉集", "第4回\u0000国風文化", "第4回\u0000平安京",
+      "第3回\u0000口分田", "第4回\u0000空海"
+    ]);
 
     // 過去バージョンの記録キー（古い順）。形式はいずれも { <旧id>: {passed, lastDate} }
     const LEGACY_MASTERY_KEYS = [
@@ -615,6 +695,7 @@
     let usePicked        = false;
     let listUnitKey      = null;  // 一覧タブでいま見ている回
     let showPickedOnly   = false; // 一覧タブで「選んだ語だけ表示」
+    let showStarOnly     = false; // 一覧タブで「★だけ表示」
     // 重要度でしぼる。"all" | "highmid" | "high"。データは消さず、出題する範囲だけ変える
     let priorityFilter = "all";
     const PRIORITY_KEEP = { all: ["高", "中", "低"], highmid: ["高", "中"], high: ["高"] };
@@ -708,6 +789,7 @@
       generateDailySet(false);
       updatePriorityNote();
       updatePickModeNote();
+      updateStarNote();
     });
 
     /* ---------- 設定の保存・読込 ---------- */
@@ -766,6 +848,7 @@
       updateProgressDisplay();
       renderHistoryList();
       updatePriorityNote();
+      updateStarNote();
       saveCachedSettings();
     }
     function updatePriorityNote() {
@@ -786,6 +869,7 @@
       document.getElementById("filter-unmastered").classList.toggle("active", filterUnmastered);
       currentSet = [];
       updateProgressDisplay();
+      updateStarNote();
       saveCachedSettings();
     }
 
@@ -841,6 +925,103 @@
       renderHistoryList();
     }
 
+    /* ---------- ★最優先（親が「この語は必ず出す」と決める）----------
+       2026-09-24・ユーザー依頼「最終、親が見て、優先度を変更できるようにしてほしい」。
+       重要度「高」が372語(76%)あって絞れないので、データの priority は触らず、
+       親が指した語を印刷の先頭に置く形にした。
+
+       ★の効き方（司令塔が 09-24 にユーザーへ確認ずみ）
+         - 重要度（すべて／高＋中／高だけ）… ★は落とさない。getPool() で素通しする
+         - 正解ずみを除く ……………………… ★も除かれる（正解ずみの★は入らない）
+         - 単元の選択 ………………………… ★は超えない。選んでいない回の★は出ない
+         - 「出さない」……………………………除外が勝つ。★があっても出ない
+         - 「✅ 選んだ語だけ」……………………★は使わない
+       ★自動では外れない。正解しても★のまま（親が外すまで） */
+    function getStarred() {
+      try { return new Set(JSON.parse(localStorage.getItem(STAR_KEY)) || []); } catch(e) { return new Set(); }
+    }
+    function saveStarred(set) {
+      try { localStorage.setItem(STAR_KEY, JSON.stringify([...set])); } catch(e) {}
+    }
+    function isStarred(item, set) { return (set || getStarred()).has(excludeKeyOf(item)); }
+    function isRecommended(item) { return RECOMMENDED_KEYS.has(excludeKeyOf(item)); }
+    // ★を付けたあと、画面と出題セットを作り直す共通の後始末
+    function afterStarChange() {
+      currentSet = [];
+      generateDailySet(false);
+      updateProgressDisplay();
+      updatePriorityNote();
+      updateStarNote();
+      renderHistoryList();
+    }
+    function toggleStarred(id) {
+      const item = KANJI_DATA.find(d => d.id === id);
+      if (!item) return;
+      const set = getStarred(), key = excludeKeyOf(item);
+      if (set.has(key)) set.delete(key); else set.add(key);
+      saveStarred(set);
+      afterStarChange();
+    }
+    // いま一覧に出ている語を、まとめて★にする／外す。
+    // ⚠️「この回を全部」ではなく「表示中を全部」。「★だけ表示」で絞ってから外せるようにするため
+    function starAllShown(on) {
+      const set = getStarred(), ex = getExcluded();
+      shownListItems().forEach(it => {
+        const key = excludeKeyOf(it);
+        // 「🚫 出さない」にした語には★を付けない（付けても出ないので、数だけ増えて誤解のもと）。
+        // 外すほうは制限しない。あとから「出さない」にした語の★も掃除できるようにする
+        if (on) { if (!isExcluded(it, ex)) set.add(key); } else set.delete(key);
+      });
+      saveStarred(set);
+      afterStarChange();
+    }
+    // おすすめ110語をまとめて★にする。
+    // これを押すと★が110語になるので、10語印刷なら「おすすめの中から並び順で10語」が出る。
+    // ＝「おすすめだけを回す」状態。意図した動き（司令塔 2026-09-24）
+    function starAllRecommended() {
+      const n = RECOMMENDED_KEYS.size;
+      if (!confirm("おすすめの " + n + "語 を、すべて★最優先にします。\n"
+                 + "（★が" + n + "語になるので、10語印刷ならこの中から10語ずつ出ます）\nよろしいですか？")) return;
+      const set = getStarred();
+      RECOMMENDED_KEYS.forEach(k => set.add(k));
+      saveStarred(set);
+      afterStarChange();
+      alert("おすすめ " + n + "語 を★にしました。（★は全体で " + set.size + "語）");
+    }
+    function clearAllStars() {
+      const set = getStarred();
+      if (set.size === 0) return;
+      if (!confirm("★最優先を、すべて外しますか？（" + set.size + "語）\n〇✕の記録・チェック・「出さない」は変わりません。")) return;
+      saveStarred(new Set());
+      afterStarChange();
+    }
+    function toggleShowStarOnly() {
+      showStarOnly = !showStarOnly;
+      renderHistoryList();
+    }
+    // ①の画面に「★N語が先に出ます」を出す。★が0件なら何も出さない（直す前と同じ画面）
+    function updateStarNote() {
+      const el = document.getElementById("star-note");
+      if (!el) return;
+      const set = getStarred();
+      if (set.size === 0) { el.textContent = ""; el.style.display = "none"; return; }
+      el.style.display = "block";
+      if (usePicked) {
+        el.textContent = "「選んだ語だけ」の間は、★最優先は使いません。（★は " + set.size + "語 保存されています）";
+        return;
+      }
+      // いまの設定で、実際に先頭へ来る★が何語か。出ない★があるなら、黙って消さずに書く
+      const mastery = getMastery();
+      const live = getPool().filter(d => isStarred(d, set))
+                            .filter(d => !filterUnmastered || !isMasteredStat(mastery[d.id]));
+      const liveKeys = new Set(live.map(excludeKeyOf));
+      const hidden = set.size - liveKeys.size;
+      el.textContent = hidden === 0
+        ? "★最優先 " + liveKeys.size + "語が先に出ます。"
+        : "★最優先 " + liveKeys.size + "語が先に出ます。"
+          + "（★" + set.size + "語のうち " + hidden + "語は、単元・正解ずみ・出さない の設定で今回は出ません）";
+    }
+
     /* ---------- プリントに出す語を親が選ぶ ---------- */
     function getPicked() {
       try { return new Set(JSON.parse(localStorage.getItem(PICKED_KEY)) || []); } catch(e) { return new Set(); }
@@ -885,6 +1066,7 @@
       updateProgressDisplay();
       updatePriorityNote();
       updatePickModeNote();
+      updateStarNote();
       saveCachedSettings();
     }
     function updatePickModeNote() {
@@ -921,6 +1103,15 @@
         if (!prev || score(d) > score(prev)) pick.set(d.word, d);
       });
       return list.filter(d => pick.get(d.word) === d);
+    }
+
+    // いま一覧に実際に出ている語。「★だけ表示」「選んだ語だけ表示」で絞った後のもの。
+    // ⚠️「表示中を全部★」がここを使うので、画面に見えていない語に★が付かない
+    function shownListItems() {
+      let items = listUnitItems();
+      if (showPickedOnly) items = items.filter(it => isPicked(it));
+      if (showStarOnly)   items = items.filter(it => isStarred(it));
+      return items;
     }
 
     /* ---------- 「出さない」にした語を GitHub に報告する ----------
@@ -1333,7 +1524,12 @@
     function getPool() {
       if (usePicked) return pickedPool();
       const keep = PRIORITY_KEEP[priorityFilter] || PRIORITY_KEEP.all;
-      return getPoolIgnoringPriority().filter(d => keep.includes(d.priority));
+      // ★最優先の語は重要度で落とさない。親が「必ず出す」と決めたものが
+      // 別の設定で消えるのは事故（2026-09-24・依頼書の失敗条件1）。
+      // ★が0件なら star.size===0 で素通りするので、直す前とまったく同じ結果になる
+      const star = getStarred();
+      return getPoolIgnoringPriority()
+        .filter(d => keep.includes(d.priority) || (star.size > 0 && star.has(excludeKeyOf(d))));
     }
     // チェックした語。並びはデータの順（回・番号順）なので、プリントも教材と同じ並びになる
     function pickedPool() {
@@ -1391,6 +1587,7 @@
         const pv0 = document.getElementById("preview-area");
         if (pv0 && pv0.style.display !== "none") renderPreview();
         updatePriorityNote();
+        updateStarNote();
         return;
       }
       if (pool.length === 0) { if (alertIfEmpty) alert("単元を1つ以上選択してください。"); return; }
@@ -1412,7 +1609,16 @@
       }
 
       const lastCorrectOf = d => { const s = mastery[d.id]; return (s && s.lastCorrectAt) ? s.lastCorrectAt : 0; };
-      const ordered = [...filtered].sort((a, b) => lastCorrectOf(a) - lastCorrectOf(b));
+      let ordered = [...filtered].sort((a, b) => lastCorrectOf(a) - lastCorrectOf(b));
+
+      // ★最優先を先頭へ寄せる。★どうしの中は「いまの並び順」のまま
+      // （正解した日が古い順・未正解が先）なので、★が語数より多ければその順で切れる。
+      // ⚠️ ★が0件のときは分けても元の配列と同じ並びになる ＝ 直す前と紙が変わらない
+      const star = getStarred();
+      if (star.size > 0) {
+        const isStar = d => star.has(excludeKeyOf(d));
+        ordered = [...ordered.filter(isStar), ...ordered.filter(d => !isStar(d))];
+      }
 
       const targetCount = currentCount === "all"
         ? ordered.length
@@ -1423,6 +1629,7 @@
       const pv = document.getElementById("preview-area");
       if (pv && pv.style.display !== "none") renderPreview();   // 開いていれば内容を追随させる
       updatePriorityNote();
+      updateStarNote();
     }
 
     // ①②とも同じセットを使う。セットが未生成のときだけ新しく作る（単元・問題数を変えると自動でクリアされる）
@@ -1504,16 +1711,21 @@
     function renderHistoryList() {
       renderListUnitSelect();
       const container = document.getElementById("history-list-container");
-      const ex = getExcluded(), picked = getPicked();
-      let items = listUnitItems();
-      const pickedHere = items.filter(it => isPicked(it, picked)).length;
+      const ex = getExcluded(), picked = getPicked(), star = getStarred();
+      const allItems = listUnitItems();
+      const pickedHere = allItems.filter(it => isPicked(it, picked)).length;
+      const starHere   = allItems.filter(it => isStarred(it, star)).length;
 
       const countEl = document.getElementById("list-count-text");
-      if (countEl) countEl.innerHTML = `この回 ${items.length}語 / チェック <b>${pickedHere}語</b>（全体で ${picked.size}語）`;
+      if (countEl) countEl.innerHTML =
+        `この回 ${allItems.length}語 / チェック <b>${pickedHere}語</b>（全体 ${picked.size}語）`
+        + ` / ★ <b>${starHere}語</b>（全体 ${star.size}語）`;
       const onlyBtn = document.getElementById("list-picked-only-btn");
       if (onlyBtn) onlyBtn.classList.toggle("is-on", showPickedOnly);
+      const starBtn = document.getElementById("list-star-only-btn");
+      if (starBtn) starBtn.classList.toggle("is-on", showStarOnly);
 
-      if (showPickedOnly) items = items.filter(it => isPicked(it, picked));
+      let items = shownListItems();
 
       const exTotal = ex.size;
       let report = "";
@@ -1532,11 +1744,15 @@
                <button class="btn-sm" onclick="restoreAllExcluded()">すべて元に戻す</button></span>
            </div>`
         : `<div class="hist-note">チェックした語がプリントに出ます（「① 印刷」で「✅ 選んだ語だけ」にしてください）。できた語は日付を入れて「⭕ 正解にする」。</div>`;
+      const starNote = `<div class="hist-note">★ を付けた語はプリントの<b>いちばん先に出ます</b>（重要度「高だけ」でも落ちません／正解しても自動では外れません）。「おすすめ」は参考の印で、★は付いていません。<br>
+        ⚠️ 選んでいない回の★と「🚫 出さない」にした語は出ません。「✅ 選んだ語だけ」の間は★を使いません。</div>`;
 
-      container.innerHTML = note;
+      container.innerHTML = note + starNote;
       if (items.length === 0) {
-        container.insertAdjacentHTML("beforeend",
-          `<p style='text-align:center;padding:20px;color:#64748b;'>${showPickedOnly ? "この回でチェックした語はありません。" : "この回に語がありません。"}</p>`);
+        const msg = showStarOnly   ? "この回で★を付けた語はありません。"
+                  : showPickedOnly ? "この回でチェックした語はありません。"
+                  : "この回に語がありません。";
+        container.insertAdjacentHTML("beforeend", `<p style='text-align:center;padding:20px;color:#64748b;'>${msg}</p>`);
         return;
       }
 
@@ -1544,15 +1760,20 @@
       items.forEach(it => {
         const isOff = isExcluded(it, ex);
         const on = isPicked(it, picked);
+        const st = isStarred(it, star);
+        const rec = isRecommended(it);
         const done = lastCorrectYmd(it.id);
         const div = document.createElement("div");
-        div.className = "word-row" + (isOff ? " is-excluded" : (on ? " is-picked" : ""));
+        div.className = "word-row" + (isOff ? " is-excluded" : ((st ? " is-star" : "") + (on ? " is-picked" : "")));
         div.innerHTML = `
           <input type="checkbox" class="word-pick" ${on ? "checked" : ""} ${isOff ? "disabled" : ""}
                  onchange="togglePicked('${it.id}')" title="プリントに出す">
+          <button class="word-star ${st ? "is-on" : ""}" ${isOff ? "disabled" : ""}
+                  onclick="toggleStarred('${it.id}')"
+                  title="${st ? "★最優先をはずす" : "★最優先にする（必ずプリントに出す）"}">${st ? "★" : "☆"}</button>
           <div class="word-body">
             <div class="word-kana">${it.kana}</div>
-            <div class="word-main">${it.word}</div>
+            <div class="word-main">${it.word}${rec ? `<span class="word-rec" title="テストに出そうな語として機械が上位に挙げたもの（参考）">おすすめ</span>` : ""}</div>
             <div class="word-mean">💡 ${it.mean}</div>
             <div class="word-ops">
               ${done ? `<span class="word-done">⭕ ${done} に正解</span>` : ``}
