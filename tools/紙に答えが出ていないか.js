@@ -30,6 +30,10 @@ const fs = require('fs');
 const os = require('os');
 const path = require('path');
 const { execFileSync } = require('child_process');
+// ⚠️ playwright はこのフォルダではなく**グローバル**に入っています。そのまま走らせると
+//    「Cannot find module 'playwright'」で落ちます。NODE_PATH を付けてください（2026-09-24）:
+//      PowerShell : $env:NODE_PATH="$env:APPDATA/npm/node_modules"; node <このファイル>
+//      Bash       : NODE_PATH=$(npm root -g) node <このファイル>
 const { chromium } = require('playwright');
 
 const ROOT = path.join(__dirname, '..');

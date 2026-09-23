@@ -3,6 +3,10 @@
    ★文字列一致では判定しない（"test-hint" は廃止コメントにも出るため誤検出する）。
      実際に紙を描かせて、その中身を見る。 */
 const path = require('path');
+// ⚠️ playwright はこのフォルダではなく**グローバル**に入っています。そのまま走らせると
+//    「Cannot find module 'playwright'」で落ちます。NODE_PATH を付けてください（2026-09-24）:
+//      PowerShell : $env:NODE_PATH="$env:APPDATA/npm/node_modules"; node <このファイル>
+//      Bash       : NODE_PATH=$(npm root -g) node <このファイル>
 const { chromium } = require('playwright');
 const URL = 'https://nambanamba.github.io/kanji-print-app/index.html?cb=' + Date.now();
 

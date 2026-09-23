@@ -1,4 +1,8 @@
-﻿const http=require('http'),fs=require('fs'),path=require('path');const {chromium}=require('playwright');
+﻿// ⚠️ playwright はこのフォルダではなく**グローバル**に入っています。そのまま走らせると
+//    「Cannot find module 'playwright'」で落ちます。NODE_PATH を付けてください（2026-09-24）:
+//      PowerShell : $env:NODE_PATH="$env:APPDATA/npm/node_modules"; node <このファイル>
+//      Bash       : NODE_PATH=$(npm root -g) node <このファイル>
+const http=require('http'),fs=require('fs'),path=require('path');const {chromium}=require('playwright');
 const ROOT=path.join(__dirname,'..'),PORT=8142;
 const MIME={'.html':'text/html; charset=utf-8','.js':'text/javascript; charset=utf-8'};
 const serve=()=>new Promise(r=>{const s=http.createServer((q,p)=>{const f=path.join(ROOT,decodeURIComponent(q.url.split('?')[0]));if(!fs.existsSync(f)||fs.statSync(f).isDirectory()){p.writeHead(404);return p.end('nf');}p.writeHead(200,{'Content-Type':MIME[path.extname(f)]||'application/octet-stream'});p.end(fs.readFileSync(f));});s.listen(PORT,'127.0.0.1',()=>r(s));});
