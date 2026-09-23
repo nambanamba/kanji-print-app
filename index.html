@@ -293,7 +293,9 @@
         page-break-inside: avoid;
       }
       .test-q-text { font-size: 9.5pt; line-height: 1.2; }
-      /* .test-hint は廃止（2026-09-23）。テストに意味を出すと、同じ紙の別問題の答えが漏れる */
+      /* .test-hint は廃止（2026-09-23）。テストに意味を出すと、同じ紙の別問題の答えが漏れる。
+         代わりに .test-note を、読みだけでは字が決まらない語にだけ出す（TEST_NOTES 参照） */
+      .test-note { font-size: 7.5pt; color: #555; margin-left: 0.3em; }
       .test-ans-box {
         width: 100%;
         height: 22mm;
@@ -1589,21 +1591,53 @@
       return uniq.join("・") || "全単元";
     }
 
+    /* ★読みだけでは答えの字が決まらない語にだけ付ける、短い添え書き。
+       ユーザー承認 2026-09-23:「これは、よみだけでわからないものだけいれるんじゃないんでした？」
+       ＝ 易しくするヒントではなく、問題が成立していないのを直すためのもの。別物として扱う。
+
+       ⚠️ 守ること（司令塔の条件・`tools\添え書き案を検査する.js` が機械で当てます）
+         - 答えの漢字を1字も書かない（「冷害」に「被害」は不可。「害」が答えの字）
+         - 同じ紙の別の問題の答えを書かない
+         - 12字以内
+         - ★この表にある語にだけ付ける。ほかの語には付けない
+       ⚠️ キーは id ではなく word。id は取り込みで振り直る前例があるため（作業メモ 2026-09-05）
+       ⚠️ kanji-data.js には持たせない。元データの取り込みで作り直され、消えるため */
+    const TEST_NOTES = {
+      "倭":   "昔の日本のよび名",
+      "隋":   "中国の王朝",
+      "唐":   "中国の王朝",
+      "租":   "稲で納める税",
+      "調":   "特産物で納める税",
+      "庸":   "布で納める税",
+      "竿燈": "夏祭りの名",
+      "冷害": "夏の低温で作物が不作",
+      "機械": "工業の種類",
+      "平氏": "武士団の名",
+      "平治": "1159年の乱の名"
+    };
+
     function renderTestPrint() {
       const todayStr = new Date().toLocaleDateString("ja-JP", { year: "numeric", month: "long", day: "numeric" });
       const unitNames = printedUnitNames();
       const n = currentSet.length;
       const half = Math.ceil(n / 2);
+
       /* ★テストには読み（ひらがな）だけを出す。意味（mean）は出さない。
          理由: 意味の文に、同じ紙の別の問題の答えがそのまま印刷されていた
          （2026-09-23 実測: 紙41枚のうち25枚・のべ57語。例: 5番の意味に「太政大臣」＝6番の答え）。
          ヒントは練習プリント（②）に出す。あちらはお手本＝答えが載っているので漏れない。
          ⚠️ ここに mean を戻すと、同じ露出が再発します。 */
-      const makeTestItem = (it, idx) => `
+      /* ★添え書きは .test-item の中に出すこと。
+         外に置くと `tools\紙に答えが出ていないか.js` の走査から外れ、
+         添え書き経由で答えが漏れても気づけなくなります。 */
+      const makeTestItem = (it, idx) => {
+        const note = TEST_NOTES[it.word];
+        return `
         <div class="test-item">
-          <div class="test-q-text"><b>${idx + 1}.</b> ${it.kana}</div>
+          <div class="test-q-text"><b>${idx + 1}.</b> ${it.kana}${note ? `<span class="test-note">（${note}）</span>` : ""}</div>
           <div class="test-ans-box"></div>
         </div>`;
+      };
       const leftHtml  = currentSet.slice(0, half).map((it, i) => makeTestItem(it, i)).join("");
       const rightHtml = currentSet.slice(half).map((it, i) => makeTestItem(it, half + i)).join("");
 

@@ -1,0 +1,15 @@
+﻿const http=require('http'),fs=require('fs'),path=require('path');const {chromium}=require('playwright');
+const ROOT=path.join(__dirname,'..'),PORT=8142;
+const MIME={'.html':'text/html; charset=utf-8','.js':'text/javascript; charset=utf-8'};
+const serve=()=>new Promise(r=>{const s=http.createServer((q,p)=>{const f=path.join(ROOT,decodeURIComponent(q.url.split('?')[0]));if(!fs.existsSync(f)||fs.statSync(f).isDirectory()){p.writeHead(404);return p.end('nf');}p.writeHead(200,{'Content-Type':MIME[path.extname(f)]||'application/octet-stream'});p.end(fs.readFileSync(f));});s.listen(PORT,'127.0.0.1',()=>r(s));});
+(async()=>{const server=await serve();const b=await chromium.launch({channel:'chrome'});
+const c=await b.newContext({viewport:{width:794,height:1123}});const page=await c.newPage();page.on('dialog',d=>d.accept());
+await page.goto(`http://127.0.0.1:${PORT}/index.html`);
+await page.waitForFunction(()=>typeof TEST_NOTES!=='undefined');
+await page.evaluate(()=>{const 三=['租','庸','調'].map(w=>KANJI_DATA.find(x=>x.word===w));
+const 他=KANJI_DATA.filter(x=>x.unitKey==='第3回'&&!['租','庸','調'].includes(x.word)).slice(0,7);
+currentSet=[...三,...他];selectedUnits=new Set(['第3回']);
+const rp=window.print;window.print=()=>{};try{renderTestPrint();}finally{window.print=rp;}});
+await page.emulateMedia({media:'print'});
+await page.screenshot({path:path.join(__dirname,'紙_第3回_添え書き_2026-09-23.png'),fullPage:true});
+console.log('done');await b.close();server.close();})();
