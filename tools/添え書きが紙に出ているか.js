@@ -91,7 +91,7 @@ function serve() {
   let ng = 0;
   const check = (n, c) => { console.log((c ? '  OK   ' : '  NG   ') + n); if (!c) ng++; };
   console.log('\n=== 判定 ===');
-  check(`表の11語すべてに添え書きが出た`, r.出た.length === r.表の語数);
+  check(`表の${r.表の語数}語すべてに添え書きが出た`, r.出た.length === r.表の語数);
   check('表に無い語には付いていない', r.余計に付いた.length === 0);
   check('★添え書きはすべて .test-item の中にある（走査から外れていない）', r.外に出た === 0);
   check('租・庸・調 が3つとも違う添え書きで出る',

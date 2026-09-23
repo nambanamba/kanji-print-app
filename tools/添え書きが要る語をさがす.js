@@ -23,8 +23,11 @@
 const fs = require('fs');
 const path = require('path');
 
-// いま承認ずみの添え書き（第2版）。漏れを見るための突き合わせ相手
-const 承認ずみ = ['倭', '隋', '唐', '租', '調', '庸', '竿燈', '冷害', '機械', '平氏', '平治'];
+/* ★突き合わせ相手は index.html の TEST_NOTES（＝いま実際に紙へ出ているもの）。
+   道具の中に写しを置くと本体と食い違います。2026-09-23 に実際に踏みました
+   （呉 を index.html に足したのに、道具側が11語のままで漏れたように見えた）。 */
+const { 添え書き表を読む } = require('./_添え書き表を読む.js');
+const 承認ずみ = Object.keys(添え書き表を読む());
 
 function scan(list) {
   const 一文字 = list.filter(d => [...d.word].length === 1);
@@ -63,9 +66,22 @@ function scan(list) {
     console.error('自己テスト失敗。結果を出しません:\n' + JSON.stringify(r, null, 1));
     process.exit(3);
   }
+  /* ★漏れの判定そのものも試す。
+     「表に無い語があれば鳴る／全部あれば鳴らない」を両方とおす。
+     ここを試さないと、表を index.html から読むようにした結果、
+     何を入れても素通りする形になっていても気づけません。 */
+  const 漏れあり = 漏れを出す(r, ['租', '倭']);          // 和・調 が表に無い → 鳴るべき
+  const 漏れなし = 漏れを出す(r, ['租', '倭', '和', '調']); // 全部ある → 鳴らぬべき
+  if (!([...漏れあり].sort().join() === ['和', '調'].sort().join() && 漏れなし.size === 0)) {
+    console.error('自己テスト失敗（漏れの判定）。結果を出しません: ' +
+      JSON.stringify({ 漏れあり: [...漏れあり], 漏れなし: [...漏れなし] }));
+    process.exit(3);
+  }
+
   console.log('自己テスト: OK');
   console.log('  鳴るべきもの … 1文字の語5件（4種）／読み「わ」の衝突1件 を拾った');
-  console.log('  鳴らぬべきもの … 同じ語の重複は別枠へ、3文字の語は拾わなかった（鳴りすぎていない）\n');
+  console.log('  鳴らぬべきもの … 同じ語の重複は別枠へ、3文字の語は拾わなかった（鳴りすぎていない）');
+  console.log('  ★漏れの判定 … 表に無い語があれば鳴り、全部あれば鳴らない（両方とおした）\n');
 })();
 
 const src = fs.readFileSync(path.join(__dirname, '..', 'kanji-data.js'), 'utf8');
@@ -79,7 +95,7 @@ console.log(`対象: ${D.length}語 ／ 読みの種類 ${new Set(D.map(d => d.k
 console.log(`\n=== ① 1文字の語: ${r.一文字.length}語 ===`);
 r.一文字.forEach(d => {
   const 済 = 承認ずみ.includes(d.word);
-  console.log(`  ${済 ? '［承認ずみ］' : '★［11語の外］'} ${d.word}（${d.kana}）  [${d.unitKey} ${d.id} ${d.priority}]`);
+  console.log(`  ${済 ? '［添え書きあり］' : '★［添え書きが無い］'} ${d.word}（${d.kana}）  [${d.unitKey} ${d.id} ${d.priority}]`);
 });
 
 console.log(`\n=== ② 読みの衝突（漢字が違うもの）: ${r.衝突.length}組 ===`);
@@ -89,20 +105,24 @@ else r.衝突.forEach(c => console.log(`  「${c.読み}」 → ${c.語.join(' /
 console.log(`\n（参考）読みも漢字も同じで単元をまたぐ語: ${r.同語重複.length}語 ＝ 同じ答えなので害なし`);
 
 // --- 漏れの判定 ---
-const 要add = new Set();
-r.一文字.forEach(d => { if (!承認ずみ.includes(d.word)) 要add.add(d.word); });
-r.衝突.forEach(c => c.語.forEach(s => {
-  const w = s.split('(')[0];
-  if (!承認ずみ.includes(w)) 要add.add(w);
-}));
+function 漏れを出す(結果, 表) {
+  const s = new Set();
+  結果.一文字.forEach(d => { if (!表.includes(d.word)) s.add(d.word); });
+  結果.衝突.forEach(c => c.語.forEach(x => {
+    const w = x.split('(')[0];
+    if (!表.includes(w)) s.add(w);
+  }));
+  return s;
+}
+const 要add = 漏れを出す(r, 承認ずみ);
 
-console.log('\n=== 判定：承認ずみ11語からの漏れ ===');
+console.log(`\n=== 判定：いま紙に出ている ${承認ずみ.length}語 からの漏れ ===`);
 if (要add.size === 0) {
-  console.log('  ★0件（機械で確実に言える範囲では、11語で足りています）');
+  console.log('  ★0件（機械で確実に言える範囲では、いまの' + 承認ずみ.length + '語で足りています）');
 } else {
   console.log(`  ★${要add.size}件 … ${[...要add].join('・')}`);
   console.log('  → 司令塔へ一覧で報告すること。文案は司令塔が見る（勝手に作って入れない）');
 }
 console.log('\n⚠️ 0件でも「漏れなし」の証明にはなりません。');
 console.log('   同音の別語（例外／機会／関東のようにデータの外にある語）は、この検査からは見えません。');
-console.log('   承認ずみ11語のうち 冷害・機械・竿燈 の3語は、まさにその型で、人が読んで見つけたものです。');
+console.log('   いまの表のうち 冷害・機械・竿燈 の3語は、まさにその型で、人が読んで見つけたものです。');
