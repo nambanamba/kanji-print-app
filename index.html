@@ -242,6 +242,18 @@
     .hist-guide-body { padding: 0 14px 12px; font-size: 0.76rem; color: #475569; line-height: 1.7; }
     .hist-guide-body p { margin: 0 0 7px; }
     .hist-guide-body p:last-child { margin-bottom: 0; }
+    /* 「△ できなかった」。できた（緑）とはっきり分けて、押し間違いを減らす */
+    .word-ng-btn { padding: 7px 10px; font-size: 0.8rem; font-weight: 700; border-radius: 7px;
+                   border: 1px solid #cbd5e1; background: #fff; color: #475569; cursor: pointer; }
+    /* ★2択は横に並べる。親が比べて選ぶものなので、縦に離すと選びにくい */
+    .word-ops-main { margin-top: 5px; }
+    /* ⚠️ flex:1 で幅をそろえると「できなかった」が2行に折り返します（390px 実測）。
+       中身の幅のまま横に並べること */
+    .word-ops-main button { white-space: nowrap; }
+    .word-date-label { display: inline-flex; align-items: center; gap: 5px;
+                       font-size: 0.74rem; color: #64748b; font-weight: 600; }
+    .word-ops-undo { margin-top: 4px; }
+    .word-ops-undo .word-undo { color: #64748b; }
     .word-practiced { display: inline-block; font-size: 0.68rem; font-weight: 700; margin-left: 6px;
                 padding: 1px 6px; border-radius: 999px; background: #dcfce7; color: #15803d;
                 border: 1px solid #86efac; vertical-align: 2px; }
@@ -980,34 +992,58 @@
     // 数え始めた日。まだ一度も数えていなければ null（画面に日付を出さない）
     function practiceSince() { const o = getPractice(); return o ? o.since : null; }
 
-    // 紙の指紋。同じ語ぞろえなら同じ値になる短い文字列（FNV-1a）。
-    // 全問（489語）でも指紋は短いままなので、保存が膨らまない
-    function sheetSignature(list) {
-      const src = list.map(excludeKeyOf).join("|");
-      let h = 0x811c9dc5;
-      for (let i = 0; i < src.length; i++) {
-        h ^= src.charCodeAt(i);
-        h = (h + ((h << 1) + (h << 4) + (h << 7) + (h << 8) + (h << 24))) >>> 0;
-      }
-      return list.length + "_" + h.toString(36);
+    /* ★★数を増やすのは「親がボタンを押したとき」だけです（2026-09-25b でこう変えました）。
+       ⚠️ ここに「刷ったら数える」を戻さないこと。戻すと、また『刷った回数』を数えることになります。
+
+       delta は +1（できた／できなかった）か -1（押し間違いを戻す）。
+       0以下になったら、その語のキーごと消す（0回の語は画面に何も出さないため）。
+       ⚠️ 前の版が書いた done（その日に刷った紙の指紋）は、あっても読みません。
+          消しもしません。★counts（回数そのもの）は絶対に触らないこと */
+    function addPractice(item, delta) {
+      const today = todayYmd();
+      const o = getPractice() || { v: 1, since: today, counts: {} };
+      if (!o.since) o.since = today;
+      const k = excludeKeyOf(item);
+      const n = (o.counts[k] || 0) + delta;
+      if (n <= 0) delete o.counts[k]; else o.counts[k] = n;
+      try { localStorage.setItem(PRACTICE_KEY, JSON.stringify(o)); } catch(e) {}
     }
 
-    // 練習プリントを1枚ぶん数える。数えたら true、その日すでに数えた紙なら false
-    function countPracticeSheet(list) {
-      if (!list || list.length === 0) return false;
-      const today = todayYmd();
-      const sig = sheetSignature(list);
-      const o = getPractice() || { v: 1, since: today, counts: {}, done: { ymd: today, sigs: [] } };
-      if (!o.done || o.done.ymd !== today) o.done = { ymd: today, sigs: [] };   // 日が変わったら捨てる
-      if (o.done.sigs.indexOf(sig) >= 0) return false;                          // 同じ日の刷り直し
-      if (!o.since) o.since = today;
-      list.forEach(it => {
-        const k = excludeKeyOf(it);
-        o.counts[k] = (o.counts[k] || 0) + 1;
-      });
-      o.done.sigs.push(sig);
-      try { localStorage.setItem(PRACTICE_KEY, JSON.stringify(o)); } catch(e) {}
-      return true;
+    /* ★「⭕ できた」「△ できなかった」の中身。
+       ★1回の操作で 練習 と 正解 の両方が入ります。
+       ⚠️ 「できた」とは別に「正解にする」を押させる形にしないこと。
+          両方押されて 練習が2回数えられます（2026-09-25b の失敗条件2）。
+          そのため、以前あった「⭕ 正解にする」ボタンは消してあります。 */
+    function markPracticed(id, ymd, できた) {
+      const item = KANJI_DATA.find(d => d.id === id);
+      if (!item) return;
+      // ★日付が読めないときは、何も数えないで戻る。
+      //   先に数えると、setCorrectOn が止まったときに練習だけ増えてしまう
+      if (できた && ymdToMs(ymd) === null) { alert("日付を選んでください。"); return; }
+      addPractice(item, +1);
+      if (できた) {
+        setCorrectOn(id, ymd);        // 中で updateProgressDisplay と renderHistoryList を呼ぶ
+      } else {
+        /* ★「できなかった」を押したら、前に付いていた ⭕ を外します（2026-09-25b・ユーザーの判断）。
+           司令塔が「今日書けなかった語を、また紙に出しますか」と聞いて「★また出す」でした。
+           ⭕ が残っていると「正解ずみを除く」で絞っている親に、その語が出てこないためです。
+
+           ⚠️ 外すのは**正解の記録だけ**です。★練習回数には触りません。
+              （練習回数まで0に戻すのは失敗条件8「すでに入っている数が消える」です。
+                上で addPractice(item, +1) を済ませてから、ここで正解だけ外しています。）
+           ⚠️ clearCorrect は中で updateProgressDisplay と renderHistoryList を呼びます。
+              ⭕ が付いていない語に対しても安全です（setKanjiStatus の "unseen" は
+              記録が無ければ delete するだけ）。 */
+        clearCorrect(id);
+      }
+    }
+    // 押し間違いを戻す。★練習だけを1回減らします（正解の記録には触りません）
+    function undoPractice(id) {
+      const item = KANJI_DATA.find(d => d.id === id);
+      if (!item) return;
+      addPractice(item, -1);
+      updateProgressDisplay();
+      renderHistoryList();
     }
 
     /* ---------- ★最優先（親が「この語は必ず出す」と決める）----------
@@ -1723,17 +1759,16 @@
       return currentSet.length > 0;
     }
     function rerollSet() { generateDailySet(true); }
-    // ★① テストプリントでは数えません（失敗条件1）。ここに countPracticeSheet を足さないこと
+    /* ★★①②とも、刷っても「練習した回数」は増えません（2026-09-25b・ユーザーの指摘）。
+
+       ユーザーの言葉: 「印刷しても練習してないかもしれないので、正解、練習した記録を
+       入れられるようにしてほしい」
+       ＝ 刷った回数を数えると、**机に置かれただけの紙も1回**に数えてしまう。
+          お子さんが実際に書いた量とは別のものを数えていた。
+
+       ⚠️ ここに数える処理を足さないこと。数えるのは ③一覧の「⭕ できた／△ できなかった」だけです。 */
     function printTestSheet()     { if (ensureSet()) renderTestPrint(); }
-    // ★② 練習プリントだけ数えます。★数えるのはここ（押した場所）で、renderPracticePrint の中ではない。
-    //    プレビューも検査の描画もここを通らないので、それらでは増えません
-    function printPracticeSheet() {
-      if (!ensureSet()) return;
-      const 数えた = countPracticeSheet(currentSet);
-      renderPracticePrint();
-      // 一覧を開いたときに古い数が出ないように、開いていれば描き直す
-      if (数えた && document.getElementById("screen-history").style.display !== "none") renderHistoryList();
-    }
+    function printPracticeSheet() { if (ensureSet()) renderPracticePrint(); }
 
     /* ---------- 採点リスト：クイズ本体の問題一覧と同じ「タップした瞬間に確定・保存」方式。
        何度でも自由に〇↔✕を切りかえられ、押しなおしても二重にカウントされない ---------- */
@@ -1849,9 +1884,19 @@
           <p><b>★ 最優先</b> … プリントの<b>いちばん先に出ます</b>（重要度「高だけ」でも落ちません／正解しても自動では外れません）。
              ⚠️ 選んでいない回の★と「🚫 出さない」にした語は出ません。「✅ 選んだ語だけ」の間は★を使いません。</p>
           <p><b>おすすめ</b> … テストに出そうな語として機械が上位に挙げたもの。参考の印で、★は付いていません。</p>
-          <p><b>練習 N回</b> … <b>練習プリント（②）に出した回数</b>です。<b>テストプリント（①）では数えていません</b>（書いて練習した回数を見るためです）。${
-            since ? `${since} から数えています。それより前の分は記録がないので入っていません。`
-                  : `まだ1回も数えていません。「② 練習プリントを印刷」を押すと、その紙に出た語から数え始めます。`}</p>
+          <p><b>⭕ できた ／ △ できなかった</b> … <b>お子さんが書いたあとに、親が押します。</b>
+             <b>どちらも「練習 N回」が1ふえます。</b><br>
+             ・<b>⭕ できた</b> … やった日に正解したことを記録します（1回の操作で両方入ります）。<br>
+             ・<b>△ できなかった</b> … <b>前に付いていた ⭕ があれば外します。</b>その語は<b>また紙に出るようになります</b>。<br>
+             押し間違えたら「<b>↩ 練習を1回減らす</b>」「<b>↩ 正解を取り消す</b>」で戻せます。</p>
+          <p><b>練習 N回</b> … <b>上のボタンで入れた回数</b>です。
+             ⚠️ <b>プリントを刷っても増えません</b>（刷っただけで練習していないことがあるため・2026-09-25 に変更）。${
+            since ? `${since} から数えています。` : `まだ1回も入っていません。`}
+             <br>⚠️ <b>2026-09-25 に刷った分が自動で入っていることがあります</b>（そのときは「刷った回数」を数えていました）。多すぎるときは「↩ 練習を1回減らす」で直せます。</p>
+          <p><b>「△ できなかった」と「↩ 正解を取り消す」のちがい</b><br>
+             ・<b>△ できなかった</b> … <b>練習 N回がふえます</b>。書いたけれど間違えた、というときに押します。<br>
+             ・<b>↩ 正解を取り消す</b> … <b>練習 N回はふえません</b>。⭕ を押し間違えたときや、まだ書いていないのに ⭕ が付いているときに押します。<br>
+             どちらも ⭕ が外れて、その語はまた紙に出るようになります。</p>
         </div></details>`;
       container.innerHTML = note + guide;
       if (items.length === 0) {
@@ -1884,9 +1929,19 @@
             <div class="word-mean">💡 ${it.mean}</div>
             <div class="word-ops">
               ${done ? `<span class="word-done">⭕ ${done} に正解</span>` : ``}
-              <input type="date" class="word-date" id="date-${it.id}" value="${done || today}" max="${today}">
-              <button class="word-ok-btn" onclick="setCorrectOn('${it.id}', document.getElementById('date-${it.id}').value)">⭕ 正解にする</button>
-              ${done ? `<button class="word-undo" onclick="clearCorrect('${it.id}')">取り消す</button>` : ``}
+              <label class="word-date-label">やった日
+                <input type="date" class="word-date" id="date-${it.id}" value="${done || today}" max="${today}">
+              </label>
+            </div>
+            <div class="word-ops word-ops-main">
+              <button class="word-ok-btn" onclick="markPracticed('${it.id}', document.getElementById('date-${it.id}').value, true)"
+                      title="練習を1回ふやして、この日に正解したことも記録します">⭕ できた</button>
+              <button class="word-ng-btn" onclick="markPracticed('${it.id}', document.getElementById('date-${it.id}').value, false)"
+                      title="練習を1回ふやして、前に付いていた⭕があれば外します（また紙に出るようになります）">△ できなかった</button>
+            </div>
+            <div class="word-ops word-ops-undo">
+              ${practiced > 0 ? `<button class="word-undo" onclick="undoPractice('${it.id}')">↩ 練習を1回減らす</button>` : ``}
+              ${done ? `<button class="word-undo" onclick="clearCorrect('${it.id}')">↩ 正解を取り消す</button>` : ``}
               <button class="hist-ex-btn ${isOff ? 'is-on' : ''}" onclick="toggleExcluded('${it.id}')"
                       title="${isOff ? 'また出題する' : 'この語は出題しない'}">${isOff ? '↩︎ 戻す' : '🚫 出さない'}</button>
             </div>
