@@ -229,6 +229,22 @@
     .word-star:disabled { opacity: 0.35; cursor: not-allowed; }
     .word-row.is-star { background: #fffbeb; }
     .word-row.is-star.is-picked { background: #fef6e7; }
+    /* 練習した回数（2026-09-25）。0回の語には出さないので、ここは「1回以上」の見た目だけ */
+    /* ⚠️ 印の説明は1つにまとめて、たたんでおくこと。
+       3つに分けて全部開いていた時期は、390px で説明だけ 368px（画面の44%）を占め、
+       ③を開いても語が1行も見えないまま始まっていた（2026-09-25 実測） */
+    .hist-guide { border-bottom: 1px solid #e2e8f0; background: #f8fafc; }
+    .hist-guide > summary { padding: 9px 14px; font-size: 0.78rem; font-weight: 700;
+                            color: #475569; cursor: pointer; list-style: none; }
+    .hist-guide > summary::-webkit-details-marker { display: none; }
+    .hist-guide > summary::before { content: "▸ "; color: #94a3b8; }
+    .hist-guide[open] > summary::before { content: "▾ "; }
+    .hist-guide-body { padding: 0 14px 12px; font-size: 0.76rem; color: #475569; line-height: 1.7; }
+    .hist-guide-body p { margin: 0 0 7px; }
+    .hist-guide-body p:last-child { margin-bottom: 0; }
+    .word-practiced { display: inline-block; font-size: 0.68rem; font-weight: 700; margin-left: 6px;
+                padding: 1px 6px; border-radius: 999px; background: #dcfce7; color: #15803d;
+                border: 1px solid #86efac; vertical-align: 2px; }
     .word-rec { display: inline-block; font-size: 0.68rem; font-weight: 700; margin-left: 6px;
                 padding: 1px 6px; border-radius: 999px; background: #e0f2fe; color: #0369a1;
                 border: 1px solid #bae6fd; vertical-align: 2px; }
@@ -604,6 +620,16 @@
     // 片方を触ったときにもう片方が巻きぞえで消える
     // ⚠️ このキー名も改名しないこと（改名すると★が読めなくなる）
     const STAR_KEY = "kanji_app_star_v1";
+    // 練習プリント（②）にその語を出した回数（2026-09-25・ユーザー依頼）。
+    // ★「まちがえた数」ではありません。ユーザーの言葉:
+    //   「歴史の漢字は間違えた問題のなかでも4問くらいしか書いてないので、練習した漢字だけカウントしたいです」
+    //   ＝ テストでまちがえた語は多くても、実際に書いて練習するのは4語くらい。
+    //      数えたいのは「書いた回数」なので、テストプリント（①）では数えません。
+    // ⚠️ kq_kanji_stats_v1 の wrong を読んではいけません。必ず0になります。
+    //    画面から setKanjiStatus(id,"weak") を呼ぶ導線が無く、さらに "mastered" が wrong:0 で
+    //    上書きするためです（司令塔が 2026-09-24 に実物で確認）。だからこの別の箱に自分で数えます。
+    // ⚠️ このキー名も改名しないこと
+    const PRACTICE_KEY = "kanji_app_practice_count_v1";
     const MIGRATED_FLAG_KEY = "kq_kanji_stats_migrated_v1";
 
     /* ---------- 「おすすめ」印の110語 ----------
@@ -923,6 +949,65 @@
       generateDailySet(false);
       updateProgressDisplay();
       renderHistoryList();
+    }
+
+    /* ---------- 練習した回数を数える（2026-09-25）----------
+       ★数えるのは「② 練習プリントを印刷」を押したとき。〈その組み合わせ〉×〈その日〉につき1回だけ。
+
+       なぜこの数えどきか
+         - ★押した場所（printPracticeSheet）で数え、renderPracticePrint の中では数えない。
+           ① テスト印刷・プレビューはそこを通らない（失敗条件1）。
+           ★さらに検査の道具は練習プリントを何十枚も描くので、
+             描画側で数えると検査が数を汚します。⚠️ ここを renderPracticePrint に移さないこと
+         - 同じ日に刷り直しても増えない（失敗条件2）。紙詰まりの刷り直しは1回の練習
+         - ★日が変わって同じ語をまた刷ったら増える。翌日また書いたら2回目の練習だから。
+           「セットにつき1回」だけにすると実際にやった量と合わなくなる＝この依頼が出た理由そのもの
+
+       中身 { v, since, counts: {語キー: 回数}, done: { ymd, sigs: [紙の指紋] } }
+       ・counts のキーは excludeKeyOf() と同じ「単元キー + NUL + 語」。
+         id は取り込みで振り直る前例があるため使わない（作業メモ 2026-09-05）
+       ・done は「その日すでに数えた紙」。日が変わったら捨てるので、ここは増え続けない */
+    function getPractice() {
+      try {
+        const o = JSON.parse(localStorage.getItem(PRACTICE_KEY));
+        if (!o || typeof o !== "object") return null;
+        if (!o.counts || typeof o.counts !== "object") return null;
+        return o;
+      } catch(e) { return null; }
+    }
+    function practiceCounts() { const o = getPractice(); return o ? o.counts : {}; }
+    function practiceCountOf(item) { return practiceCounts()[excludeKeyOf(item)] || 0; }
+    // 数え始めた日。まだ一度も数えていなければ null（画面に日付を出さない）
+    function practiceSince() { const o = getPractice(); return o ? o.since : null; }
+
+    // 紙の指紋。同じ語ぞろえなら同じ値になる短い文字列（FNV-1a）。
+    // 全問（489語）でも指紋は短いままなので、保存が膨らまない
+    function sheetSignature(list) {
+      const src = list.map(excludeKeyOf).join("|");
+      let h = 0x811c9dc5;
+      for (let i = 0; i < src.length; i++) {
+        h ^= src.charCodeAt(i);
+        h = (h + ((h << 1) + (h << 4) + (h << 7) + (h << 8) + (h << 24))) >>> 0;
+      }
+      return list.length + "_" + h.toString(36);
+    }
+
+    // 練習プリントを1枚ぶん数える。数えたら true、その日すでに数えた紙なら false
+    function countPracticeSheet(list) {
+      if (!list || list.length === 0) return false;
+      const today = todayYmd();
+      const sig = sheetSignature(list);
+      const o = getPractice() || { v: 1, since: today, counts: {}, done: { ymd: today, sigs: [] } };
+      if (!o.done || o.done.ymd !== today) o.done = { ymd: today, sigs: [] };   // 日が変わったら捨てる
+      if (o.done.sigs.indexOf(sig) >= 0) return false;                          // 同じ日の刷り直し
+      if (!o.since) o.since = today;
+      list.forEach(it => {
+        const k = excludeKeyOf(it);
+        o.counts[k] = (o.counts[k] || 0) + 1;
+      });
+      o.done.sigs.push(sig);
+      try { localStorage.setItem(PRACTICE_KEY, JSON.stringify(o)); } catch(e) {}
+      return true;
     }
 
     /* ---------- ★最優先（親が「この語は必ず出す」と決める）----------
@@ -1638,8 +1723,17 @@
       return currentSet.length > 0;
     }
     function rerollSet() { generateDailySet(true); }
+    // ★① テストプリントでは数えません（失敗条件1）。ここに countPracticeSheet を足さないこと
     function printTestSheet()     { if (ensureSet()) renderTestPrint(); }
-    function printPracticeSheet() { if (ensureSet()) renderPracticePrint(); }
+    // ★② 練習プリントだけ数えます。★数えるのはここ（押した場所）で、renderPracticePrint の中ではない。
+    //    プレビューも検査の描画もここを通らないので、それらでは増えません
+    function printPracticeSheet() {
+      if (!ensureSet()) return;
+      const 数えた = countPracticeSheet(currentSet);
+      renderPracticePrint();
+      // 一覧を開いたときに古い数が出ないように、開いていれば描き直す
+      if (数えた && document.getElementById("screen-history").style.display !== "none") renderHistoryList();
+    }
 
     /* ---------- 採点リスト：クイズ本体の問題一覧と同じ「タップした瞬間に確定・保存」方式。
        何度でも自由に〇↔✕を切りかえられ、押しなおしても二重にカウントされない ---------- */
@@ -1712,6 +1806,7 @@
       renderListUnitSelect();
       const container = document.getElementById("history-list-container");
       const ex = getExcluded(), picked = getPicked(), star = getStarred();
+      const counts = practiceCounts();
       const allItems = listUnitItems();
       const pickedHere = allItems.filter(it => isPicked(it, picked)).length;
       const starHere   = allItems.filter(it => isStarred(it, star)).length;
@@ -1736,18 +1831,29 @@
           ? `<a class="btn-sm hist-report" href="${escapeAttr(url)}" target="_blank" rel="noopener">🐙 GitHubに報告して消してもらう</a>`
           : `<button class="btn-sm hist-report" onclick="showRemovalText()">🐙 報告する文を出す（語が多いため）</button>`;
       }
+      // 「出さない」の操作はボタンがあるので、たたまずに出す
       const note = exTotal > 0
         ? `<div class="hist-note">
-             <span>チェックした語がプリントに出ます（「① 印刷」で「✅ 選んだ語だけ」にしてください）。
-                   ／ 全体で <b>${exTotal}語</b> を「出さない」にしています。</span>
+             <span>全体で <b>${exTotal}語</b> を「出さない」にしています。</span>
              <span class="hist-note-actions">${report}
                <button class="btn-sm" onclick="restoreAllExcluded()">すべて元に戻す</button></span>
            </div>`
-        : `<div class="hist-note">チェックした語がプリントに出ます（「① 印刷」で「✅ 選んだ語だけ」にしてください）。できた語は日付を入れて「⭕ 正解にする」。</div>`;
-      const starNote = `<div class="hist-note">★ を付けた語はプリントの<b>いちばん先に出ます</b>（重要度「高だけ」でも落ちません／正解しても自動では外れません）。「おすすめ」は参考の印で、★は付いていません。<br>
-        ⚠️ 選んでいない回の★と「🚫 出さない」にした語は出ません。「✅ 選んだ語だけ」の間は★を使いません。</div>`;
+        : "";
 
-      container.innerHTML = note + starNote;
+      // ★印の意味は1つにまとめて、たたんでおく（開けば全部読める）。
+      // ⚠️ ここを3つの開いた箱に戻さないこと。390px で語が1行も見えなくなります（2026-09-25 実測）
+      const since = practiceSince();
+      const guide = `<details class="hist-guide"><summary>ⓘ 印の意味（✅ チェック ／ ★最優先 ／ おすすめ ／ 練習 N回）</summary>
+        <div class="hist-guide-body">
+          <p><b>✅ チェック</b> … チェックした語がプリントに出ます（「① 印刷」で「✅ 選んだ語だけ」にしてください）。できた語は日付を入れて「⭕ 正解にする」。</p>
+          <p><b>★ 最優先</b> … プリントの<b>いちばん先に出ます</b>（重要度「高だけ」でも落ちません／正解しても自動では外れません）。
+             ⚠️ 選んでいない回の★と「🚫 出さない」にした語は出ません。「✅ 選んだ語だけ」の間は★を使いません。</p>
+          <p><b>おすすめ</b> … テストに出そうな語として機械が上位に挙げたもの。参考の印で、★は付いていません。</p>
+          <p><b>練習 N回</b> … <b>練習プリント（②）に出した回数</b>です。<b>テストプリント（①）では数えていません</b>（書いて練習した回数を見るためです）。${
+            since ? `${since} から数えています。それより前の分は記録がないので入っていません。`
+                  : `まだ1回も数えていません。「② 練習プリントを印刷」を押すと、その紙に出た語から数え始めます。`}</p>
+        </div></details>`;
+      container.innerHTML = note + guide;
       if (items.length === 0) {
         const msg = showStarOnly   ? "この回で★を付けた語はありません。"
                   : showPickedOnly ? "この回でチェックした語はありません。"
@@ -1762,6 +1868,7 @@
         const on = isPicked(it, picked);
         const st = isStarred(it, star);
         const rec = isRecommended(it);
+        const practiced = counts[excludeKeyOf(it)] || 0;   // 0回なら何も出さない（画面がうるさくなるため）
         const done = lastCorrectYmd(it.id);
         const div = document.createElement("div");
         div.className = "word-row" + (isOff ? " is-excluded" : ((st ? " is-star" : "") + (on ? " is-picked" : "")));
@@ -1773,7 +1880,7 @@
                   title="${st ? "★最優先をはずす" : "★最優先にする（必ずプリントに出す）"}">${st ? "★" : "☆"}</button>
           <div class="word-body">
             <div class="word-kana">${it.kana}</div>
-            <div class="word-main">${it.word}${rec ? `<span class="word-rec" title="テストに出そうな語として機械が上位に挙げたもの（参考）">おすすめ</span>` : ""}</div>
+            <div class="word-main">${it.word}${rec ? `<span class="word-rec" title="テストに出そうな語として機械が上位に挙げたもの（参考）">おすすめ</span>` : ""}${practiced > 0 ? `<span class="word-practiced" title="練習プリント（②）に出した回数。テストプリント（①）では数えていません">練習 ${practiced}回</span>` : ""}</div>
             <div class="word-mean">💡 ${it.mean}</div>
             <div class="word-ops">
               ${done ? `<span class="word-done">⭕ ${done} に正解</span>` : ``}
