@@ -207,6 +207,30 @@ const 見る = (ラベル, ok, 詳) => { if (!ok) NG++; 言う(`     ${ok ? 'OK 
   await page.evaluate(() => { document.querySelector('.hist-guide').open = false; });
   await page.waitForTimeout(150);
 
+  /* --- ⑦b ★消したボタンの名前が、画面に残っていないか ---
+     ⚠️ 2026-09-25b に実際にやりました。案内文に「できた語は日付を入れて『⭕ 正解にする』」が
+        残ったまま公開し、司令塔が公開版で見つけました。
+     ★なぜ【⑦】がすり抜けたか: 【⑦】は「必要な言葉が**あるか**」しか見ていません。
+        ★「あるか」だけを見る検査は、消し忘れを永久に見つけられません。網を広げても同じです。
+        → ここで「★**無いはずのものが無いか**」を見ます（4-3b の逆向き）。
+     ⚠️ ボタンを消したら、この一覧に1行足すこと。 */
+  const 消した文言 = ['⭕ 正解にする'];
+  const 残り = await page.evaluate(ws => {
+    const 出 = [];
+    ['home', 'check', 'history'].forEach(t => {
+      try { switchTab(t); } catch(e) { return; }
+      const el = document.getElementById('screen-' + t);
+      if (!el) return;
+      const txt = el.textContent.replace(/\s+/g, ' ');
+      ws.forEach(w => { if (txt.includes(w)) 出.push(t + ' タブ: ' + w); });
+    });
+    switchTab('history');
+    return 出;
+  }, 消した文言);
+  言う('【⑦b】★消したボタンの名前が画面に残っていないか（①②③の3タブ）');
+  見る('残っていない', 残り.length === 0, 残り.length === 0 ? `0件（見た文言: ${消した文言.join('・')}）` : 残り.join(' / '));
+  await page.waitForTimeout(200);
+
   // --- ⑧ 390px ではみ出していないか ---
   const はみ出し = await page.evaluate(() => {
     const w = document.documentElement.clientWidth, 悪い = [];
