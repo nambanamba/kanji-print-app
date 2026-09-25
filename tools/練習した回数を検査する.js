@@ -44,7 +44,29 @@
       ⚠️ ボタンや機能を消したら、★その名前を「消した文言」に足すこと。
          足さないと、次に同じ消し忘れが起きても誰も気づきません。
 
-   ★見ているもの（依頼書 2026-09-25b「何が起きたら失敗か」の1〜8 ＋ 9）
+   ============================================================================
+   ★★2026-09-26 に、入力を ②「今日の採点」に一本化しました（依頼書 = 漢字プリント_入力を②に一本化_依頼_2026-09-26.md）。
+      ユーザーの言葉:「社会の漢字で、練習したを入力するにはどうすればいいですか？」
+                      「★できた、練習したは、同じ画面で入力したいです」
+
+      ★何が起きていたか: 同じ「⭕ できた」という名前のボタンが②と③の2か所にあって、
+        ★効きめが違いました。②で押しても練習は増えず（setResult → saveCheckResults）、
+        練習が入るのは③だけ（markPracticed）。ユーザーは②で採点していたので、
+        ★練習回数がいつまでも0でした。
+
+      ★いまの決まり（②の「保存」を押したとき）
+        ・その紙に出ていた語ぜんぶ … 練習 +1（★同じ日・同じ紙ぞろえなら1回だけ）
+        ・⭕ を押した語 ……………… 今日の正解として記録
+        ・★押していない語 ………… 「できなかった」として ⭕ を外す
+      ★③は残します（あとから直すところ）。②に並ぶのはその紙の語だけなので、
+        紙に出ていない語を直す手段が要るためです。
+
+      ⚠️ だから、この道具が ca2c0c0（＝②で保存しても練習が入らなかった公開版）に当たると
+         【7】で鳴ります。★それが正しい動きです。入口の自己テスト (c3) に使っています。
+         ★「捕まえられるか」を、★実際に壊れていた版に当てて確かめる（4-3c の最後の1つ）。
+   ============================================================================
+
+   ★見ているもの（依頼書 2026-09-25b「何が起きたら失敗か」の1〜8 ＋ 9 ＋ 2026-09-26 の 10〜13）
      1. 練習プリントを刷って、数が増える（自動が残っている）
      2. 1回の練習が2回数えられる
      3. 「できなかった」を選んだのに、正解の記録が入る
@@ -55,13 +77,26 @@
      7. 数が全部0のとき、紙が1枚でも変わる
      8. すでに入っている練習回数が消える／勝手に変わる
      9.★消したボタンの名前が、画面の案内文に残っている（09-25b 追加・上の囲み参照）
+     10.★②で保存しても、練習回数が入らない（09-26 追加。★ca2c0c0 で実際に起きていたこと）
+     11.★②で保存を2回押したら、練習が2回数えられる
+     12.★②で保存したときに、★その紙に無い語の記録が動く
+     13.「✨ すべてできた」→ 保存 で、全語に 練習+1 と正解が入らない
 
    ★入口の自己テスト（4-1 / 4-3 / 4-6c）。1つでも落ちたら数字を出さずに終了コード3で止まります。
        (a1) 刷ったら数える偽の実装                  → 鳴るべき
        (a2) できなかったで ⭕ を外さない偽の実装    → 鳴るべき（09-25b で足した決まり）
+       (a3)★②の保存で練習を入れない偽の実装        → 鳴るべき（09-26）
+       (a4)★②の保存で二重に数える偽の実装          → 鳴るべき（09-26）
+       (a5)★②の保存が紙に無い語まで触る偽の実装    → 鳴るべき（09-26）
        (b1) いまの実装（刷っても増えない）          → 鳴ってはいけない
        (b2) いまの実装（できなかったで ⭕ が外れる）→ 鳴ってはいけない
+       (b3)★いまの実装（②の保存で練習が入る）      → 鳴ってはいけない（09-26）
        (c)  対照 2b43d78（刷ると増える版）          → 鳴るべき（★向きが逆。上の囲みのとおり）
+       (c2) 対照 2b43d78（「⭕ 正解にする」が現役）  → 鳴るべき
+       (c3)★対照 ca2c0c0（②で保存しても練習が入らない版）→ 鳴るべき
+            ★★これが「実際に壊れていた版」です。対照で鳴るだけでは「その版に在った」ことしか
+              言えないので、★ユーザーが困っていた当の版に当てています（4-3c の最後の1つ）。
+       (c3b)★対照 ca2c0c0（書き直す前の説明文が現役）→ 鳴るべき（消した文言の台帳・4-3c）
      ★(a) と (b) を対にしてあります。(a) だけだと、網を広げて通してしまえるためです（4-3）。
 
    ⚠️ 対照を `HEAD` にしてはいけません（4-6c）。コミットで固定しています。
@@ -83,8 +118,11 @@ const { execFileSync } = require('child_process');
 const { chromium } = require('playwright');
 
 const ROOT = path.join(__dirname, '..');
-// ★手で入れる形に変える直前の公開版（＝依頼書が指定した対照）。HEAD にしないこと
+// ★手で入れる形に変える直前の公開版（＝09-25b の依頼書が指定した対照）。HEAD にしないこと
 const BEFORE = '2b43d78';
+/* ★②に一本化する直前の公開版（＝09-26 の依頼書が指定した対照）。★HEAD にしないこと。
+   ★この版が「②で保存しても練習が入らない」当の版です。(c3)(c3b) で当てています */
+const BEFORE26 = 'ca2c0c0';
 const KEY = 'kanji_app_practice_count_v1';
 
 const MIME = { '.html': 'text/html; charset=utf-8', '.js': 'text/javascript; charset=utf-8' };
@@ -114,7 +152,11 @@ async function open(browser, port) {
    ⚠️ ここは「消したら足す」台帳です。ボタンや機能を消すたびに1行足してください。
       ★対照 2b43d78 では「⭕ 正解にする」が現役だったので、そちらでは正しく鳴ります（(c) に使用）。 */
 const 消した文言 = [
-  { 語: '⭕ 正解にする', いつ: '2026-09-25b', なぜ: '[⭕ できた] に置きかえた（1回の操作で練習と正解の両方が入る形にするため）' }
+  { 語: '⭕ 正解にする', いつ: '2026-09-25b', なぜ: '[⭕ できた] に置きかえた（1回の操作で練習と正解の両方が入る形にするため）' },
+  /* ★②の説明文は 2026-09-26 に書き直しました。押していない語は ⭕ が外れるようになったので、
+     「そのままで大丈夫」は★もう本当ではありません（失敗条件5＝説明と食いちがう）。
+     ★対照 ca2c0c0 にはこの文が現役であるため、(c3b) で鳴ることを確かめています */
+  { 語: '何も押さずにそのままで大丈夫', いつ: '2026-09-26', なぜ: '②の保存で、押していない語は ⭕ が外れるようになった（説明と食いちがうため書き直し）' }
 ];
 
 /* --------------------------------------------------------------
@@ -398,16 +440,170 @@ async function 測定_他の箱と既存の数(page) {
   }, { KEY });
 }
 
+/* --------------------------------------------------------------
+   測定7: ★②「今日の採点」の保存で、練習と正解の両方が入る（2026-09-26・失敗条件10〜12）
+   ★本物のボタンを押します（⭕ も 保存 も）。
+   ⚠️ 先に仕込むもの（ここが検査の本体です）
+      ・★その紙に無い語に、練習5回と ⭕ を入れておく → 保存で★動いてはいけない（失敗条件12）
+      ・★その紙に出ている語のうち、押さない語に ⭕ を入れておく → 保存で★外れるべき
+   -------------------------------------------------------------- */
+async function 測定_採点して保存(page, 壊す) {
+  return page.evaluate(({ KEY, 壊す }) => {
+    const out = {};
+    const byUnit = {};
+    KANJI_DATA.forEach(d => (byUnit[d.unitKey] = byUnit[d.unitKey] || []).push(d));
+    const u = Object.entries(byUnit).map(([k, list]) => ({ 回: k, list }))
+      .filter(x => x.list.length >= 20).sort((a, b) => b.list.length - a.list.length)[0];
+
+    localStorage.removeItem(KEY);
+    localStorage.setItem('kq_kanji_stats_v1', '{}');
+    ['kanji_app_excluded_v1', 'kanji_app_picked_v1', 'kanji_app_star_v1'].forEach(k => localStorage.setItem(k, '[]'));
+
+    selectedUnits = new Set([u.回]);
+    usePicked = false; filterUnmastered = false; filterWeak = false;
+    priorityFilter = 'all'; currentCount = 10;
+    currentSet = []; generateDailySet(false);
+    const 紙 = currentSet.map(d => d.id);
+    out.紙の語数 = 紙.length;
+    if (紙.length < 5) { out.えらべない = '紙に5語も出ていません'; return out; }
+
+    // ★その紙に無い語。練習5回と古い ⭕ を先に入れておく（保存で動いてはいけない）
+    const 外 = u.list.find(d => 紙.indexOf(d.id) < 0);
+    if (!外) { out.えらべない = '紙に無い語が見つかりません'; return out; }
+    for (let i = 0; i < 5; i++) addPractice(外, +1);
+    setCorrectOn(外.id, '2026-01-05');
+    // ★紙に出ていて、これから押さない語。先に ⭕ を入れておく（保存で外れるべき）
+    const 外す = currentSet[3];
+    setCorrectOn(外す.id, '2026-01-05');
+
+    const 数 = id => {
+      const it = KANJI_DATA.find(d => d.id === id);
+      try { const o = JSON.parse(localStorage.getItem(KEY)); return ((o && o.counts) || {})[it.unitKey + '\u0000' + it.word] || 0; } catch(e) { return 0; }
+    };
+    const 正解日 = id => {
+      try { const s = (JSON.parse(localStorage.getItem('kq_kanji_stats_v1')) || {})[id]; return s && s.lastCorrectAt ? ymdOf(s.lastCorrectAt) : null; } catch(e) { return null; }
+    };
+
+    /* ★偽の実装（自己テスト用）。⚠️ 壊すのは「数えかた」だけ。画面の作りには触りません */
+    if (壊す === '入れない') {
+      window.countScoringSheet = function () { return false; };            // ★練習をまったく入れない
+    } else if (壊す === '二重') {
+      window.countScoringSheet = function (list) {                          // ★指紋を覚えないので毎回数える
+        const o = (() => { try { return JSON.parse(localStorage.getItem(KEY)) || { v: 1, counts: {} }; } catch(e) { return { v: 1, counts: {} }; } })();
+        if (!o.counts) o.counts = {};
+        list.forEach(it => { const k = it.unitKey + '\u0000' + it.word; o.counts[k] = (o.counts[k] || 0) + 1; });
+        localStorage.setItem(KEY, JSON.stringify(o));
+        return true;
+      };
+    } else if (壊す === '紙の外も') {
+      const 元 = window.countScoringSheet;
+      window.countScoringSheet = function (list) {                          // ★紙に無い語まで数える
+        const r = 元(list);
+        const o = JSON.parse(localStorage.getItem(KEY));
+        KANJI_DATA.filter(d => d.unitKey === list[0].unitKey).forEach(it => {
+          const k = it.unitKey + '\u0000' + it.word; o.counts[k] = (o.counts[k] || 0) + 1;
+        });
+        localStorage.setItem(KEY, JSON.stringify(o));
+        return r;
+      };
+    }
+
+    switchTab('check');
+    const 行 = () => [...document.querySelectorAll('#check-list-container .check-item')];
+    const ボタン = (r, t) => [...r.querySelectorAll('button')].find(b => b.textContent.includes(t));
+    const 保存 = () => { const b = [...document.querySelectorAll('button')].find(x => x.textContent.includes('採点結果を保存する')); if (b) b.click(); };
+    out.行数 = 行().length;
+
+    // ★画面を開いた時点で、押された形の行が無いこと（今日の採点は白紙から始まる）
+    out.最初から押されている行 = 行().filter(r => r.classList.contains('is-correct')).length;
+    // ★先に ⭕ が付いていた語は「前に ⭕」として見えていること（黙って消さない）
+    out.前の記録が見えている = !!(行()[3] && 行()[3].querySelector('.word-done'));
+
+    // 1語め・2語めに ⭕。ほかは押さない
+    ボタン(行()[0], 'できた').click();
+    ボタン(行()[1], 'できた').click();
+    out.保存前の練習合計 = (() => { try { const o = JSON.parse(localStorage.getItem(KEY)); return Object.values((o && o.counts) || {}).reduce((a, b) => a + b, 0); } catch(e) { return 0; } })();
+    out.保存前の紙の練習 = 紙.map(数).reduce((a, b) => a + b, 0);
+    out.保存前に正解が入った = 正解日(紙[0]) !== null;
+
+    保存();
+    out.今日 = todayYmd();
+    out.保存後の紙の練習 = 紙.map(数);
+    out.押した語の正解 = [正解日(紙[0]), 正解日(紙[1])];
+    out.押していない語の正解 = 正解日(紙[2]);
+    out.先に正解が付いていた語 = 正解日(外す.id);
+    out.紙に無い語の練習 = 数(外.id);
+    out.紙に無い語の正解 = 正解日(外.id);
+
+    // ★もう一度保存（同じ紙・同じ日）→ 練習は増えない
+    switchTab('check');
+    保存();
+    out.二回目の保存後の紙の練習 = 紙.map(数);
+    return out;
+  }, { KEY, 壊す });
+}
+
+/* 測定8: 「✨ すべてできた」→ 保存 で、全語に 練習+1 と正解が入る（失敗条件13） */
+async function 測定_すべてできた(page) {
+  return page.evaluate(({ KEY }) => {
+    const out = {};
+    const byUnit = {};
+    KANJI_DATA.forEach(d => (byUnit[d.unitKey] = byUnit[d.unitKey] || []).push(d));
+    const u = Object.entries(byUnit).map(([k, list]) => ({ 回: k, list }))
+      .filter(x => x.list.length >= 20).sort((a, b) => b.list.length - a.list.length)[0];
+    localStorage.removeItem(KEY);
+    localStorage.setItem('kq_kanji_stats_v1', '{}');
+    selectedUnits = new Set([u.回]);
+    usePicked = false; filterUnmastered = false; filterWeak = false;
+    priorityFilter = 'all'; currentCount = 10;
+    currentSet = []; generateDailySet(false);
+    const 紙 = currentSet.map(d => d.id);
+    switchTab('check');
+    const 押す = t => { const b = [...document.querySelectorAll('button')].find(x => x.textContent.includes(t)); if (b) b.click(); };
+    押す('すべてできた');
+    押す('採点結果を保存する');
+    const 数 = id => {
+      const it = KANJI_DATA.find(d => d.id === id);
+      try { const o = JSON.parse(localStorage.getItem(KEY)); return ((o && o.counts) || {})[it.unitKey + '\u0000' + it.word] || 0; } catch(e) { return 0; }
+    };
+    const 正解日 = id => { try { const s = (JSON.parse(localStorage.getItem('kq_kanji_stats_v1')) || {})[id]; return s && s.lastCorrectAt ? ymdOf(s.lastCorrectAt) : null; } catch(e) { return null; } };
+    out.語数 = 紙.length;
+    out.練習 = 紙.map(数);
+    out.正解 = 紙.map(正解日);
+    out.今日 = todayYmd();
+    return out;
+  }, { KEY });
+}
+
+// ★測定7の結果を「鳴った／鳴らない」の1つの値にする（自己テストと本番で同じ読み方をするため）
+function 測定7が鳴ったか(r) {
+  if (r.えらべない) return { 鳴った: true, 理由: r.えらべない };
+  const 理由 = [];
+  if (r.保存前の紙の練習 !== 0) 理由.push(`保存前に練習が入っている(${r.保存前の紙の練習})`);
+  if (!r.保存後の紙の練習 || r.保存後の紙の練習.some(n => n !== 1)) 理由.push(`保存後の練習が全部1でない(${(r.保存後の紙の練習 || []).join(',')})`);
+  if (!r.押した語の正解 || r.押した語の正解.some(d => d !== r.今日)) 理由.push(`⭕を押した語の正解が今日でない(${(r.押した語の正解 || []).join(',')})`);
+  if (r.押していない語の正解 !== null) 理由.push(`押していない語に正解が入った(${r.押していない語の正解})`);
+  if (r.先に正解が付いていた語 !== null) 理由.push(`押していない語の古い⭕が外れていない(${r.先に正解が付いていた語})`);
+  if (r.紙に無い語の練習 !== 5) 理由.push(`★紙に無い語の練習が動いた(5→${r.紙に無い語の練習})`);
+  if (r.紙に無い語の正解 !== '2026-01-05') 理由.push(`★紙に無い語の正解が動いた(${r.紙に無い語の正解})`);
+  if (!r.二回目の保存後の紙の練習 || r.二回目の保存後の紙の練習.some(n => n !== 1)) 理由.push(`★保存2回で二重に数えた(${(r.二回目の保存後の紙の練習 || []).join(',')})`);
+  if (r.最初から押されている行 !== 0) 理由.push(`開いた時点で押された行がある(${r.最初から押されている行})`);
+  return { 鳴った: 理由.length > 0, 理由: 理由.join(' / ') };
+}
+
 function 同じか(a, b) { return JSON.stringify(a) === JSON.stringify(b); }
 
 (async () => {
   const tmp = fs.mkdtempSync(path.join(os.tmpdir(), 'kanji-practice2-'));
+  const tmp26 = fs.mkdtempSync(path.join(os.tmpdir(), 'kanji-practice26-'));
   ['index.html', 'kanji-data.js'].forEach(f => {
     fs.writeFileSync(path.join(tmp, f), execFileSync('git', ['show', `${BEFORE}:${f}`], { cwd: ROOT, maxBuffer: 1 << 28 }));
+    fs.writeFileSync(path.join(tmp26, f), execFileSync('git', ['show', `${BEFORE26}:${f}`], { cwd: ROOT, maxBuffer: 1 << 28 }));
   });
 
   const s今 = await serve(ROOT, 8201);
   const s前 = await serve(tmp, 8202);
+  const s前26 = await serve(tmp26, 8203);   // ★②で保存しても練習が入らなかった版（ca2c0c0）
   const browser = await chromium.launch({ channel: 'chrome' });
   let 終了コード = 0;
 
@@ -463,6 +659,41 @@ function 同じか(a, b) { return JSON.stringify(a) === JSON.stringify(b); }
       const r = await 測定_刷って増えないか(page, false);
       自己.push({ 名: `(c) 対照 ${BEFORE}（刷ると増える版）`, 鳴るべき: true, 鳴った: r['練習を2回刷ったあと'] !== r.はじめ,
                  詳細: `刷る前 ${r.はじめ} → 練習を2回刷ったあと ${r['練習を2回刷ったあと']}（★対照では増えるのが正しかった）` });
+      await ctx.close();
+    }
+    /* ===== ここから 2026-09-26（②に一本化）ぶん ===== */
+    for (const [名, 壊す] of [['(a3) ②の保存で練習を入れない偽の実装', '入れない'],
+                              ['(a4) ②の保存で二重に数える偽の実装', '二重'],
+                              ['(a5) ②の保存が紙に無い語まで触る偽の実装', '紙の外も']]) {
+      const { ctx, page } = await open(browser, 8201);
+      const r = 測定7が鳴ったか(await 測定_採点して保存(page, 壊す));
+      自己.push({ 名, 鳴るべき: true, 鳴った: r.鳴った, 詳細: r.鳴った ? r.理由 : '鳴りませんでした（★偽の実装を見逃しています）' });
+      await ctx.close();
+    }
+    {
+      const { ctx, page } = await open(browser, 8201);
+      const r = 測定7が鳴ったか(await 測定_採点して保存(page, null));
+      自己.push({ 名: '(b3) いまの実装（②の保存で練習と正解が入る）', 鳴るべき: false, 鳴った: r.鳴った,
+                 詳細: r.鳴った ? r.理由 : '鳴りません（正しい）' });
+      await ctx.close();
+    }
+    {
+      /* ★★(c3) 実際に壊れていた版に当てる（4-3c の最後の1つ）。
+         ca2c0c0 は「②で採点しても練習が入らない」まま公開していた版そのものです。
+         ここで鳴らなければ、この検査はユーザーが困っていた不具合を捕まえられません。 */
+      const { ctx, page } = await open(browser, 8203);
+      const r = 測定7が鳴ったか(await 測定_採点して保存(page, null));
+      自己.push({ 名: `(c3) ★対照 ${BEFORE26}（②で保存しても練習が入らなかった公開版）`, 鳴るべき: true, 鳴った: r.鳴った,
+                 詳細: r.鳴った ? r.理由 : '鳴りませんでした（★実際の不具合を捕まえられていません）' });
+      await ctx.close();
+    }
+    {
+      // ★(c3b) 書き直す前の説明文（「何も押さずにそのままで大丈夫」）は ca2c0c0 に現役である
+      const { ctx, page } = await open(browser, 8203);
+      const r = await 測定_消した文言が残っていないか(page, 消した文言);
+      自己.push({ 名: `(c3b) ★対照 ${BEFORE26}（書き直す前の説明文が現役の版）`, 鳴るべき: true,
+                 鳴った: r.some(x => x.語 === '何も押さずにそのままで大丈夫'),
+                 詳細: `見つかった: ${r.map(x => x.タブ + ':' + x.語).join(' / ') || '0件'}` });
       await ctx.close();
     }
 
@@ -582,11 +813,49 @@ function 同じか(a, b) { return JSON.stringify(a) === JSON.stringify(b); }
       await ctx.close();
     }
 
+    /* 7. ★②の保存で、練習と正解の両方が入る（2026-09-26・失敗条件10〜12） */
+    {
+      const { ctx, page } = await open(browser, 8201);
+      const r = await 測定_採点して保存(page, null);
+      console.log('【7】★②「今日の採点」の保存で、練習と正解の両方が入るか（2026-09-26・失敗条件10〜12）');
+      console.log(`     紙に出した語: ${r.紙の語数}語（うち1語めと2語めに ⭕ を押した。3語め以降は押さない）`);
+      const 判定 = [
+        ['★保存を押すまでは、どこにも入らない', r.保存前の紙の練習 === 0 && r.保存前に正解が入った === false,
+          `保存前の練習 ${r.保存前の紙の練習} / 保存前の正解 ${r.保存前に正解が入った ? 'あり（✖）' : 'なし'}`],
+        ['開いた時点で押された行が無い（今日の採点は白紙から）', r.最初から押されている行 === 0, `${r.最初から押されている行}行`],
+        ['★先に ⭕ が付いていた語は「前に ⭕」として見えている（黙って消さない）', r.前の記録が見えている === true, r.前の記録が見えている ? '見えている' : '見えない'],
+        ['★保存 → 紙に出ていた語ぜんぶに練習1回', !!r.保存後の紙の練習 && r.保存後の紙の練習.every(n => n === 1), `${(r.保存後の紙の練習 || []).join(',')}`],
+        ['⭕ を押した語は、今日の正解として記録される', !!r.押した語の正解 && r.押した語の正解.every(d => d === r.今日), `${(r.押した語の正解 || []).join(' / ')}（今日=${r.今日}）`],
+        ['★押していない語に正解は入らない', r.押していない語の正解 === null, r.押していない語の正解 || 'なし'],
+        ['★押していない語の、前に付いていた ⭕ は外れる（また紙に出る）', r.先に正解が付いていた語 === null, r.先に正解が付いていた語 || '外れた'],
+        ['★★その紙に無い語の練習は動かない（失敗条件12）', r.紙に無い語の練習 === 5, `入れておいた5回 → ${r.紙に無い語の練習}回`],
+        ['★★その紙に無い語の正解も動かない（失敗条件12）', r.紙に無い語の正解 === '2026-01-05', `入れておいた 2026-01-05 → ${r.紙に無い語の正解}`],
+        ['★保存を2回押しても、練習は1回だけ（失敗条件11）', !!r.二回目の保存後の紙の練習 && r.二回目の保存後の紙の練習.every(n => n === 1), `${(r.二回目の保存後の紙の練習 || []).join(',')}`]
+      ];
+      判定.forEach(([名, ok, 詳]) => { if (!ok) 終了コード = 1; console.log(`     ${ok ? 'OK ' : '✖ '} ${名}　（${詳}）`); });
+      console.log('');
+      await ctx.close();
+    }
+
+    /* 8. ★「✨ すべてできた」→ 保存（失敗条件13） */
+    {
+      const { ctx, page } = await open(browser, 8201);
+      const r = await 測定_すべてできた(page);
+      console.log('【8】「✨ すべてできた」→ 保存 で、全語に練習+1 と正解が入るか（失敗条件13）');
+      const 練習OK = r.練習.every(n => n === 1), 正解OK = r.正解.every(d => d === r.今日);
+      if (!練習OK || !正解OK) 終了コード = 1;
+      console.log(`     ${練習OK ? 'OK ' : '✖ '} 全${r.語数}語に練習1回　（${r.練習.join(',')}）`);
+      console.log(`     ${正解OK ? 'OK ' : '✖ '} 全${r.語数}語に今日の正解　（今日=${r.今日} / ちがう語 ${r.正解.filter(d => d !== r.今日).length}件）`);
+      console.log('');
+      await ctx.close();
+    }
+
     console.log(終了コード === 0 ? '★すべて通りました。' : '★落ちた項目があります（上の ✖）。');
   } finally {
     await browser.close();
-    s今.close(); s前.close();
+    s今.close(); s前.close(); s前26.close();
     fs.rmSync(tmp, { recursive: true, force: true });
+    fs.rmSync(tmp26, { recursive: true, force: true });
   }
   process.exitCode = 終了コード;
 })();

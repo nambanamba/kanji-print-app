@@ -13,6 +13,15 @@
       ⚠️ 作り直す前の版をそのまま走らせたら、入口の門が「届いていません」で止めてくれました。
          ★画面を変えたら、その画面を見ている検査を必ず走らせること（4-6h・自分で 09-25 に見つけた型）。
 
+   ★★2026-09-26 に【⑩】を足しました（入力を ②「今日の採点」に一本化）。
+      ユーザーの言葉:「★できた、練習したは、同じ画面で入力したいです」
+        ②の「保存」で … その紙の語ぜんぶに練習+1／⭕ を押した語に今日の正解／
+                         ★押していない語は「できなかった」として ⭕ が外れる
+      ⚠️ 【⑩】に入る前に localStorage を空にして開き直します。
+         ★【①】〜【⑨】の数を引き継いだまま読むと、数を読み違えます
+         （09-25b に Math.max(全語) で実際に踏みました）。
+      ③は残します（あとから直すところ）。【⑩】でその案内が画面に出ているかも見ます。
+
    ⚠️ これは「人が見るための画像＋クリックの記録」です。合否を決める検査は
       tools/練習した回数を検査する.js のほうです。
 
@@ -66,11 +75,13 @@ const 見る = (ラベル, ok, 詳) => { if (!ok) NG++; 言う(`     ${ok ? 'OK 
   // ★届いているかの門。届いていなければ、以降は意味がないので止める
   const 届いた = await page.evaluate(() => ({
     手で入れる: typeof markPracticed === 'function' && typeof undoPractice === 'function' && typeof addPractice === 'function',
+    // ★2026-09-26: ②の保存で数える仕組み。届いていなければ【⑩】は意味がない
+    採点で数える: typeof countScoringSheet === 'function',
     自動が残っている: typeof countPracticeSheet !== 'undefined',
     key: typeof PRACTICE_KEY !== 'undefined' ? PRACTICE_KEY : null
   }));
-  言う(`     手で入れる仕組みが届いているか: ${届いた.手で入れる} / ★刷ったら数える仕組みが残っていないか: ${!届いた.自動が残っている} / キー=${届いた.key}`);
-  if (!届いた.手で入れる || 届いた.自動が残っている || 届いた.key !== KEY) {
+  言う(`     手で入れる仕組みが届いているか: ${届いた.手で入れる} / ★②の保存で数える仕組み: ${届いた.採点で数える} / ★刷ったら数える仕組みが残っていないか: ${!届いた.自動が残っている} / キー=${届いた.key}`);
+  if (!届いた.手で入れる || !届いた.採点で数える || 届いた.自動が残っている || 届いた.key !== KEY) {
     言う('     ✖ 届いていません（または古い仕組みが残っています）。ここで止めます。');
     await b.close(); if (server) server.close(); process.exit(1);
   }
@@ -214,7 +225,8 @@ const 見る = (ラベル, ok, 詳) => { if (!ok) NG++; 言う(`     ${ok ? 'OK 
         ★「あるか」だけを見る検査は、消し忘れを永久に見つけられません。網を広げても同じです。
         → ここで「★**無いはずのものが無いか**」を見ます（4-3b の逆向き）。
      ⚠️ ボタンを消したら、この一覧に1行足すこと。 */
-  const 消した文言 = ['⭕ 正解にする'];
+  // ⚠️ 2026-09-26 に1つ足しました。②の説明を書き直したので、前の文が残っていたら鳴ります
+  const 消した文言 = ['⭕ 正解にする', '何も押さずにそのままで大丈夫'];
   const 残り = await page.evaluate(ws => {
     const 出 = [];
     ['home', 'check', 'history'].forEach(t => {
@@ -254,6 +266,123 @@ const 見る = (ラベル, ok, 詳) => { if (!ok) NG++; 言う(`     ${ok ? 'OK 
   });
   言う('【⑨】練習プリントの紙に、画面の文言が出ていないか');
   見る('紙には出ていない', 紙.length === 0, 紙.length === 0 ? '0件' : 紙.join('・'));
+
+  /* --- ⑩ ★② 今日の採点：保存で「練習」と「正解」の両方が入る（2026-09-26 一本化）---
+     ⚠️ ここで localStorage を空にして開き直します。★上の【①】〜【⑨】の数を引き継いだまま
+        読むと、数を読み違えます（09-25b に Math.max(全語) で実際に踏みました）。
+     ★仕込み: ①その紙に無い語に練習3回と古い ⭕（保存で動いてはいけない）
+              ②その紙の4語めに古い ⭕（押さないので保存で外れるべき） */
+  await page.evaluate(() => localStorage.clear());
+  await page.goto(url);
+  await page.waitForFunction(() => typeof KANJI_DATA !== 'undefined');
+  await page.evaluate(() => { window.print = () => {}; });
+  const 仕込み = await page.evaluate(() => {
+    const byUnit = {};
+    KANJI_DATA.forEach(d => (byUnit[d.unitKey] = byUnit[d.unitKey] || []).push(d));
+    const u = Object.entries(byUnit).map(([k, list]) => ({ 回: k, list }))
+      .filter(x => x.list.length >= 20).sort((a, b) => b.list.length - a.list.length)[0];
+    selectedUnits = new Set([u.回]); listUnitKey = u.回;
+    usePicked = false; filterUnmastered = false; filterWeak = false;
+    priorityFilter = 'all'; currentCount = 10;
+    currentSet = []; generateDailySet(false);
+    const 紙 = currentSet.map(d => d.id);
+    const 外 = u.list.find(d => 紙.indexOf(d.id) < 0);
+    for (let i = 0; i < 3; i++) addPractice(外, +1);
+    setCorrectOn(外.id, '2026-01-05');
+    setCorrectOn(currentSet[3].id, '2026-01-05');
+    switchTab('check');
+    return { 回: u.回, 紙: 紙.length, 外の語: 外.word, 外のid: 外.id, 四語めid: currentSet[3].id, ids: 紙 };
+  });
+  await page.waitForTimeout(250);
+  言う(`【⑩】★② 今日の採点で「保存」を押した（回: ${仕込み.回} / 紙に ${仕込み.紙}語）`);
+  const 行C = n => page.locator('#check-list-container .check-item').nth(n);
+  const 最初 = await page.evaluate(() => ({
+    押された行: document.querySelectorAll('#check-list-container .check-item.is-correct').length,
+    前の記録: (document.querySelectorAll('#check-list-container .check-item')[3].querySelector('.word-done') || {}).textContent || '(無し)',
+    // ★たたんである中も読む（textContent は open でなくても中身を返す）
+    説明: document.querySelector('#screen-check .check-guide').textContent.replace(/\s+/g, ' '),
+    説明の高さ: Math.round(document.querySelector('#screen-check .check-guide').getBoundingClientRect().height),
+    // ★390px で、説明の下に第1問が見えているか（09-25 に③で踏んだ型）
+    第一問が見えている: (() => {
+      const r = document.querySelector('#check-list-container .check-item');
+      return !!r && r.getBoundingClientRect().top < window.innerHeight;
+    })()
+  }));
+  見る('開いた時点で押された行が無い（今日の採点は白紙から）', 最初.押された行 === 0, `${最初.押された行}行`);
+  見る('★先に ⭕ が付いていた語は「前に ⭕」として見えている', 最初.前の記録.includes('に正解'), 最初.前の記録);
+  // ★説明が、いまの動きのとおりに書いてあるか（失敗条件5：説明と食いちがう）
+  const 説明の要点 = ['練習 1回', '⭕ を押していない語', '外れます', '保存を押すまで', '2回押しても'];
+  const そろい10 = 説明の要点.filter(k => 最初.説明.includes(k));
+  見る('★②の説明が、いまの動きのとおりに書いてある', そろい10.length === 説明の要点.length,
+       `${そろい10.length}/${説明の要点.length}：${そろい10.join('・')}`);
+  見る('★390px で、説明の下に第1問が見えている', 最初.第一問が見えている === true, `説明の高さ ${最初.説明の高さ}px`);
+  await page.screenshot({ path: path.join(__dirname, 名 + '_採点_保存前_390px.png') });
+
+  await 行C(0).locator('button', { hasText: 'できた' }).first().click();
+  await 行C(1).locator('button', { hasText: 'できた' }).first().click();
+  await page.waitForTimeout(250);
+  /* ⚠️ ここは「紙の語の数が0のまま」で見ます。★保存の中身を文字で眺めて
+        「たぶん入っていない」で済ませないこと（それは何も守りません）。 */
+  const 保存前の紙 = await page.evaluate(ids => {
+    const o = JSON.parse(localStorage.getItem('kanji_app_practice_count_v1')) || { counts: {} };
+    return ids.map(id => { const it = KANJI_DATA.find(d => d.id === id); return o.counts[it.unitKey + '\u0000' + it.word] || 0; });
+  }, 仕込み.ids);
+  見る('★保存前は、紙の語の練習が全部0', 保存前の紙.every(n => n === 0), `${保存前の紙.join(',')}`);
+
+  await page.click('text=採点結果を保存する');
+  await page.waitForTimeout(400);
+  const 採点後 = await page.evaluate(({ ids, 外のid, 四語めid }) => {
+    const o = JSON.parse(localStorage.getItem('kanji_app_practice_count_v1')) || { counts: {} };
+    const st = JSON.parse(localStorage.getItem('kq_kanji_stats_v1')) || {};
+    const 数 = id => { const it = KANJI_DATA.find(d => d.id === id); return o.counts[it.unitKey + '\u0000' + it.word] || 0; };
+    const 日 = id => (st[id] && st[id].lastCorrectAt) ? ymdOf(st[id].lastCorrectAt) : null;
+    return { 紙の練習: ids.map(数), 押した: [日(ids[0]), 日(ids[1])], 押していない: 日(ids[2]),
+             四語め: 日(四語めid), 外の練習: 数(外のid), 外の正解: 日(外のid), 今日: todayYmd(), saved: o.saved };
+  }, 仕込み);
+  見る('★紙に出ていた語ぜんぶに練習1回', 採点後.紙の練習.every(n => n === 1), `${採点後.紙の練習.join(',')}`);
+  見る('⭕ を押した語に、今日の正解が入った', 採点後.押した.every(d => d === 採点後.今日), `${採点後.押した.join(' / ')}（今日=${採点後.今日}）`);
+  見る('★押していない語に正解は入らない', 採点後.押していない === null, 採点後.押していない || 'なし');
+  見る('★押していない語の、前に付いていた ⭕ が外れた（また紙に出る）', 採点後.四語め === null, 採点後.四語め || '外れた');
+  見る('★★その紙に無い語の練習は動かない', 採点後.外の練習 === 3, `入れておいた3回 → ${採点後.外の練習}回（${仕込み.外の語}）`);
+  見る('★★その紙に無い語の正解も動かない', 採点後.外の正解 === '2026-01-05', `${採点後.外の正解}`);
+
+  // ★同じ紙で2回目の保存 → 練習は増えない
+  await page.evaluate(() => switchTab('check'));
+  await page.waitForTimeout(200);
+  await page.click('text=採点結果を保存する');
+  await page.waitForTimeout(400);
+  const 二回目 = await page.evaluate(ids => {
+    const o = JSON.parse(localStorage.getItem('kanji_app_practice_count_v1')) || { counts: {} };
+    return ids.map(id => { const it = KANJI_DATA.find(d => d.id === id); return o.counts[it.unitKey + '\u0000' + it.word] || 0; });
+  }, 仕込み.ids);
+  見る('★保存を2回押しても、練習は1回だけ', 二回目.every(n => n === 1), `${二回目.join(',')}`);
+
+  // ★③に「あとから直すところ」と分かる案内が出ているか（②との役割分け）
+  const 役割 = await page.evaluate(() => {
+    switchTab('history');
+    const el = document.querySelector('#history-list-container .hist-role');
+    return el ? el.textContent.replace(/\s+/g, ' ').trim() : null;
+  });
+  await page.waitForTimeout(250);
+  見る('★③に「あとから直すところ」と分かる案内が出ている', !!役割 && 役割.includes('あとから直すところ'), 役割 || '(無し)');
+  // ★②の行に入れた練習が、③の一覧にも出ているか（同じ数を2画面で見る）
+  const 一覧の数 = await page.evaluate(() => [...document.querySelectorAll('#history-list-container .word-practiced')].length);
+  見る('★②で入れた練習が、③の一覧にも出ている', 一覧の数 >= 10, `「練習 N回」のバッジ ${一覧の数}個（紙10語＋先に入れた1語）`);
+
+  // ★390px で ② の画面がはみ出していないか
+  await page.evaluate(() => switchTab('check'));
+  await page.waitForTimeout(250);
+  const はみ出し2 = await page.evaluate(() => {
+    const w = document.documentElement.clientWidth, 悪い = [];
+    document.querySelectorAll('#screen-check .check-item, #screen-check button, #screen-check .word-done, #screen-check .word-practiced').forEach(e => {
+      const r = e.getBoundingClientRect();
+      if (r.right > w + 1 || r.left < -1) 悪い.push(`${e.className}: left=${Math.round(r.left)} right=${Math.round(r.right)} (幅 ${w})`);
+    });
+    return 悪い;
+  });
+  見る('390px で ② の画面がはみ出していない', はみ出し2.length === 0, `${はみ出し2.length}件`);
+  はみ出し2.slice(0, 6).forEach(x => 言う(`        ✖ ${x}`));
+  await page.screenshot({ path: path.join(__dirname, 名 + '_採点_保存後_390px.png') });
 
   言う('');
   言う(NG === 0 ? '★すべて通りました。' : `★落ちた項目 ${NG}件（上の ✖）。`);
