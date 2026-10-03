@@ -601,7 +601,7 @@
       </div>
       <div class="card">
         <div class="card-title"><span>記録の持ち出し・取りこみ</span></div>
-        <p class="io-note">〇✕の記録はこの端末のブラウザだけに保存されます。別の端末やブラウザに移すときは、ここで書き出して読みこんでください。</p>
+        <p class="io-note">〇✕・★・チェック・練習回数・①の設定は、この端末のブラウザだけに保存されます。別の端末やブラウザに移すときは、ここで書き出して読みこんでください。</p>
         <div class="io-row">
           <button class="btn-sm" onclick="exportStats()">📤 記録を書き出す（ファイル）</button>
           <button class="btn-sm" onclick="showExportText()">📋 文字でコピー</button>
@@ -1494,13 +1494,39 @@
       let saved = {};
       try { saved = JSON.parse(localStorage.getItem(MASTERY_WORDS_KEY)) || {}; } catch(e) {}
       Object.keys(mastery).forEach(id => { if (!words[id] && saved[id]) words[id] = saved[id]; });
+      // version 2（2026-10-03）: ★・チェック・練習回数・①の設定も持ち出す。
+      // ⚠️ 読みこみ側は version 1 のファイル（これらが無い）も今までどおり読めること
+      const pr = getPractice();
+      let settings = null;
+      try { settings = JSON.parse(localStorage.getItem(SETTINGS_KEY)); } catch(e) {}
+      if (!settings || typeof settings !== "object") settings = null;
       return {
-        app: "kanji-print-app", type: EXPORT_TYPE, version: 1,
+        app: "kanji-print-app", type: EXPORT_TYPE, version: 2,
         exportedAt: new Date().toISOString(),
         count: Object.keys(mastery).length,
         stats: mastery, words: words,
-        excluded: [...getExcluded()]      // 「出さない」にした語も一緒に持ち出す
+        excluded: [...getExcluded()],     // 「出さない」にした語も一緒に持ち出す
+        starred: [...getStarred()],       // ★最優先
+        picked: [...getPicked()],         // 一覧のチェック
+        usePicked: usePicked === true,    // 「選んだ語で出す」か
+        practice: { since: pr ? (pr.since || null) : null, counts: pr ? Object.assign({}, pr.counts) : {} },
+        settings: settings                // ①の設定（新しい端末が初期状態のときだけ入れる）
       };
+    }
+    // 書き出せるものが1つでもあるか。〇✕が0件でも、★やチェックだけ持ち出したい場合がある
+    function exportBoxesFilled(d) {
+      return d.count > 0 || d.excluded.length > 0 || d.starred.length > 0 || d.picked.length > 0
+        || Object.keys(d.practice.counts).length > 0 || d.settings !== null;
+    }
+    function exportSummary(d) {
+      const parts = [`〇✕ ${d.count}語`];
+      if (d.excluded.length) parts.push(`出さない ${d.excluded.length}語`);
+      if (d.starred.length) parts.push(`★ ${d.starred.length}語`);
+      if (d.picked.length) parts.push(`チェック ${d.picked.length}語`);
+      const pc = Object.keys(d.practice.counts).length;
+      if (pc) parts.push(`練習回数 ${pc}語`);
+      if (d.settings) parts.push("①の設定");
+      return parts.join(" / ");
     }
     function exportFileName() {
       const d = new Date(), z = n => String(n).padStart(2, "0");
@@ -1510,7 +1536,7 @@
     }
     function exportStats() {
       const data = buildExportData();
-      if (data.count === 0) { showIoResult(false, "書き出せる記録がまだありません。"); return; }
+      if (!exportBoxesFilled(data)) { showIoResult(false, "書き出せる記録がまだありません。"); return; }
       try {
         const blob = new Blob([JSON.stringify(data, null, 2)], { type: "application/json" });
         const url = URL.createObjectURL(blob);
@@ -1518,7 +1544,7 @@
         a.href = url; a.download = exportFileName();
         document.body.appendChild(a); a.click(); document.body.removeChild(a);
         setTimeout(() => URL.revokeObjectURL(url), 1000);
-        showIoResult(true, `${data.count}語ぶんの記録を書き出しました。`);
+        showIoResult(true, `書き出しました（${exportSummary(data)}）。`);
       } catch(e) {
         showIoResult(false, "ファイルの書き出しに失敗しました。「📋 文字でコピー」をお使いください。");
       }
@@ -1526,10 +1552,10 @@
     // iPadなどファイルの受けわたしがしにくい端末むけの文字での持ち出し
     function showExportText() {
       const data = buildExportData();
-      if (data.count === 0) { showIoResult(false, "書き出せる記録がまだありません。"); return; }
+      if (!exportBoxesFilled(data)) { showIoResult(false, "書き出せる記録がまだありません。"); return; }
       document.getElementById("io-text-area").style.display = "block";
       document.getElementById("io-textarea").value = JSON.stringify(data);
-      showIoResult(true, `${data.count}語ぶんの記録です。「コピーする」を押して、別の端末で貼りつけてください。`);
+      showIoResult(true, `記録です（${exportSummary(data)}）。「コピーする」を押して、別の端末で貼りつけてください。`);
     }
     function toggleImportText() {
       const el = document.getElementById("io-text-area");
@@ -1560,11 +1586,83 @@
       if (!text) { showIoResult(false, "読みこむ内容が空です。"); return; }
       applyImport(text);
     }
+    // version 2 の追加分を取りこむ。★・チェックは足すだけ。練習回数は語ごとに大きいほう。
+    // ①の設定は、こちらがまだ初期状態（保存が無い）のときだけ入れる。⚠️ 既にいじっていれば上書きしない
+    function applyImportV2(data) {
+      const out = { star: 0, pick: 0, practice: 0, settings: null, usePicked: false };
+      const addKeys = (arr, get, save) => {
+        if (!Array.isArray(arr)) return 0;
+        const set = get(); let n = 0;
+        arr.forEach(k => { if (typeof k === "string" && k && !set.has(k)) { set.add(k); n++; } });
+        if (n > 0) save(set);
+        return n;
+      };
+      out.star = addKeys(data.starred, getStarred, saveStarred);
+      const pickedBefore = getPicked().size;
+      out.pick = addKeys(data.picked, getPicked, savePicked);
+      // 練習回数（語ごとに大きいほう。数え始めた日は古いほう）
+      const pin = data.practice;
+      if (pin && typeof pin === "object" && pin.counts && typeof pin.counts === "object") {
+        const cur = getPractice() || { v: 1, since: null, counts: {} };
+        let n = 0;
+        Object.keys(pin.counts).forEach(k => {
+          const v = pin.counts[k];
+          if (!Number.isInteger(v) || v <= 0) return;
+          if (v > (cur.counts[k] || 0)) { cur.counts[k] = v; n++; }
+        });
+        const okYmd = s => typeof s === "string" && /^\d{4}-\d{2}-\d{2}$/.test(s);
+        if (okYmd(pin.since) && (!okYmd(cur.since) || pin.since < cur.since)) cur.since = pin.since;
+        if (!okYmd(cur.since)) cur.since = todayYmd();
+        if (Object.keys(cur.counts).length > 0) {
+          try { localStorage.setItem(PRACTICE_KEY, JSON.stringify(cur)); } catch(e) {}
+        }
+        out.practice = n;
+      }
+      // ①の設定
+      const sin = data.settings;
+      if (sin && typeof sin === "object") {
+        let has = false;
+        try { has = localStorage.getItem(SETTINGS_KEY) !== null; } catch(e) {}
+        if (has) out.settings = "kept";
+        else {
+          const clean = {};
+          const known = new Set(KANJI_UNITS.map(u => u.key));
+          if (Array.isArray(sin.selectedUnits)) {
+            const u = sin.selectedUnits.filter(k => known.has(k));
+            if (u.length > 0) clean.selectedUnits = u;
+          }
+          if (sin.count === "all" || (Number.isInteger(sin.count) && sin.count > 0)) clean.count = sin.count;
+          if (typeof sin.filterUnmastered === "boolean") clean.filterUnmastered = sin.filterUnmastered;
+          if (typeof sin.filterWeak === "boolean") clean.filterWeak = sin.filterWeak;
+          if (PRIORITY_KEEP[sin.priorityFilter]) clean.priorityFilter = sin.priorityFilter;
+          if (typeof sin.usePicked === "boolean") clean.usePicked = sin.usePicked;
+          try { localStorage.setItem(SETTINGS_KEY, JSON.stringify(clean)); } catch(e) {}
+          loadCachedSettings();      // 画面にも反映する
+          renderUnitGrid();
+          out.settings = "applied";
+        }
+      }
+      // 「選んだ語で出す」: こちらにチェックが1つも無かったときだけ、ファイルの選択を引きつぐ
+      if (data.usePicked === true && out.settings !== "applied" && pickedBefore === 0 && getPicked().size > 0 && !usePicked) {
+        usePicked = true;
+        document.getElementById("mode-picked").classList.toggle("active", true);
+        document.getElementById("mode-auto").classList.toggle("active", false);
+        saveCachedSettings();
+        out.usePicked = true;
+      }
+      return out;
+    }
     // 取りこみ本体。既存の記録とつき合わせ、日付が新しい方を残す
     function applyImport(text) {
       let data;
       try { data = JSON.parse(text); } catch(e) { showIoResult(false, "内容を読み取れませんでした。書き出したファイル・文字をそのまま使ってください。"); return; }
-      if (!data || data.type !== EXPORT_TYPE || !data.stats || typeof data.stats !== "object") {
+      if (!data || data.type !== EXPORT_TYPE) {
+        showIoResult(false, "このアプリで書き出したデータではないようです。"); return;
+      }
+      // version 1 は stats が必須（今までどおり）。version 2 は〇✕が0件でも★などだけ運べる
+      const isV2 = (data.version || 1) >= 2;
+      if (!data.stats && isV2) data.stats = {};
+      if (!data.stats || typeof data.stats !== "object") {
         showIoResult(false, "このアプリで書き出したデータではないようです。"); return;
       }
       const incoming = data.stats, words = data.words || {};
@@ -1582,22 +1680,37 @@
         if ((rec.lastAnswered || 0) > (cur.lastAnswered || 0)) { mastery[id] = rec; updated++; }
         else kept++;
       });
-      if (added + updated === 0 && skipped === 0 && kept === 0) { showIoResult(false, "取りこめる記録がありませんでした。"); return; }
-      saveMastery(mastery);
+      const hasV2 = isV2 && (Array.isArray(data.starred) || Array.isArray(data.picked)
+        || (data.practice && typeof data.practice === "object") || (data.settings && typeof data.settings === "object")
+        || Array.isArray(data.excluded));
+      if (added + updated === 0 && skipped === 0 && kept === 0 && !hasV2) { showIoResult(false, "取りこめる記録がありませんでした。"); return; }
+      if (added + updated + kept + skipped > 0) saveMastery(mastery);
       let exAdded = 0;
       if (Array.isArray(data.excluded)) {          // 「出さない」の設定も引きつぐ（足すだけ・消さない）
         const ex = getExcluded();
         data.excluded.forEach(k => { if (typeof k === "string" && !ex.has(k)) { ex.add(k); exAdded++; } });
         if (exAdded > 0) saveExcluded(ex);
       }
+      // ---- version 2 で増えた分（足すだけ。消さない）----
+      const v2 = isV2 ? applyImportV2(data) : { star: 0, pick: 0, practice: 0, settings: null, usePicked: false };
       currentSet = [];
       generateDailySet(false);
       updateProgressDisplay();
+      updatePriorityNote();
+      updatePickModeNote();
+      updateStarNote();
+      updateSelectedCountLabel();
       renderHistoryList();
       const parts = [`新しく追加 ${added}語`, `上書き ${updated}語`];
       if (kept > 0) parts.push(`こちらの方が新しいので残した ${kept}語`);
       if (skipped > 0) parts.push(`今のデータに無く取りこめなかった ${skipped}語`);
       if (exAdded > 0) parts.push(`「出さない」の設定 ${exAdded}語`);
+      if (v2.star > 0) parts.push(`★ ${v2.star}語`);
+      if (v2.pick > 0) parts.push(`チェック ${v2.pick}語`);
+      if (v2.usePicked) parts.push("「選んだ語で出す」");
+      if (v2.practice > 0) parts.push(`練習回数 ${v2.practice}語`);
+      if (v2.settings === "applied") parts.push("①の設定");
+      if (v2.settings === "kept") parts.push("①の設定はこちらで変更ずみなので上書きしませんでした");
       showIoResult(true, "読みこみました。" + parts.join(" / "));
     }
     /* ---------- できた／できなかったの一覧をCSVで書き出す ---------- */
