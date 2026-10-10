@@ -1440,8 +1440,12 @@
           付け替える3か所（migrateLegacyMastery／rescueOrphanedRecords／applyImport）は、
           古い id を見たら飛ばす。 */
     function isOldHistoryId(id) { return /^[kg]\d+_\d+$/.test(String(id)); }
+    // 消すのは1回だけ（済んだ印を残す）。〇✕の保存先は対戦アプリと共有で、対戦アプリはまだ古い k… を使う。
+    // 毎回消すと、これから対戦アプリで付く記録まで消えてしまう
+    const HISTORY_PURGED_FLAG = "kanji_app_history_purged_20261010";
     function purgeOldHistoryRecords() {
       try {
+        if (localStorage.getItem(HISTORY_PURGED_FLAG)) return;
         const mastery = getMastery();
         let n = 0;
         Object.keys(mastery).forEach(id => { if (isOldHistoryId(id)) { delete mastery[id]; n++; } });
@@ -1453,6 +1457,7 @@
           Object.keys(index).forEach(id => { if (isOldHistoryId(id)) { delete index[id]; m++; } });
           if (m > 0) localStorage.setItem(MASTERY_WORDS_KEY, JSON.stringify(index));
         }
+        localStorage.setItem(HISTORY_PURGED_FLAG, "1");
       } catch(e) {}
     }
     // 旧形式 {passed, lastDate} を現行の間隔反復形式に変換する
