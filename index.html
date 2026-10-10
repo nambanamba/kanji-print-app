@@ -858,6 +858,7 @@
       // デフォルトで全単元を選択
       KANJI_UNITS.forEach(u => selectedUnits.add(u.key));
       migrateLegacyMastery();   // 旧バージョンの記録を引き継ぐ
+      purgeOldHistoryRecords(); // 2026-10-10 作り直し前の歴史の記録（k…／g…）を消す
       rescueOrphanedRecords();  // idが変わっていたら語をたよりに付け替える
       // すでにある記録の語も毎回控えておく。〇✕を押すまで控えが作られないと、
       // その前にidが振り直された場合に復元できなくなるため
@@ -1430,6 +1431,30 @@
       KANJI_DATA.forEach(d => { m[d.id] = true; });
       return m;
     }
+    /* ---------- 歴史の漢字リスト作り直し（2026-10-10）----------
+       歴史（第1〜4・6回）は新しい h{回}_{連番} の410語に入れかえた。ユーザーの指示:
+       「過去の正誤は残ってなくていい」「昔の分は捨ててください。容量が重くなるので」
+       ・古い歴史の id は k{回}_{連番}（旧リストの 〇✕ の記録）と g{回}_{連番}（さらに前の体系）
+       ・夏期講習は kaki{N}_{連番}。これは「k」のあとに数字が来ないので当たらない（触らない）
+       ⚠️ 古い記録を、同じ語の新しい h… に付け替えてはいけない（新しく始めるのが意図）。
+          付け替える3か所（migrateLegacyMastery／rescueOrphanedRecords／applyImport）は、
+          古い id を見たら飛ばす。 */
+    function isOldHistoryId(id) { return /^[kg]\d+_\d+$/.test(String(id)); }
+    function purgeOldHistoryRecords() {
+      try {
+        const mastery = getMastery();
+        let n = 0;
+        Object.keys(mastery).forEach(id => { if (isOldHistoryId(id)) { delete mastery[id]; n++; } });
+        if (n > 0) saveMastery(mastery);
+        const raw = localStorage.getItem(MASTERY_WORDS_KEY);
+        if (raw) {
+          const index = JSON.parse(raw) || {};
+          let m = 0;
+          Object.keys(index).forEach(id => { if (isOldHistoryId(id)) { delete index[id]; m++; } });
+          if (m > 0) localStorage.setItem(MASTERY_WORDS_KEY, JSON.stringify(index));
+        }
+      } catch(e) {}
+    }
     // 旧形式 {passed, lastDate} を現行の間隔反復形式に変換する
     function convertLegacyStat(rec) {
       const t = (rec && rec.lastDate && Date.parse(rec.lastDate + "T00:00:00")) || Date.now();
@@ -1450,6 +1475,7 @@
           try { old = JSON.parse(localStorage.getItem(key)); } catch(e) { return; }
           if (!old || typeof old !== "object") return;
           Object.keys(old).forEach(oldId => {
+            if (isOldHistoryId(oldId)) return;   // 作り直し前の歴史は引き継がない
             const word = LEGACY_ID_WORDS[oldId];
             const id = (word && toId[word]) || (known[oldId] ? oldId : null);
             if (id) merged[id] = convertLegacyStat(old[oldId]);   // 今のデータに無い語は復元できない
@@ -1484,6 +1510,7 @@
         };
         Object.keys(mastery).forEach(id => {
           const rec = mastery[id];
+          if (isOldHistoryId(id)) { put(id, rec); return; }   // 作り直し前の歴史は新しい語へ付け替えない
           const recorded = index[id];          // この記録をつけたときの語
           const current = wordOf[id];          // 今そのidに入っている語
           if (!recorded || recorded === current) { put(id, rec); return; }  // 控えが無い（姉妹アプリ由来など）／変わっていない
@@ -1683,6 +1710,7 @@
       Object.keys(incoming).forEach(oldId => {
         const rec = incoming[oldId];
         if (!rec || typeof rec !== "object") { skipped++; return; }
+        if (isOldHistoryId(oldId)) { skipped++; return; }   // 作り直し前の歴史の記録は取りこまない
         const word = words[oldId];
         const id = (word && toId[word]) || (known[oldId] ? oldId : null);
         if (!id) { skipped++; return; }               // 今のデータに無い語は取りこめない
