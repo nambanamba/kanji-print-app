@@ -530,6 +530,7 @@
         <div id="preview-area" style="display:none;"></div>
         <button class="btn-main" onclick="printTestSheet()">🖨️ ① テストプリントを印刷（A4）</button>
         <button class="btn-main" style="background:#0891b2; box-shadow:0 4px 10px rgba(8,145,178,0.3); margin-top:10px;" onclick="printPracticeSheet()">🖨️ ② 練習プリントを印刷（A4）</button>
+        <button class="btn-main" style="background:#475569; box-shadow:0 4px 10px rgba(71,85,105,0.3); margin-top:10px;" onclick="printBothSheets()">🖨️ ①＋② まとめて印刷（テスト → 練習）</button>
         <p style="font-size:0.76rem; color:var(--text-muted); margin-top:10px; text-align:center;">①②は同じ問題セットで印刷されます。<a href="#" onclick="rerollSet(); return false;" style="color:var(--primary);">🔄 別の問題に出題し直す</a></p>
       </div>
 
@@ -1988,6 +1989,14 @@
           ★[✏️ 練習した]（②の保存 / ③のボタン）だけです（2026-09-26b）。 */
     function printTestSheet()     { if (ensureSet()) renderTestPrint(); }
     function printPracticeSheet() { if (ensureSet()) renderPracticePrint(); }
+    // ①テスト と ②練習 を、同じ問題セットのまま1回の印刷で続けて出す（①の次の紙から②が始まる）
+    function printBothSheets() {
+      if (!ensureSet()) return;
+      document.getElementById("print-region").innerHTML =
+        `<div>${renderTestPrint(true)}</div>`
+        + `<div style="page-break-before:always; break-before:page;">${renderPracticePrint(true)}</div>`;
+      window.print();
+    }
 
     /* ---------- ② 今日の採点 ----------
        ★2026-09-26: 練習と正解を、この画面1か所で入れる形にしました（ユーザー依頼）。
@@ -2328,7 +2337,7 @@
       "呉":   "造船がさかんな市"
     };
 
-    function renderTestPrint() {
+    function renderTestPrint(returnHtml) {
       const todayStr = new Date().toLocaleDateString("ja-JP", { year: "numeric", month: "long", day: "numeric" });
       const unitNames = printedUnitNames();
       const n = currentSet.length;
@@ -2353,7 +2362,7 @@
       const leftHtml  = currentSet.slice(0, half).map((it, i) => makeTestItem(it, i)).join("");
       const rightHtml = currentSet.slice(half).map((it, i) => makeTestItem(it, half + i)).join("");
 
-      document.getElementById("print-region").innerHTML = `
+      const html = `
         <div class="p-head">
           <div>
             <div class="p-title">中学受験 社会 漢字テスト（${n}問）</div>
@@ -2374,6 +2383,8 @@
           </div>
         </div>`;
 
+      if (returnHtml) return html;      // ①②まとめて印刷のとき（printBothSheets）
+      document.getElementById("print-region").innerHTML = html;
       window.print();
     }
 
@@ -2434,7 +2445,7 @@
     function traceFontPt(word)  { return fitFontPt(word, 76, 11); }    // 練習マスは全幅の半分（2列）
     function sampleFontPt(word) { return fitFontPt(word, 105, 11); }   // お手本は読み仮名のぶんを残す
 
-    function renderPracticePrint() {
+    function renderPracticePrint(returnHtml) {
       const todayStr = new Date().toLocaleDateString("ja-JP", { year: "numeric", month: "long", day: "numeric" });
       const unitNames = printedUnitNames();
       const n = currentSet.length;
@@ -2457,7 +2468,7 @@
         </div>`;
       }).join("");
 
-      document.getElementById("print-region").innerHTML = `
+      const html = `
         <div class="p-head">
           <div>
             <div class="p-title">中学受験 社会 漢字練習プリント（${n}問）</div>
@@ -2472,6 +2483,8 @@
         <div class="section-title">お手本を見て練習しよう（なぞり書き ＋ 5回練習）</div>
 ${practiceItemsHtml}`;
 
+      if (returnHtml) return html;
+      document.getElementById("print-region").innerHTML = html;
       window.print();
     }
   </script>
