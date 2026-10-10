@@ -582,6 +582,12 @@
         </div>
         <div class="list-head">
           <select id="list-unit-select" onchange="setListUnit(this.value)"></select>
+          <select id="list-prio-select" onchange="setListPrio(this.value)" title="一覧の表示だけをしぼります（印刷の重要度の設定とは別）">
+            <option value="all">重要度: すべて</option>
+            <option value="高">重要度: 高</option>
+            <option value="中">重要度: 中</option>
+            <option value="低">重要度: 低</option>
+          </select>
           <span class="list-count" id="list-count-text"></span>
         </div>
         <div class="list-head" style="border-bottom:1px solid #e2e8f0;">
@@ -768,6 +774,7 @@
     let usePicked        = false;
     let listUnitKey      = null;  // 一覧タブでいま見ている回
     let showPickedOnly   = false; // 一覧タブで「選んだ語だけ表示」
+    let listPrio         = "all"; // 一覧タブの重要度フィルタ（表示だけ。印刷の設定とは別）
     let showStarOnly     = false; // 一覧タブで「★だけ表示」
     // 重要度でしぼる。"all" | "highmid" | "high"。データは消さず、出題する範囲だけ変える
     let priorityFilter = "all";
@@ -1308,6 +1315,10 @@
       document.getElementById("list-picked-only-btn").classList.toggle("is-on", showPickedOnly);
       renderHistoryList();
     }
+    function setListPrio(v) {
+      listPrio = v;
+      renderHistoryList();
+    }
     function setListUnit(key) {
       listUnitKey = key;
       renderHistoryList();
@@ -1333,6 +1344,7 @@
       let items = listUnitItems();
       if (showPickedOnly) items = items.filter(it => isPicked(it));
       if (showStarOnly)   items = items.filter(it => isStarred(it));
+      if (listPrio !== "all") items = items.filter(it => it.priority === listPrio);
       return items;
     }
 
@@ -2154,6 +2166,8 @@
         + ` / ★ <b>${starHere}語</b>（全体 ${star.size}語）`;
       const onlyBtn = document.getElementById("list-picked-only-btn");
       if (onlyBtn) onlyBtn.classList.toggle("is-on", showPickedOnly);
+      const prioSel = document.getElementById("list-prio-select");
+      if (prioSel) prioSel.value = listPrio;
       const starBtn = document.getElementById("list-star-only-btn");
       if (starBtn) starBtn.classList.toggle("is-on", showStarOnly);
 
@@ -2212,7 +2226,8 @@
         </div></details>`;
       container.innerHTML = 役割 + note + guide;
       if (items.length === 0) {
-        const msg = showStarOnly   ? "この回で★を付けた語はありません。"
+        const msg = listPrio !== "all" ? `この回に重要度「${listPrio}」の語はありません（ほかの条件との組み合わせかもしれません）。`
+                  : showStarOnly   ? "この回で★を付けた語はありません。"
                   : showPickedOnly ? "この回でチェックした語はありません。"
                   : "この回に語がありません。";
         container.insertAdjacentHTML("beforeend", `<p style='text-align:center;padding:20px;color:#64748b;'>${msg}</p>`);
@@ -2238,7 +2253,7 @@
           <div class="word-body">
             <div class="word-kana">${it.kana}</div>
             <div class="word-main">${it.word}${rec ? `<span class="word-rec" title="テストに出そうな語として機械が上位に挙げたもの（参考）">おすすめ</span>` : ""}${practiced > 0 ? `<span class="word-practiced" title="「✏️ 練習した」で入れた回数（②の保存と、この行のボタン）。★プリントを刷っただけでは数えていません">練習 ${practiced}回</span>` : ""}</div>
-            <div class="word-mean">💡 ${it.mean}</div>
+            <div class="word-mean">💡 ${it.mean}${it.priority ? ` <span style="color:#94a3b8;">（重要度 ${it.priority}）</span>` : ""}</div>
             <div class="word-ops">
               ${done ? `<span class="word-done">⭕ ${done} に正解</span>` : ``}
               <label class="word-date-label">やった日
