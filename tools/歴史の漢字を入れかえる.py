@@ -7,12 +7,22 @@ import hashlib, json, re, sys, collections
 
 SRC = 'G:/マイドライブ/四谷大塚/5年下/quiz_csv/漢字_洗い出し_20261010/'
 DST = 'G:/マイドライブ/四谷大塚/kanji-print-app/kanji-data.js'
-EXPECT = {  # 回: (語数, sha256先頭16桁)  ← 依頼書の表
-    1: (27, '3f6e2f6e2fe1445e'), 2: (28, '137b5ffb1e06530b'), 3: (33, '61163d8ca26f68a7'),
-    4: (43, '372cf3ceccd614ea'), 6: (31, '7452376deda870dd'), 7: (33, 'd8a2e4a70159893d'),
-    8: (25, '59c024aa93e42831'), 9: (30, '4c41c6e58136b2f7'), 11: (25, 'ff828d1ef59b8b36'),
-    12: (21, 'effe60393995af99'), 13: (27, '0aeb31c5328f44cf'), 14: (30, '2993ae3863dcda9d'),
-    16: (18, 'c2478511bb6bf353'), 17: (21, 'c03caccfd6450fe1'), 18: (18, 'fb9197b5d059afd3'),
+EXPECT = {  # 回: (語数, sha256先頭16桁)  ← 依頼書(県名を外す・374語版)の表
+    1: (22, 'af5b75daade1dc2d'),
+    2: (25, 'fa081f457cf22019'),
+    3: (32, '07d972413a513eeb'),
+    4: (35, '25799d4f3e4ea5bf'),
+    6: (29, '53f0deb1eed5d3f5'),
+    7: (28, '688683b3a3f1f560'),
+    8: (23, '45b64d633c29762f'),
+    9: (28, '1f673e079dc35c41'),
+    11: (24, '9e87ed144f1749fc'),
+    12: (20, '32ec4c116fd5cafb'),
+    13: (24, 'c6d9798dfbe3ed0b'),
+    14: (30, '2993ae3863dcda9d'),
+    16: (17, 'd81c37f3b238d64c'),
+    17: (20, 'e29ffa7fb40552f7'),
+    18: (17, '9d3c3af8f1e4e8b7'),
 }
 NL = '\r\n'
 write = '--書く' in sys.argv
@@ -36,7 +46,7 @@ for kai in sorted(EXPECT):
     new_entries.append((kai, units.pop(), data))
 
 all_ids = [d['id'] for _, _, ds in new_entries for d in ds]
-assert len(all_ids) == len(set(all_ids)) == 410, '新しい語は410・id重複なし'
+assert len(all_ids) == len(set(all_ids)) == 374, '新しい語は374・id重複なし'
 
 b = open(DST, 'rb').read()                                           # バイナリで読む
 s = b.decode('utf-8')
@@ -56,7 +66,7 @@ while True:
     else:
         break
 old_history = s[i0:cut]
-assert 'id: "k' in old_history and 'id: "kaki' not in old_history
+assert 'id: "h' in old_history and 'id: "kaki' not in old_history
 end_arr = s.index(NL + '];' + NL, cut) + len(NL)                     # KANJI_DATA の閉じ括弧の手前の改行まで
 kaki_part = s[cut:end_arr]
 assert len(re.findall(r'^    id: "kaki', kaki_part, re.M)) == 375, '夏期講習は375語のはず'
@@ -97,8 +107,8 @@ assert out[out.index(kaki_part[:60]):].startswith(kaki_part), '夏期講習の�
 ids = re.findall(r'^    id: "([^"]+)"', out, re.M)
 cnt = collections.Counter(re.match(r'[a-z]+', i).group(0) for i in ids)
 print('出力の語数', len(ids), dict(cnt))
-assert cnt['h'] == 410 and cnt['kaki'] == 375 and cnt.get('k', 0) == 0 and len(ids) == len(set(ids))
-print('入れかえ前の歴史', len(re.findall(r'^    id: "k\d', old_history, re.M)), '語 → 410語')
+assert cnt['h'] == 374 and cnt['kaki'] == 375 and cnt.get('k', 0) == 0 and len(ids) == len(set(ids))
+print('入れかえ前の歴史', len(re.findall(r'^    id: "h\d', old_history, re.M)), '語 →', 374, '語')
 if write:
     open(DST, 'wb').write(out.encode('utf-8'))                       # バイナリで書く
     print('書きました', DST)
