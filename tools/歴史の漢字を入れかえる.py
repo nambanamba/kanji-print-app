@@ -12,7 +12,7 @@ EXPECT = {  # 回: (語数, sha256先頭16桁)  ← 依頼書(県名を外す・
     2: (24, '9afe9472cd685fa7'),
     3: (32, '07d972413a513eeb'),
     4: (34, '6eef7f0852c5a8a4'),
-    6: (27, 'a8154bdedd6de764'),
+    6: (28, '358da1a3af0c2234'),
     7: (28, '688683b3a3f1f560'),
     8: (23, '45b64d633c29762f'),
     9: (28, '1f673e079dc35c41'),
@@ -46,7 +46,7 @@ for kai in sorted(EXPECT):
     new_entries.append((kai, units.pop(), data))
 
 all_ids = [d['id'] for _, _, ds in new_entries for d in ds]
-assert len(all_ids) == len(set(all_ids)) == 368, '新しい語は368・id重複なし'
+assert len(all_ids) == len(set(all_ids)) == 369, '新しい語は369・id重複なし'
 
 b = open(DST, 'rb').read()                                           # バイナリで読む
 s = b.decode('utf-8')
@@ -107,8 +107,8 @@ assert out[out.index(kaki_part[:60]):].startswith(kaki_part), '夏期講習の�
 ids = re.findall(r'^    id: "([^"]+)"', out, re.M)
 cnt = collections.Counter(re.match(r'[a-z]+', i).group(0) for i in ids)
 print('出力の語数', len(ids), dict(cnt))
-assert cnt['h'] == 368 and cnt['kaki'] == 375 and cnt.get('k', 0) == 0 and len(ids) == len(set(ids))
-print('入れかえ前の歴史', len(re.findall(r'^    id: "h\d', old_history, re.M)), '語 →', 368, '語')
+assert cnt['h'] == 369 and cnt['kaki'] == 375 and cnt.get('k', 0) == 0 and len(ids) == len(set(ids))
+print('入れかえ前の歴史', len(re.findall(r'^    id: "h\d', old_history, re.M)), '語 →', 369, '語')
 if write:
     open(DST, 'wb').write(out.encode('utf-8'))                       # バイナリで書く
     print('書きました', DST)
